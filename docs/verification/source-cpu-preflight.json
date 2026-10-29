@@ -1,0 +1,56 @@
+{
+  "code_revision": "4df1b73",
+  "source_video_id": "SIZsFGvtClM",
+  "source_bytes": 25861753,
+  "source_sha256": "18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f",
+  "model_inference": false,
+  "probed_source": {
+    "duration_ms": 700407,
+    "timeline_origin_ms": 0,
+    "video": {
+      "codec": "av1",
+      "width": 1280,
+      "height": 720,
+      "frame_rate": 29.97002997002997
+    },
+    "audio": [
+      {
+        "audio_ordinal": 0,
+        "stream_index": 1,
+        "language": "eng",
+        "codec": "aac",
+        "channels": 2,
+        "sample_rate": 44100,
+        "default": true
+      }
+    ]
+  },
+  "selection": {
+    "start_ms": 0,
+    "end_ms": 60000,
+    "revision": 1,
+    "audio_ordinal": 0,
+    "stream_index": 1
+  },
+  "workflow_status": "paused",
+  "next_action": "configure_separation",
+  "outputs": {
+    "working_audio": {
+      "duration_ms": 60000,
+      "sample_rate": 48000,
+      "channels": 2,
+      "sample_width": 2,
+      "byte_size": 11520078,
+      "sha256": "68bd81e2e5a31ab037666e0e25d80a7b90136f2d431ee0d2c728325eeed8f7ad"
+    },
+    "asr_audio": {
+      "duration_ms": 60000,
+      "sample_rate": 16000,
+      "channels": 1,
+      "sample_width": 2,
+      "byte_size": 1920078,
+      "sha256": "5fa0fe5df1602d67285d360a5a0f0a544c791200c1ecbd2145abef9471c35517"
+    }
+  },
+  "elapsed_seconds": 3.505
+}
