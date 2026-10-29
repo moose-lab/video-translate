@@ -30,3 +30,5 @@ Recorded local commands for this increment:
   and receives the next sequence.
 - The supplied 700.407-second MP4 was uploaded and probed through the product queue locally: AV1,
   1280×720, AAC stereo audio ordinal 0 / stream 1, language `eng`. This is media inspection only.
+- PostgreSQL composite foreign keys rejected both a mismatched workspace/project input state and an
+  event referencing a run from a different project in the same workspace.
