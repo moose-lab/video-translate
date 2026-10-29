@@ -1,6 +1,6 @@
 """Fenced raw-reference input cleanup. Storage operations never hold SQL locks."""
 
-from sqlalchemy import case, or_, select, update
+from sqlalchemy import func, or_, select, update
 
 from ..models.analysis import ReferenceRequest, ReferenceVersion
 from ..models.core import Asset, Project, utcnow
@@ -116,11 +116,11 @@ def cleanup_raw_uploads(session_factory, storage, *, workspace_id, before, limit
                     & ReferenceRequest.upload_write_settled.is_(False),
                 ),
             )
-            # New garbage precedes conservative late-writer tombstones. Rotate
-            # tombstone checks so unknown writers cannot starve later inputs.
+            # One oldest-considered queue for regular inputs and tombstones.
+            # New arrivals start at creation time rather than jumping ahead of
+            # every previously checked candidate; protected rows rotate too.
             .order_by(
-                case((ReferenceRequest.upload_state == "deleted", 1), else_=0),
-                ReferenceRequest.upload_gc_checked_at.asc().nullsfirst(),
+                func.coalesce(ReferenceRequest.upload_gc_checked_at, ReferenceRequest.created_at),
                 ReferenceRequest.created_at,
                 ReferenceRequest.id,
             )

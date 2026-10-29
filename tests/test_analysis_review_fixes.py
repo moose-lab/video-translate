@@ -562,3 +562,96 @@ def test_bounded_raw_cleanup_rotates_protected_reservations(dubbing_project, mon
     assert one() == 1, "a protected older input must not starve later garbage forever"
     with client.app.state.storage.open(first.upload_key) as stream:
         assert stream.read() == wav_bytes()
+
+
+@pytest.mark.parametrize("ordinary", ["protected", "garbage"])
+def test_bounded_raw_cleanup_is_fair_between_tombstones_and_regular_inputs(
+    dubbing_project, monkeypatch, ordinary
+):
+    client, headers, p = dubbing_project
+    record = failed_partial_upload(dubbing_project, monkeypatch)
+    monkeypatch.undo()
+    storage = client.app.state.storage
+    with client.app.state.session_factory.begin() as db:
+        row = db.get(ReferenceRequest, record.id)
+        row.upload_state = "writing"
+        row.upload_write_settled = False
+        row.upload_lease_expires_at = utcnow() - timedelta(seconds=1)
+
+    def one():
+        return cleanup_orphans(
+            client.app.state.session_factory,
+            storage,
+            workspace_id=record.workspace_id,
+            before=utcnow() + timedelta(days=1),
+            limit=1,
+        )
+
+    assert one() == 1
+    # A writer can finish storage.put and die before its settlement checkpoint.
+    import io
+
+    storage.put(record.upload_key, io.BytesIO(wav_bytes()), "audio/wav")
+    queued = upload(dubbing_project)
+    assert queued.status_code == 202
+    if ordinary == "garbage":
+        assert (
+            client.post(
+                "/api/runs/" + queued.json()["run"]["id"] + "/cancel", headers=headers
+            ).status_code
+            == 200
+        )
+    with client.app.state.session_factory() as db:
+        regular = db.scalar(
+            select(ReferenceRequest).where(
+                ReferenceRequest.project_id == p["id"], ReferenceRequest.id != record.id
+            )
+        )
+    outcomes = [one() for _ in range(4)]
+    if ordinary == "protected":
+        assert outcomes == [0, 0, 0, 0]
+        with storage.open(regular.upload_key) as stream:
+            assert stream.read() == wav_bytes()
+        assert client.get("/api/runs/" + queued.json()["run"]["id"]).json()["status"] == "queued"
+    else:
+        assert 1 in outcomes[:2], "an old tombstone must not starve new garbage"
+        with pytest.raises(FileNotFoundError):
+            storage.open(regular.upload_key)
+    with pytest.raises(FileNotFoundError):
+        storage.open(record.upload_key)
+    with client.app.state.session_factory() as db:
+        row = db.get(ReferenceRequest, record.id)
+        assert row.upload_state == "deleted" and row.upload_write_settled is False
+
+
+def test_new_protected_arrivals_do_not_perpetually_delay_old_raw_tombstone(
+    dubbing_project, monkeypatch
+):
+    import io
+
+    client, _, _ = dubbing_project
+    record = failed_partial_upload(dubbing_project, monkeypatch)
+    monkeypatch.undo()
+    storage = client.app.state.storage
+    with client.app.state.session_factory.begin() as db:
+        row = db.get(ReferenceRequest, record.id)
+        row.upload_state = "writing"
+        row.upload_write_settled = False
+        row.upload_lease_expires_at = utcnow() - timedelta(seconds=1)
+
+    def one():
+        return cleanup_orphans(
+            client.app.state.session_factory,
+            storage,
+            workspace_id=record.workspace_id,
+            before=utcnow() + timedelta(days=1),
+            limit=1,
+        )
+
+    assert one() == 1
+    storage.put(record.upload_key, io.BytesIO(wav_bytes()), "audio/wav")
+    for _ in range(3):
+        assert upload(dubbing_project).status_code == 202
+        assert one() == 0
+    with pytest.raises(FileNotFoundError):
+        storage.open(record.upload_key)
