@@ -18,6 +18,6 @@ The original preview database and server key were preserved during the API resta
 
 Checks occurred between15:53 and15:55UTC. These are actual service schema/health/model metadata and HF account checks. No source audio or model inference request was submitted. Valid HF account authentication does not prove Inference Providers permission, available credit, successful synthesis, language quality or final export.
 
-The protected token input remained empty after save. A screenshot of the service page is saved outside the repository at `../../VideoTranslate-service-setup.png`. The browser exposes only configuration state; no token prefix, suffix, ciphertext, account response or signed media URL was placed in this evidence.
+The protected token input remained empty after save. A screenshot of the service page is saved outside the repository in the parent outputs directory, `../../../VideoTranslate-service-setup.png` relative to this document. The browser exposes only configuration state; no token prefix, suffix, ciphertext, account response or signed media URL was placed in this evidence.
 
 The current preview was restarted during the review-fix work; a few subsequent metadata-only fixes were committed after that restart. Code review and automated verification target the committed code, independently of these live network observations. Later domain and end-to-end tests must use the current build with the same protected state.
