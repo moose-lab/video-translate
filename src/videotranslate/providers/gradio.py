@@ -92,10 +92,9 @@ class GradioClient:
             self._path(api_name), {"data": args}, max_bytes=1024 * 1024, headers=self.headers
         )
         try:
-            result = json.loads(raw)
+            return parse_submission(json.loads(raw))
         except (ValueError, TypeError):
-            raise ValueError("Invalid Gradio submission response") from None
-        return parse_submission(result)
+            raise ProviderError("uncertain") from None
 
     def poll(self, api_name, event_id):
         event_id = parse_submission({"event_id": event_id})

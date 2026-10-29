@@ -232,3 +232,69 @@ def test_proxy_backend_pins_dns_target_and_keeps_origin_for_tls(monkeypatch):
     assert calls == [("http://127.0.0.1:7897", "1.1.1.1", 443)]
     stream.close()
     client.close()
+
+
+def test_encoded_responses_are_rejected_before_decompression_for_all_operations():
+    import httpx
+
+    from videotranslate.providers.contracts import ProviderError
+    from videotranslate.providers.network import SafeHTTP
+
+    class NeverRead(httpx.SyncByteStream):
+        def __iter__(self):
+            raise AssertionError("compressed body must not be read")
+            yield b""
+
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        return httpx.Response(200, headers={"Content-Encoding": "gzip"}, stream=NeverRead())
+
+    client = SafeHTTP(transport=httpx.MockTransport(handler), resolver=lambda host: ["1.1.1.1"])
+    url = "https://example.hf.space/file"
+    operations = [
+        (
+            lambda: client.get(url, headers={"Accept-Encoding": "gzip"}, max_bytes=1024),
+            "invalid_response",
+        ),
+        (lambda: client.get_sse(url, max_bytes=1024), "invalid_response"),
+        (lambda: client.download(url, max_bytes=1024), "invalid_response"),
+        (lambda: client.post_json(url, {"data": []}, max_bytes=1024), "uncertain"),
+        (
+            lambda: client.upload(
+                url, filename="test.wav", content=b"fake", content_type="audio/wav"
+            ),
+            "uncertain",
+        ),
+    ]
+    for operation, expected in operations:
+        with pytest.raises(ProviderError) as error:
+            operation()
+        assert error.value.code == expected
+    assert all(request.headers["accept-encoding"] == "identity" for request in seen)
+    client.close()
+
+
+def test_oversized_or_invalid_successful_post_response_is_uncertain():
+    import httpx
+
+    from videotranslate.providers.contracts import ProviderError
+    from videotranslate.providers.network import SafeHTTP
+
+    client = SafeHTTP(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, content=b"x" * 2048)),
+        resolver=lambda host: ["1.1.1.1"],
+    )
+    with pytest.raises(ProviderError) as error:
+        client.post_json("https://example.hf.space/call/predict", {"data": []}, max_bytes=1024)
+    assert error.value.code == "uncertain"
+    with pytest.raises(ProviderError) as error:
+        client.upload(
+            "https://example.hf.space/upload",
+            filename="a.wav",
+            content=b"fake",
+            content_type="audio/wav",
+        )
+    assert error.value.code == "uncertain"
+    client.close()

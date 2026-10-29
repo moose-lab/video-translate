@@ -1016,3 +1016,16 @@ def test_nvidia_failure_closing_a_submitted_stream_is_uncertain(monkeypatch):
     with pytest.raises(ProviderError) as error:
         nvidia_stream.stream_remote(b"\0\0", source_language="en")
     assert error.value.code == "uncertain"
+
+
+def test_gradio_submission_without_real_event_id_is_uncertain():
+    from videotranslate.providers.contracts import ProviderError
+    from videotranslate.providers.gradio import GradioClient
+
+    class Http:
+        def post_json(self, *args, **kwargs):
+            return b"{}"
+
+    with pytest.raises(ProviderError) as error:
+        GradioClient(Http(), "https://test.hf.space", "").submit("predict", [])
+    assert error.value.code == "uncertain"

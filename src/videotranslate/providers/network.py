@@ -71,6 +71,22 @@ def status_error(status):
     return ProviderError("network")
 
 
+def identity_headers(headers):
+    """Never request compressed responses, even when a caller supplies headers."""
+    result = {
+        key: value for key, value in (headers or {}).items() if key.lower() != "accept-encoding"
+    }
+    result["Accept-Encoding"] = "identity"
+    return result
+
+
+def require_identity_response(response, *, submitted=False):
+    """Reject encoding before HTTPX can allocate decompressed content."""
+    encoding = response.headers.get("content-encoding", "").strip().lower()
+    if encoding not in {"", "identity"}:
+        raise ProviderError("uncertain" if submitted else "invalid_response")
+
+
 class SafeHTTP:
     """Bounded GETs with validated redirects and pinned public DNS for the real transport."""
 
@@ -133,7 +149,7 @@ class SafeHTTP:
     def _get(self, url, *, headers=None, max_bytes=1024 * 1024):
         from urllib.parse import urljoin, urlsplit
 
-        current_headers = dict(headers or {})
+        current_headers = identity_headers(headers)
         for _ in range(4):
             validate_url(url, allowed_hosts=self.allowed_hosts)
             validate_public_addresses(self.resolver(urlsplit(url).hostname))
@@ -154,6 +170,7 @@ class SafeHTTP:
                     continue
                 if response.status_code >= 400:
                     raise status_error(response.status_code)
+                require_identity_response(response)
                 result = bytearray()
                 for chunk in response.iter_bytes():
                     result.extend(chunk)
@@ -176,18 +193,20 @@ class SafeHTTP:
         encoded = json.dumps(body, ensure_ascii=False, allow_nan=False).encode()
         if not 1 <= max_request_bytes <= 64 * 1024 * 1024 or len(encoded) > max_request_bytes:
             raise ValueError("Provider request too large")
-        request_headers = {**(headers or {}), "Content-Type": "application/json"}
+        request_headers = identity_headers(headers)
+        request_headers["Content-Type"] = "application/json"
         try:
             with self.client.stream(
                 "POST", url, headers=request_headers, content=encoded
             ) as response:
                 if response.status_code >= 300:
                     raise status_error(response.status_code)
+                require_identity_response(response, submitted=True)
                 result = bytearray()
                 for chunk in response.iter_bytes():
                     result.extend(chunk)
                     if len(result) > max_bytes:
-                        raise ValueError("Provider response too large")
+                        raise ProviderError("uncertain")
                 return bytes(result)
         except httpx.RequestError:
             raise ProviderError("uncertain") from None
@@ -220,16 +239,23 @@ class SafeHTTP:
             raise ValueError("Invalid upload")
         try:
             with self.client.stream(
-                "POST", url, headers=headers, files={"files": (filename, content, content_type)}
+                "POST",
+                url,
+                headers=identity_headers(headers),
+                files={"files": (filename, content, content_type)},
             ) as response:
                 if response.status_code >= 300:
                     raise status_error(response.status_code)
+                require_identity_response(response, submitted=True)
                 data = bytearray()
                 for chunk in response.iter_bytes():
                     data.extend(chunk)
                     if len(data) > 1024 * 1024:
-                        raise ValueError("Provider response too large")
-            result = json.loads(data)
+                        raise ProviderError("uncertain")
+            try:
+                result = json.loads(data)
+            except (ValueError, TypeError):
+                raise ProviderError("uncertain") from None
             if (
                 not isinstance(result, list)
                 or len(result) != 1
@@ -237,7 +263,7 @@ class SafeHTTP:
                 or not result[0]
                 or result[0].lower().startswith(("file:", "http:", "https:"))
             ):
-                raise ValueError("Invalid provider upload response")
+                raise ProviderError("uncertain")
             return result
         except httpx.RequestError:
             raise ProviderError("uncertain") from None
@@ -265,7 +291,7 @@ class SafeHTTP:
         import httpx
 
         deadline = time.monotonic() + timeout_seconds
-        current_headers = dict(headers or {})
+        current_headers = identity_headers(headers)
         for _ in range(4):
             validate_url(url, allowed_hosts=self.allowed_hosts)
             validate_public_addresses(self.resolver(urlsplit(url).hostname))
@@ -288,6 +314,7 @@ class SafeHTTP:
                         continue
                     if response.status_code >= 400:
                         raise status_error(response.status_code)
+                    require_identity_response(response)
                     for chunk in response.iter_bytes():
                         data.extend(chunk)
                         if len(data) > max_bytes:
