@@ -32,6 +32,10 @@ The current default run scope is `stage:target_language:segment_id`; options are
 
 Each batch/model operation has its own durable submission/checkpoint and exact source/context/target-row snapshots. A local batch identifier must be labelled local, never passed off as a provider request ID. Aggregate target readiness depends on the required current batches/rows. Completion of one batch cannot make an entire target appear translated or invalidate another batch's newly committed text.
 
+## Replacing an edited source analysis
+
+Task4A deliberately keeps the active transcript batch ID stable during individual cell edits, so unrelated cells do not conflict. That batch ID alone is therefore insufficient as a replacement-ASR publication guard: a slow recognition result must not replace source text or cast that the user corrected after analysis started. Capture an appropriate source-edit/cast snapshot or separate analysis-replacement fingerprint. It can change for source/cast edits without becoming a global CAS guard on every cell. Mixing, subtitles and unrelated target changes must not stale ASR through a blanket project-revision dependency. Translation jobs retain their narrower selected-source-text and target-row/lock snapshots.
+
 ## Media and configuration limits
 
 - Reuse the probe's protocol/container allowlists when adding FFmpeg operations. Source and reference bytes cannot cause arbitrary nested network or local-resource reads. Validate downloaded media before publication and bound output size, duration and process lifetime.
