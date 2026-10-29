@@ -1,0 +1,37 @@
+# Working cloud separation profile
+
+> Use Superpowers subagent-driven development/TDD. Start only after the original task4B review fixes pass their SPEC and QUALITY gates. Assign one fresh implementer, then independent SPEC followed by QUALITY review. This is an implementation refinement within approved remote source analysis, not an expansion to local inference or a replacement of the full product goal.
+
+## Why this task exists
+
+The first real60-second product-path separation call saved its actual remote ID/terminal manifest, but the original preset's file downloads failed403/404. A different public HF Space successfully returned four real5-second WAV stems. Details and exact source/output hashes are in`docs/verification/live-separation-preflight.md` and`demucs-multistem-smoke.json`. Metadata-only checks could not reveal the first service's unusable output.
+
+Implement an explicit compatible profile for the verified alternative. Do not weaken host/file validation, pretend its model is the original fine-tuned model, redirect old saved jobs, or synthesize a fake background. No real model calls, protected preview changes or user credentials are needed in implementation/review; the controller performs integration afterward.
+
+## Inspected source contract
+
+- Space`teamup-tech/Demucs`, revision`541b5b5bdee7e1eb6163d6f4e064e9e24f33c40c`, host`https://teamup-tech-demucs.hf.space`, Gradio6.24.0.
+- Prefix`/gradio_api`, named endpoint`/process`; ordered inputs`input_0:Audio,input_1:Dropdown`. Initial supported model`htdemucs`. Reject other model IDs until implemented and tested; the service also advertises other variants, which are not this task.
+- Ordered outputs`Drums,Bass,Vocals,Other`, all Audio FileData. The source maps Demucs's internal order into that public order. Other must not be labelled Instrumental by itself.
+- The inspected source keeps WAV/FLAC lossless, restores the input rate and returns four independent files. Actual5-second output verified48kHz stereo PCM16. Public access worked without a token. Keep this profile unauthenticated; never forward the workspace HF credential to this third-party Space.
+- Existing`demucs` two-stem profile/`htdemucs_ft` requests must remain recoverable through their original named API, model, host and prefix. This task adds explicit selection and does not silently change saved connections.
+
+## Required implementation
+
+- [ ] RED tests for new profile settings/capabilities and exact schema/order/model validation, including rejection before inference on incompatible endpoint/labels/model or credential settings. Use a clear adapter/profile identifier such as`demucs_multistem`. Keep the prior profile's contract strict.
+- [ ] Extend the remote prepare/submit/poll contract with the exact named API/profile/model/output mapping needed for this operation. Persist these alongside immutable connection revision/host/prefix BEFORE its one named POST. Existing private operations without new fields retain the legacy two-stem defaults. Never reconstruct polling from current workspace settings. Preserve real terminal FileData before downloads and all established uncertain/retry/key-alias behavior.
+- [ ] Download and fully validate each of the four distinct real stems against selected duration, size, channels and sample rates, with existing safety limits. Metadata and CPU work are outside the publication transaction. Invalid or missing output cannot yield successful background preparation.
+- [ ] Reconstruct the instrumental from Drums+Bass+Other, excluding Vocals. Use bounded CPU FFmpeg, no model/runtime/weights. Sum at unity rather than averaging the three stems. A floating-point WAV intermediate can preserve headroom until final finishing; do not silently clip, normalize each stem independently or apply creative gain/limiting here. Check projected output-byte/duration limits before the paid operation where determinable. Maintain exact selected-window length and supported timestamp behavior.
+- [ ] Publish the same two downstream assets,`vocals` and`instrumental`, with accurate media format, decode/hash/duration facts and private provenance for the four returned stem hashes/mapping. Normalize containers explicitly if necessary; a file named WAV cannot contain copied MP3 bytes. Existing ASR/reference/workflow consumers continue to consume those two assets through current ownership/freshness rules.
+- [ ] Preserve publication guards/cancel/lease/stop checks and cleanup lineage for discarded work. Failed downloads resume the same saved files; a config/profile change does not repoll an old ID at a new endpoint. Successful media is reusable across intents and target languages. Do not create a second paid operation while summing outputs locally.
+- [ ] Add the explicit service option to protected setup, truthful model/Space display, defaults for newly selected configuration, capabilities and actual metadata checking. Existing saved settings are not auto-overwritten. Recommend the verified profile for new configuration; keep all `inference_verified` claims scoped to actual recorded evidence. File-access failures should offer a service/result action, not imply that rotating a valid HF token necessarily fixes a public artifact failure.
+- [ ] Meaningful tests: real three-tone audio verifies additive unity gain and exclusion of a distinguishable vocal tone; no hidden attenuation/clipping; exact duration; incorrect returned order/type/missing/duplicate paths; download/cache/restart/same-input publication retry; legacy saved operations; settings edits while old job is pending; source/cancel/stale suppression; key aliases and orphan protections. Test doubles stay explicitly in tests. No fake media or success payload in production.
+- [ ] Run the complete backend suite with live isolated PostgreSQL, Ruff/format/compile/lock, frontend tests/type/build, scoped commit and actual verification note. Both independent gates before controller60-second integration. No public push/deploy, account scope change or raw token handling.
+
+## CPU mix rationale
+
+The[official FFmpeg amix documentation](https://ffmpeg.org/ffmpeg-filters.html#amix) and installed`ffmpeg -h filter=amix` describe multiple-input mixing and its default normalization. Disable that scaling for an actual sum. The background is reconstructed from the three non-vocal model components, not from a made-up silent track. Do not mistake this narrow reconstruction for the later final dubbed-dialogue mix, Smart Fit, gains, limiter or export work in task6.
+
+## Controller acceptance after reviews
+
+Use the retained whole selected source and explicit first60-second window. Reuse its already prepared extraction when intentionally selecting the new separation connection/profile, while keeping the original failed job's history. Run the actual registered product stage through a durable worker, retrieve/decode both resulting assets, then run actual English NVIDIA source transcription through the workflow and pause for source/cast review. Retain real IDs/events/artifacts and record failures honestly. A separate five-second service probe alone does not satisfy this step. Translation, cloning/QC, final mixing/export, workbench and fresh EN→ZH/JA completed-product integration remain required afterward.

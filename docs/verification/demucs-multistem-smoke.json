@@ -1,0 +1,53 @@
+{
+  "space": "teamup-tech/Demucs",
+  "space_sha": "541b5b5bdee7e1eb6163d6f4e064e9e24f33c40c",
+  "host": "https://teamup-tech-demucs.hf.space",
+  "prefix": "/gradio_api",
+  "api_name": "process",
+  "model": "htdemucs",
+  "duration_ms": 5000,
+  "phase": "prepared",
+  "credential_used": false,
+  "product_stage": false,
+  "input_sha256": "b32fd34c773e24ab51614e767db62049eacd681463cfcce7ecf844b8daaff86e",
+  "remote_id": "b8e321c96bf1427287cd0ebe1a0ce22b",
+  "source_video_id": "SIZsFGvtClM",
+  "artifacts": [
+    {
+      "kind": "drums",
+      "duration_ms": 5000,
+      "sample_rate": 48000,
+      "channels": 2,
+      "byte_size": 960044,
+      "sha256": "c5079719d00186122d3eef6eae95e38f7666073963a36a1234832a24b50c1435",
+      "filename": "drums.wav"
+    },
+    {
+      "kind": "bass",
+      "duration_ms": 5000,
+      "sample_rate": 48000,
+      "channels": 2,
+      "byte_size": 960044,
+      "sha256": "eb569f8c6c4c910ae36f3f216c0afce3fe6108f256220c773933bbd9015838c8",
+      "filename": "bass.wav"
+    },
+    {
+      "kind": "vocals",
+      "duration_ms": 5000,
+      "sample_rate": 48000,
+      "channels": 2,
+      "byte_size": 960044,
+      "sha256": "23a972501d150d8eb25a191e57e24b0b7b74f84edefc468093fd4b64d69dc510",
+      "filename": "vocals.wav"
+    },
+    {
+      "kind": "other",
+      "duration_ms": 5000,
+      "sample_rate": 48000,
+      "channels": 2,
+      "byte_size": 960044,
+      "sha256": "7a24f1143b3a6a595dcae1051ca29d839e21e0cf782fdafc8cd76ccabbc8f2ea",
+      "filename": "other.wav"
+    }
+  ]
+}
