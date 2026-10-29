@@ -1,0 +1,33 @@
+{
+  "kind": "independent_clone_asr_diagnostic",
+  "source_video_id": "SIZsFGvtClM",
+  "model": "openai/whisper-large-v3",
+  "clone_sha256": "6b3ed44d591d67fcaaafd22c00bd059549632aeb244443428a7a0724ff1de25b",
+  "input_sha256": "6ccfb25b1324add39d5e59967ffbb07ae894b7c35e2ecef4843af288e5f891e4",
+  "credential_source": "application_encrypted_vault",
+  "credential_displayed_or_written": false,
+  "inference_submission_attempts": 1,
+  "product_stage": false,
+  "final_dubbing_acceptance": false,
+  "phase": "prepared",
+  "response_received": true,
+  "normalized": {
+    "segments": [
+      {
+        "text": "想象一下,作为一名软件开发者却不需要编写任何代码",
+        "start": 0.0,
+        "end": 4.56
+      }
+    ],
+    "detected_language": null
+  },
+  "text_comparison": {
+    "normalization": "Unicode NFKC/casefold, remove punctuation and separator categories",
+    "expected_text": "想象一下，作为一名软件开发者却不需要编写任何代码。",
+    "recognized_text": "想象一下,作为一名软件开发者却不需要编写任何代码",
+    "normalized_exact_match": true,
+    "speaker_identity_verified": false,
+    "normal_speed_human_review": "pending",
+    "video_alignment_verified": false
+  }
+}
