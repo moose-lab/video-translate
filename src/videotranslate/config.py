@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     server_secret: SecretStr = SecretStr("development-only-secret-do-not-use-in-production")
     public_origin: str = "http://localhost:8000"
     debug: bool = False
+    provider_allowed_hosts: str = ""
     s3_endpoint_url: str = ""
     s3_bucket: str = ""
     s3_region: str = ""

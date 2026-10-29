@@ -108,6 +108,14 @@ def initialize_inputs(db: Session, project: Project) -> None:
         "source.audio_track": project.source_track_index,
         "source.language": project.source_language,
     }
+    from ..models.providers import ProviderConnection
+
+    connections = db.scalars(
+        select(ProviderConnection).where(ProviderConnection.workspace_id == project.workspace_id)
+    ).all()
+    values.update(
+        {"provider." + connection.slot: connection.settings for connection in connections}
+    )
     asset = db.get(Asset, project.source_asset_id) if project.source_asset_id else None
     if asset and asset.workspace_id == project.workspace_id and asset.project_id == project.id:
         values["source.video"] = {"asset_id": asset.id, "sha256": asset.sha256}

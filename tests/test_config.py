@@ -102,6 +102,9 @@ def test_initial_migration_on_clean_database(tmp_path):
             "run_attempts",
             "input_states",
             "project_events",
+            "workspace_credentials",
+            "provider_connections",
+            "provider_connection_revisions",
         }
         with engine.connect() as connection:
             assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []

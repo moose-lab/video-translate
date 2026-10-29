@@ -1,0 +1,1 @@
+"""Remote service configuration."""

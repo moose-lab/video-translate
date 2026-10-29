@@ -138,3 +138,9 @@ Remote adapters must use `RunContext` submission checkpoints and resume a saved 
 uncertain submission requires explicit acknowledgment before retry. No inference provider is
 implemented by the probe worker. Object storage and database commits are not atomic; deployment
 needs a provider-supported, ownership-checked orphan reconciliation process.
+
+### Provider credential storage
+
+Provider credentials are encrypted using a workspace- and purpose-derived Fernet key based on `VT_SERVER_SECRET`; the API returns only whether a credential is configured and its revision. Preserve the server secret securely across restarts. To rotate it, deploy a controlled maintenance operation that reads and decrypts every credential using the old secret, encrypts each with the new secret, verifies the results, and updates them transactionally before switching all application instances. No automatic rotation utility is implemented yet; changing the secret alone makes existing credentials unreadable.
+
+Provider connection settings are revisioned separately from credentials. The language catalogue records synthesis model metadata, not verified end-to-end language support.
