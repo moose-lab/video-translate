@@ -1,0 +1,28 @@
+{
+  "code_revision": "70ae7789ec5fa460b51a0cf8069010e1cb3604a3",
+  "recorded_wire": "nvidia-live-wire.json",
+  "original_response_retained": true,
+  "original_speaker": 0,
+  "original_end_seconds": 5.04,
+  "working_cues": [
+    {
+      "start_ms": 800,
+      "end_ms": 5000,
+      "flags": [
+        "provider_end_clipped"
+      ]
+    }
+  ],
+  "new_model_calls": 0,
+  "product_transcript_published": false,
+  "controller_residual_reproduction": {
+    "tests_passed": 1,
+    "duration_seconds": 3.35
+  },
+  "controller_prior_full_suite": {
+    "code_revision": "67f3398d19bca242b4d4458af238085c171aebf3",
+    "tests_passed": 401,
+    "duration_seconds": 169.73,
+    "isolated_postgresql_enabled": true
+  }
+}
