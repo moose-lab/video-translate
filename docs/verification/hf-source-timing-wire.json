@@ -1,0 +1,27 @@
+{
+  "source_video_id": "SIZsFGvtClM",
+  "model": "openai/whisper-large-v3",
+  "selected_duration_ms": 59510,
+  "actual_chunk_count": 8,
+  "all_client_and_typed_rows_valid": true,
+  "only_overhanging_segment": {
+    "text": " You've likely heard about prompt engineering,",
+    "start": 57.06,
+    "end": 59.52
+  },
+  "observed_overhang_ms": 10,
+  "provider_raw_response_retained": true,
+  "registered_run_state": "failed_before_publication",
+  "model_resubmitted_for_this_local_check": false,
+  "diagnostic_retry_count": 1,
+  "official_timestamp_quantum_seconds": 0.02,
+  "official_source_blob_sha": "639dd929506dce33bfc8163f6b48772b9201bd3a",
+  "official_source_file": "huggingface/transformers/src/transformers/models/whisper/tokenization_whisper.py",
+  "source_timestamp_default_lines": [
+    280,
+    328,
+    335,
+    398,
+    403
+  ]
+}
