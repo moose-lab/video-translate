@@ -48,6 +48,8 @@ class ProjectCreate(BaseModel):
     @field_validator("target_languages", mode="before")
     @classmethod
     def normalize_targets(cls, values):
+        if not isinstance(values, (list, tuple)):
+            raise ValueError("Target languages must be a list")
         return [resolve(value)["tag"] for value in values]
 
     @field_validator("target_languages")

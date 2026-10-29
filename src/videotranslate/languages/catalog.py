@@ -9,6 +9,8 @@ DATA = Path(__file__).parent / "data"
 
 
 def key(value: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError("Language must be a string")
     return unicodedata.normalize("NFKC", value).strip().casefold()
 
 

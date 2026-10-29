@@ -131,3 +131,40 @@ def test_rtl_aliases_variants_and_pagination_are_explicit(client_factory, regist
     )
     assert response.status_code == 201
     assert response.json()["target_languages"] == ["zh-Hans", "zh-Hant"]
+
+
+def test_project_language_wrong_types_return_safe_422_on_create_and_patch(client_factory, register):
+    client = client_factory()
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    created = client.post("/api/projects", headers=headers, json={"name": "Film"}).json()
+    for field, value in [
+        ("source_language", 123),
+        ("source_language", None),
+        ("source_language", {}),
+        ("target_languages", None),
+        ("target_languages", 123),
+        ("target_languages", "en"),
+        ("target_languages", [123]),
+        ("target_languages", [None]),
+        ("target_languages", [{}]),
+    ]:
+        body = {field: value}
+        for method, path, payload in [
+            ("post", "/api/projects", {"name": "Film", **body}),
+            ("patch", "/api/projects/" + created["id"], body),
+        ]:
+            result = getattr(client, method)(path, headers=headers, json=payload)
+            assert result.status_code == 422, (field, value, method, result.text)
+            assert result.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_language_resolver_rejects_non_string_input_safely():
+    import pytest
+
+    from videotranslate.languages.catalog import key, resolve, search
+
+    for value in (None, 123, {}, [], True):
+        for func in (key, resolve, lambda v: search(v, True)):
+            with pytest.raises(ValueError):
+                func(value)
