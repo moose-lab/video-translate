@@ -59,6 +59,7 @@ def cached_analysis(db, project, source_run_id, snapshot):
             [row.model_dump() for row in payload.segments],
             selection.end_ms - selection.start_ms,
             operation.provider,
+            model=operation.model,
         )
         bounded(operation.public_facts, 65536)
     except ValueError:
@@ -460,14 +461,25 @@ def separate_handler(context):
         http.close()
 
 
-def working_timings(rows, duration_ms, provider):
-    """Keep provider originals; bound only NVIDIA's documented 50 ms frame tail."""
+def working_timings(rows, duration_ms, provider, model=None):
+    """Preserve originals; bound only the declared provider/model timestamp quantum."""
+    from decimal import Decimal
+
     result = []
     for row in rows:
         start, end = round(row["start"] * 1000), round(row["end"] * 1000)
         flags = []
         if row["end"] > duration_ms / 1000:
-            if provider != "nvidia_stream" or row["end"] > duration_ms / 1000 + 0.05:
+            nvidia_tail = (
+                provider == "nvidia_stream"
+                and Decimal(str(row["end"])) * 1000 <= Decimal(duration_ms) + 50
+            )
+            whisper_tail = (
+                provider == "hf_asr"
+                and model == "openai/whisper-large-v3"
+                and Decimal(str(row["end"])) * 1000 <= Decimal(duration_ms) + 20
+            )
+            if not (nvidia_tail or whisper_tail):
                 raise ValueError("Source timing exceeds selected window")
             end = duration_ms
             flags.append("provider_end_clipped")
@@ -614,7 +626,10 @@ def transcribe_handler(context):
                 }
             )
             working_timings(
-                [row.model_dump() for row in payload.segments], duration, operation.provider
+                [row.model_dump() for row in payload.segments],
+                duration,
+                operation.provider,
+                model=operation.model,
             )
         except ValueError:
             operations.failed()
@@ -674,7 +689,9 @@ def publish_transcript(db, run, result):
     from ..providers.contracts import valid_speaker_id
 
     try:
-        timings = working_timings(rows, selection.end_ms - selection.start_ms, operation.provider)
+        timings = working_timings(
+            rows, selection.end_ms - selection.start_ms, operation.provider, model=operation.model
+        )
     except ValueError:
         raise StageFailure(FailureCode.INVALID_MEDIA) from None
     for row in rows:

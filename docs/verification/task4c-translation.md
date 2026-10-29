@@ -35,3 +35,13 @@ Commands use the project Python environment with `--frozen --extra dev`; pytest 
 - From `web/`, bundled Node 24: `pnpm test`, `pnpm typecheck`, `pnpm build`.
 
 Frontend verification already completed: 34 tests passed; typecheck and build passed. Final Ruff check, formatting (114 files), compilation, dependency-lock and diff checks passed. Independent SPEC then QUALITY review remains required; this note does not self-approve either gate.
+
+## Separate Whisper timing prerequisite
+
+The controller-provided sanitized wire record (`hf-source-timing-wire.json`) isolates a valid last source row at 57.06–59.52 s against a 59.510 s selection. The official Whisper tokenizer timestamp quantum is 0.02 s. This repair grants at most 20 ms only to `hf_asr` with immutable model `openai/whisper-large-v3`; unknown/no model and other providers retain strict rejection. The existing NVIDIA 50 ms allowance remains separate, with exact decimal-millisecond comparisons at both declared limits. No numeric-speaker, raw-response, retry-taxonomy or schema contract is changed.
+
+`working_timings()` remains compatible with existing three-argument callers. The fresh handler, publisher and prepared-cache validation pass `operation.model`. Only working end milliseconds are bounded; the existing `provider_end_clipped` flag makes this visible. Raw source seconds and text remain unchanged in the private checkpoint and immutable transcript originals.
+
+RED: all 11 new tests failed before the model-aware rule; the actual-shaped registered handler reproduced `INVALID_MEDIA`. GREEN: 11 passed in 6.21 seconds. Evidence includes exact 20 ms and >20 ms boundaries, unknown/no model, other provider, existing NVIDIA boundaries, actual 59.510→59.520 data, real CPU preparation of a 59.510 s selection, private success before simulated restart, publication of the explicit flag, immutable original seconds/text, unknown-model cache rejection and acknowledged local cache review without another provider POST.
+
+Combined full verification after this source repair: **501 passed in 285.22 seconds**, isolated PostgreSQL enabled, no skips. Frontend again passed **34 tests**, typecheck and build. Ruff, formatting (115 files), compilation, dependency-lock and diff checks passed. A subsequent small translation-enqueue concurrency follow-up is documented separately below; it does not alter this model-specific source repair. The repair is a separate scoped commit from core 4C.
