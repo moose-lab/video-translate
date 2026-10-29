@@ -116,6 +116,9 @@ class Project(Base):
 
 class Asset(Base):
     __tablename__ = "assets"
+    __table_args__ = (
+        Index("uq_assets_id_project_workspace", "id", "project_id", "workspace_id", unique=True),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"), index=True)
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"), index=True)

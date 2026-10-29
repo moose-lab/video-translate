@@ -116,6 +116,10 @@ def update_project(
     db: Session, project: Project, changes: dict, expected_revision: int | None = None
 ) -> Project:
     """Join caller's transaction; caller commits project + related writes atomically."""
+    source_changed = any(
+        key in changes and getattr(project, key) != changes[key]
+        for key in ("source_asset_id", "source_track_index")
+    )
     expected = project.revision if expected_revision is None else expected_revision
     result = db.execute(
         update(Project)
@@ -136,12 +140,23 @@ def update_project(
     from ..execution.inputs import set_inputs
 
     values = {}
+    if source_changed:
+        values["source.selection"] = None
+        from ..dubbing.source import invalidate_transcript, source_state
+
+        source = source_state(db, project)
+        if source:
+            invalidate_transcript(db, project, source.transcript_id)
     if "source_track_index" in changes:
         values["source.audio_track"] = project.source_track_index
     if "source_language" in changes:
         values["source.language"] = project.source_language
     if values:
         set_inputs(db, project, values)
+    if "target_languages" in changes:
+        from ..dubbing.translations import align_declared_tracks
+
+        align_declared_tracks(db, project)
     if "source_track_index" in changes:
         from ..execution.events import append_event
 

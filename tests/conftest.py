@@ -158,3 +158,10 @@ def execution_project(client_factory, register, tiny_mp4):
     )
     assert response.status_code == 201, response.text
     return client, headers, response.json()["project"]
+
+
+@pytest.fixture
+def dubbing_project(client_factory, register, tmp_path):
+    from dubbing_helpers import make_probed_project
+
+    return make_probed_project(client_factory, register, tmp_path)

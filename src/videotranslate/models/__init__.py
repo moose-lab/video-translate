@@ -1,3 +1,3 @@
 """Persistent domain records."""
 
-from . import core, execution, providers  # noqa: F401
+from . import core, dubbing, execution, providers  # noqa: F401

@@ -18,7 +18,23 @@ _NUMBERS = {
     "delay_seconds",
     "elapsed_ms",
 }
-_IDS = {"asset_id", "code", "provider", "model", "remote_id", "fingerprint", "recovery"}
+_IDS = {
+    "asset_id",
+    "code",
+    "provider",
+    "model",
+    "remote_id",
+    "fingerprint",
+    "recovery",
+    "segment_id",
+    "speaker_id",
+    "track_id",
+    "selection_id",
+    "transcript_id",
+    "target_language",
+    "provenance",
+    "merged_into_id",
+}
 
 
 def safe_facts(facts: dict) -> dict:
