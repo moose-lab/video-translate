@@ -6,7 +6,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": true
+    "is_auto": true,
+    "model_name": "Auto"
   },
   {
     "code": "kbt",
@@ -15,7 +16,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Abadi"
   },
   {
     "code": "ab",
@@ -24,7 +26,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Abkhazian"
   },
   {
     "code": "abr",
@@ -33,7 +36,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Abron"
   },
   {
     "code": "abn",
@@ -42,7 +46,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Abua"
   },
   {
     "code": "fub",
@@ -51,7 +56,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Adamawa Fulfulde"
   },
   {
     "code": "ady",
@@ -60,7 +66,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Adyghe"
   },
   {
     "code": "aal",
@@ -69,7 +76,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Afade"
   },
   {
     "code": "af",
@@ -78,7 +86,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Afrikaans"
   },
   {
     "code": "yay",
@@ -87,7 +96,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Agwagwune"
   },
   {
     "code": "ajg",
@@ -96,7 +106,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Aja (Benin)"
   },
   {
     "code": "keu",
@@ -105,7 +116,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Akebu"
   },
   {
     "code": "ala",
@@ -114,7 +126,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Alago"
   },
   {
     "code": "sq",
@@ -123,7 +136,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Albanian"
   },
   {
     "code": "arq",
@@ -132,7 +146,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Algerian Arabic"
   },
   {
     "code": "aao",
@@ -141,7 +156,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Algerian Saharan Arabic"
   },
   {
     "code": "qva",
@@ -150,7 +166,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ambo-Pasco Quechua"
   },
   {
     "code": "abs",
@@ -159,7 +176,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ambonese Malay"
   },
   {
     "code": "adx",
@@ -168,7 +186,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Amdo Tibetan"
   },
   {
     "code": "am",
@@ -177,7 +196,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Amharic"
   },
   {
     "code": "anw",
@@ -186,7 +206,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Anaang"
   },
   {
     "code": "anp",
@@ -195,7 +216,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Angika"
   },
   {
     "code": "xmv",
@@ -204,7 +226,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Antankarana Malagasy"
   },
   {
     "code": "an",
@@ -213,7 +236,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Aragonese"
   },
   {
     "code": "aae",
@@ -222,7 +246,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Arbëreshë Albanian"
   },
   {
     "code": "qxu",
@@ -231,7 +256,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Arequipa-La Unión Quechua"
   },
   {
     "code": "hy",
@@ -240,7 +266,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Armenian"
   },
   {
     "code": "ahs",
@@ -249,7 +276,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ashe"
   },
   {
     "code": "prq",
@@ -258,7 +286,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ashéninka Perené"
   },
   {
     "code": "eiv",
@@ -267,7 +296,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Askopan"
   },
   {
     "code": "as",
@@ -276,7 +306,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Assamese"
   },
   {
     "code": "ast",
@@ -285,7 +316,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Asturian"
   },
   {
     "code": "tay",
@@ -294,7 +326,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Atayal"
   },
   {
     "code": "awo",
@@ -303,7 +336,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Awak"
   },
   {
     "code": "quy",
@@ -312,7 +346,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ayacucho Quechua"
   },
   {
     "code": "az",
@@ -321,7 +356,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Azerbaijani"
   },
   {
     "code": "bba",
@@ -330,7 +366,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Baatonum"
   },
   {
     "code": "bcy",
@@ -339,7 +376,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bacama"
   },
   {
     "code": "bde",
@@ -348,7 +386,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bade"
   },
   {
     "code": "ksf",
@@ -357,7 +396,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bafia"
   },
   {
     "code": "bfd",
@@ -366,7 +406,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bafut"
   },
   {
     "code": "fui",
@@ -375,7 +416,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bagirmi Fulfulde"
   },
   {
     "code": "bqg",
@@ -384,16 +426,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bago-Kusuntu"
   },
   {
     "code": "abv",
     "name": "Baharna Arabic",
     "iso639_3": "abv",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Baharna Arabic"
   },
   {
     "code": "bkh",
@@ -402,7 +446,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bakoko"
   },
   {
     "code": "bjt",
@@ -411,7 +456,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Balanta-Ganja"
   },
   {
     "code": "bft",
@@ -420,7 +466,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Balti"
   },
   {
     "code": "bce",
@@ -429,7 +476,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bamenyam"
   },
   {
     "code": "bax",
@@ -438,7 +486,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bamun"
   },
   {
     "code": "bsj",
@@ -447,7 +496,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bangwinji"
   },
   {
     "code": "bjn",
@@ -456,7 +506,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Banjar"
   },
   {
     "code": "abb",
@@ -465,7 +516,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bankon"
   },
   {
     "code": "bci",
@@ -474,7 +526,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Baoulé"
   },
   {
     "code": "bhr",
@@ -483,7 +536,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bara Malagasy"
   },
   {
     "code": "bjk",
@@ -492,7 +546,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Barok"
   },
   {
     "code": "bas",
@@ -501,7 +556,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Basa (Cameroon)"
   },
   {
     "code": "bzw",
@@ -510,7 +566,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Basa (Nigeria)"
   },
   {
     "code": "ba",
@@ -519,7 +576,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bashkir"
   },
   {
     "code": "eu",
@@ -528,7 +586,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Basque"
   },
   {
     "code": "btm",
@@ -537,7 +596,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Batak Mandailing"
   },
   {
     "code": "bnm",
@@ -546,7 +606,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Batanga"
   },
   {
     "code": "btv",
@@ -555,7 +616,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bateri"
   },
   {
     "code": "bbl",
@@ -564,7 +626,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bats"
   },
   {
     "code": "bda",
@@ -573,7 +636,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bayot"
   },
   {
     "code": "beb",
@@ -582,7 +646,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bebele"
   },
   {
     "code": "be",
@@ -591,7 +656,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Belarusian"
   },
   {
     "code": "bn",
@@ -600,7 +666,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bengali"
   },
   {
     "code": "bew",
@@ -609,7 +676,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Betawi"
   },
   {
     "code": "bhb",
@@ -618,7 +686,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bhili"
   },
   {
     "code": "bho",
@@ -627,7 +696,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bhojpuri"
   },
   {
     "code": "bxf",
@@ -636,7 +706,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bilur"
   },
   {
     "code": "bhp",
@@ -645,7 +716,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bima"
   },
   {
     "code": "brx",
@@ -654,7 +726,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bodo"
   },
   {
     "code": "bux",
@@ -663,7 +736,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Boghom"
   },
   {
     "code": "bky",
@@ -672,7 +746,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bokyi"
   },
   {
     "code": "bmq",
@@ -681,7 +756,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bomu"
   },
   {
     "code": "bou",
@@ -690,7 +766,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bondei"
   },
   {
     "code": "fue",
@@ -699,7 +776,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Borgu Fulfulde"
   },
   {
     "code": "bs",
@@ -708,7 +786,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bosnian"
   },
   {
     "code": "brh",
@@ -717,7 +796,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Brahui"
   },
   {
     "code": "bra",
@@ -726,7 +806,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Braj"
   },
   {
     "code": "br",
@@ -735,7 +816,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Breton"
   },
   {
     "code": "bdm",
@@ -744,7 +826,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Buduma"
   },
   {
     "code": "bug",
@@ -753,7 +836,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Buginese"
   },
   {
     "code": "bhh",
@@ -762,7 +846,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bukharic"
   },
   {
     "code": "bg",
@@ -771,7 +856,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bulgarian"
   },
   {
     "code": "bum",
@@ -780,7 +866,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bulu (Cameroon)"
   },
   {
     "code": "bns",
@@ -789,7 +876,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bundeli"
   },
   {
     "code": "bnn",
@@ -798,7 +886,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bunun"
   },
   {
     "code": "bwr",
@@ -807,7 +896,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Bura-Pabir"
   },
   {
     "code": "bys",
@@ -816,7 +906,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Burak"
   },
   {
     "code": "my",
@@ -825,7 +916,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Burmese"
   },
   {
     "code": "bsk",
@@ -834,7 +926,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Burushaski"
   },
   {
     "code": "miu",
@@ -843,7 +936,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cacaloxtepec Mixtec"
   },
   {
     "code": "qvl",
@@ -852,7 +946,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cajatambo North Lima Quechua"
   },
   {
     "code": "cky",
@@ -861,7 +956,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cakfem-Mushere"
   },
   {
     "code": "wes",
@@ -870,7 +966,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cameroon Pidgin"
   },
   {
     "code": "sro",
@@ -879,7 +976,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Campidanese Sardinian"
   },
   {
     "code": "yue",
@@ -888,7 +986,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cantonese"
   },
   {
     "code": "ca",
@@ -897,7 +996,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Catalan"
   },
   {
     "code": "ceb",
@@ -906,7 +1006,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cebuano"
   },
   {
     "code": "cen",
@@ -915,7 +1016,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cen"
   },
   {
     "code": "ckb",
@@ -924,7 +1026,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Kurdish"
   },
   {
     "code": "nhn",
@@ -933,7 +1036,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Nahuatl"
   },
   {
     "code": "pbs",
@@ -942,7 +1046,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Pame"
   },
   {
     "code": "pst",
@@ -951,7 +1056,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Pashto"
   },
   {
     "code": "ncx",
@@ -960,7 +1066,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Puebla Nahuatl"
   },
   {
     "code": "tar",
@@ -969,7 +1076,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Tarahumara"
   },
   {
     "code": "esu",
@@ -978,7 +1086,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central Yupik"
   },
   {
     "code": "fuq",
@@ -987,16 +1096,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Central-Eastern Niger Fulfulde"
   },
   {
     "code": "shu",
     "name": "Chadian Arabic",
     "iso639_3": "shu",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chadian Arabic"
   },
   {
     "code": "ny",
@@ -1005,7 +1116,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chichewa"
   },
   {
     "code": "zpv",
@@ -1014,7 +1126,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chichicapan Zapotec"
   },
   {
     "code": "cgg",
@@ -1023,7 +1136,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chiga"
   },
   {
     "code": "zoh",
@@ -1032,7 +1146,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chimalapa Zoque"
   },
   {
     "code": "qug",
@@ -1041,7 +1156,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chimborazo Highland Quichua"
   },
   {
     "code": "zh",
@@ -1057,7 +1173,8 @@
       "zh-Hans",
       "zh-Hant"
     ],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chinese"
   },
   {
     "code": "qxa",
@@ -1066,7 +1183,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chiquián Ancash Quechua"
   },
   {
     "code": "the",
@@ -1075,7 +1193,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chitwania Tharu"
   },
   {
     "code": "cjk",
@@ -1084,7 +1203,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chokwe"
   },
   {
     "code": "cv",
@@ -1093,7 +1213,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Chuvash"
   },
   {
     "code": "ckl",
@@ -1102,7 +1223,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cibak"
   },
   {
     "code": "kjc",
@@ -1111,7 +1233,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Coastal Konjo"
   },
   {
     "code": "zoc",
@@ -1120,7 +1243,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Copainalá Zoque"
   },
   {
     "code": "kw",
@@ -1129,7 +1253,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cornish"
   },
   {
     "code": "qwa",
@@ -1138,7 +1263,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Corongo Ancash Quechua"
   },
   {
     "code": "hr",
@@ -1147,7 +1273,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Croatian"
   },
   {
     "code": "mfn",
@@ -1156,7 +1283,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cross River Mbembe"
   },
   {
     "code": "xtu",
@@ -1165,7 +1293,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Cuyamecalco Mixtec"
   },
   {
     "code": "cs",
@@ -1174,7 +1303,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Czech"
   },
   {
     "code": "dbd",
@@ -1183,7 +1313,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dadiya"
   },
   {
     "code": "dag",
@@ -1192,7 +1323,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dagbani"
   },
   {
     "code": "dml",
@@ -1201,7 +1333,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dameli"
   },
   {
     "code": "da",
@@ -1210,7 +1343,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Danish"
   },
   {
     "code": "dar",
@@ -1219,7 +1353,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dargwa"
   },
   {
     "code": "dzg",
@@ -1228,7 +1363,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dazaga"
   },
   {
     "code": "dcc",
@@ -1237,7 +1373,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Deccan"
   },
   {
     "code": "deg",
@@ -1246,7 +1383,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Degema"
   },
   {
     "code": "kna",
@@ -1255,7 +1393,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dera (Nigeria)"
   },
   {
     "code": "dgh",
@@ -1264,7 +1403,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dghwede"
   },
   {
     "code": "mki",
@@ -1273,7 +1413,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dhatki"
   },
   {
     "code": "dv",
@@ -1282,16 +1423,18 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dhivehi"
   },
   {
     "code": "adf",
     "name": "Dhofari Arabic",
     "iso639_3": "adf",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dhofari Arabic"
   },
   {
     "code": "cfa",
@@ -1300,7 +1443,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dijim-Bwilim"
   },
   {
     "code": "dgo",
@@ -1309,7 +1453,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dogri"
   },
   {
     "code": "dmk",
@@ -1318,7 +1463,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Domaaki"
   },
   {
     "code": "dty",
@@ -1327,7 +1473,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dotyali"
   },
   {
     "code": "dua",
@@ -1336,7 +1483,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Duala"
   },
   {
     "code": "nl",
@@ -1345,7 +1493,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dutch"
   },
   {
     "code": "ldb",
@@ -1354,7 +1503,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "DũYa"
   },
   {
     "code": "dyu",
@@ -1363,7 +1513,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Dyula"
   },
   {
     "code": "bgp",
@@ -1372,7 +1523,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eastern Balochi"
   },
   {
     "code": "gui",
@@ -1381,16 +1533,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eastern Bolivian Guaraní"
   },
   {
     "code": "avl",
     "name": "Eastern Egyptian Bedawi Arabic",
     "iso639_3": "avl",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eastern Egyptian Bedawi Arabic"
   },
   {
     "code": "kqo",
@@ -1399,7 +1553,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eastern Krahn"
   },
   {
     "code": "mhr",
@@ -1408,7 +1563,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eastern Mari"
   },
   {
     "code": "ydd",
@@ -1417,7 +1573,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eastern Yiddish"
   },
   {
     "code": "ebr",
@@ -1426,7 +1583,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ebrié"
   },
   {
     "code": "ego",
@@ -1435,16 +1593,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eggon"
   },
   {
     "code": "arz",
     "name": "Egyptian Arabic",
     "iso639_3": "arz",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Egyptian Arabic"
   },
   {
     "code": "etu",
@@ -1453,7 +1613,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ejagham"
   },
   {
     "code": "elm",
@@ -1462,7 +1623,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eleme"
   },
   {
     "code": "afo",
@@ -1471,7 +1633,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eloyi"
   },
   {
     "code": "ebu",
@@ -1480,7 +1643,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Embu"
   },
   {
     "code": "en",
@@ -1495,7 +1659,8 @@
       "en-US",
       "en-GB"
     ],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "English"
   },
   {
     "code": "myv",
@@ -1504,7 +1669,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Erzya"
   },
   {
     "code": "ish",
@@ -1513,7 +1679,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Esan"
   },
   {
     "code": "eo",
@@ -1522,7 +1689,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Esperanto"
   },
   {
     "code": "et",
@@ -1531,7 +1699,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Estonian"
   },
   {
     "code": "eto",
@@ -1540,7 +1709,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Eton (Cameroon)"
   },
   {
     "code": "ewo",
@@ -1549,7 +1719,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ewondo"
   },
   {
     "code": "ext",
@@ -1558,7 +1729,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Extremaduran"
   },
   {
     "code": "fan",
@@ -1567,7 +1739,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Fang (Equatorial Guinea)"
   },
   {
     "code": "fat",
@@ -1576,7 +1749,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Fanti"
   },
   {
     "code": "gur",
@@ -1585,7 +1759,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Farefare"
   },
   {
     "code": "fmp",
@@ -1594,7 +1769,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Fe'fe'"
   },
   {
     "code": "fil",
@@ -1603,7 +1779,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Filipino"
   },
   {
     "code": "tlp",
@@ -1612,7 +1789,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Filomena Mata-Coahuitlán Totonac"
   },
   {
     "code": "fi",
@@ -1621,7 +1799,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Finnish"
   },
   {
     "code": "fip",
@@ -1630,7 +1809,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Fipa"
   },
   {
     "code": "fr",
@@ -1639,7 +1819,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "French"
   },
   {
     "code": "ff",
@@ -1648,7 +1829,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Fulah"
   },
   {
     "code": "gl",
@@ -1657,7 +1839,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Galician"
   },
   {
     "code": "wof",
@@ -1666,7 +1849,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gambian Wolof"
   },
   {
     "code": "lg",
@@ -1675,7 +1859,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ganda"
   },
   {
     "code": "gbm",
@@ -1684,7 +1869,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Garhwali"
   },
   {
     "code": "gwt",
@@ -1693,7 +1879,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gawar-Bati"
   },
   {
     "code": "gwc",
@@ -1702,7 +1889,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gawri"
   },
   {
     "code": "gbr",
@@ -1711,7 +1899,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gbagyi"
   },
   {
     "code": "gby",
@@ -1720,7 +1909,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gbari"
   },
   {
     "code": "gyz",
@@ -1729,7 +1919,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Geji"
   },
   {
     "code": "gej",
@@ -1738,7 +1929,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gen"
   },
   {
     "code": "ka",
@@ -1747,7 +1939,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Georgian"
   },
   {
     "code": "de",
@@ -1756,7 +1949,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "German"
   },
   {
     "code": "ges",
@@ -1765,7 +1959,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Geser-Gorom"
   },
   {
     "code": "aln",
@@ -1774,7 +1969,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gheg Albanian"
   },
   {
     "code": "bbj",
@@ -1783,7 +1979,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ghomálá'"
   },
   {
     "code": "gid",
@@ -1792,7 +1989,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gidar"
   },
   {
     "code": "glw",
@@ -1801,7 +1999,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Glavda"
   },
   {
     "code": "gom",
@@ -1810,7 +2009,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Goan Konkani"
   },
   {
     "code": "gig",
@@ -1819,7 +2019,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Goaria"
   },
   {
     "code": "ank",
@@ -1828,7 +2029,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Goemai"
   },
   {
     "code": "gol",
@@ -1837,7 +2039,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gola"
   },
   {
     "code": "el",
@@ -1846,7 +2049,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Greek"
   },
   {
     "code": "gn",
@@ -1855,7 +2059,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Guarani"
   },
   {
     "code": "gdf",
@@ -1864,7 +2069,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Guduf-Gava"
   },
   {
     "code": "amu",
@@ -1873,7 +2079,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Guerrero Amuzgo"
   },
   {
     "code": "gu",
@@ -1882,7 +2089,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gujarati"
   },
   {
     "code": "gju",
@@ -1891,16 +2099,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gujari"
   },
   {
     "code": "afb",
     "name": "Gulf Arabic",
     "iso639_3": "afb",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gulf Arabic"
   },
   {
     "code": "ggg",
@@ -1909,7 +2119,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gurgula"
   },
   {
     "code": "guz",
@@ -1918,7 +2129,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gusii"
   },
   {
     "code": "gsl",
@@ -1927,7 +2139,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gusilay"
   },
   {
     "code": "gwe",
@@ -1936,7 +2149,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Gweno"
   },
   {
     "code": "ztu",
@@ -1945,7 +2159,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Güilá Zapotec"
   },
   {
     "code": "hoj",
@@ -1954,7 +2169,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hadothi"
   },
   {
     "code": "hah",
@@ -1963,7 +2179,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hahon"
   },
   {
     "code": "ht",
@@ -1972,7 +2189,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Haitian"
   },
   {
     "code": "cnh",
@@ -1981,7 +2199,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hakha Chin"
   },
   {
     "code": "hao",
@@ -1990,7 +2209,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hakö"
   },
   {
     "code": "hla",
@@ -1999,7 +2219,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Halia"
   },
   {
     "code": "ha",
@@ -2008,7 +2229,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hausa"
   },
   {
     "code": "haw",
@@ -2017,7 +2239,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hawaiian"
   },
   {
     "code": "haz",
@@ -2026,7 +2249,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hazaragi"
   },
   {
     "code": "he",
@@ -2037,7 +2261,8 @@
     ],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hebrew"
   },
   {
     "code": "hem",
@@ -2046,7 +2271,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hemba"
   },
   {
     "code": "hz",
@@ -2055,7 +2281,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Herero"
   },
   {
     "code": "kjk",
@@ -2064,16 +2291,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Highland Konjo"
   },
   {
     "code": "acw",
     "name": "Hijazi Arabic",
     "iso639_3": "acw",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hijazi Arabic"
   },
   {
     "code": "hi",
@@ -2082,7 +2311,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hindi"
   },
   {
     "code": "var",
@@ -2091,7 +2321,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Huarijio"
   },
   {
     "code": "mau",
@@ -2100,7 +2331,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Huautla Mazatec"
   },
   {
     "code": "nhq",
@@ -2109,7 +2341,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Huaxcaleca Nahuatl"
   },
   {
     "code": "hbb",
@@ -2118,7 +2351,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Huba"
   },
   {
     "code": "mxs",
@@ -2127,7 +2361,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Huitepec Mixtec"
   },
   {
     "code": "hul",
@@ -2136,7 +2371,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hula"
   },
   {
     "code": "hu",
@@ -2145,7 +2381,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hungarian"
   },
   {
     "code": "hkk",
@@ -2154,7 +2391,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hunjara-Kaina Ke"
   },
   {
     "code": "hwo",
@@ -2163,7 +2401,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Hwana"
   },
   {
     "code": "ibb",
@@ -2172,7 +2411,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ibibio"
   },
   {
     "code": "is",
@@ -2181,7 +2421,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Icelandic"
   },
   {
     "code": "ida",
@@ -2190,7 +2431,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Idakho-Isukha-Tiriki"
   },
   {
     "code": "idu",
@@ -2199,7 +2441,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Idoma"
   },
   {
     "code": "ig",
@@ -2208,7 +2451,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Igbo"
   },
   {
     "code": "ahl",
@@ -2217,7 +2461,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Igo"
   },
   {
     "code": "kpo",
@@ -2226,7 +2471,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ikposo"
   },
   {
     "code": "ikw",
@@ -2235,7 +2481,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ikwere"
   },
   {
     "code": "qvi",
@@ -2244,7 +2491,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Imbabura Highland Quichua"
   },
   {
     "code": "id",
@@ -2253,7 +2501,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Indonesian"
   },
   {
     "code": "mvy",
@@ -2262,7 +2511,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Indus Kohistani"
   },
   {
     "code": "ia",
@@ -2271,7 +2521,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Interlingua (International Auxiliary Language Association)"
   },
   {
     "code": "ik",
@@ -2280,7 +2531,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Inupiaq"
   },
   {
     "code": "ga",
@@ -2289,7 +2541,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Irish"
   },
   {
     "code": "os",
@@ -2298,7 +2551,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Iron Ossetic"
   },
   {
     "code": "its",
@@ -2307,7 +2561,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Isekiri"
   },
   {
     "code": "iso",
@@ -2316,7 +2571,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Isoko"
   },
   {
     "code": "it",
@@ -2325,7 +2581,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Italian"
   },
   {
     "code": "itw",
@@ -2334,7 +2591,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ito"
   },
   {
     "code": "itz",
@@ -2343,7 +2601,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Itzá"
   },
   {
     "code": "vmj",
@@ -2352,7 +2611,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ixtayutla Mixtec"
   },
   {
     "code": "ijc",
@@ -2361,7 +2621,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Izon"
   },
   {
     "code": "jax",
@@ -2370,7 +2631,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Jambi Malay"
   },
   {
     "code": "ja",
@@ -2382,7 +2644,8 @@
     ],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Japanese"
   },
   {
     "code": "jqr",
@@ -2391,7 +2654,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Jaqaru"
   },
   {
     "code": "qxw",
@@ -2400,7 +2664,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Jauja Wanca Quechua"
   },
   {
     "code": "jns",
@@ -2409,7 +2674,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Jaunsari"
   },
   {
     "code": "jv",
@@ -2418,7 +2684,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Javanese"
   },
   {
     "code": "juo",
@@ -2427,7 +2694,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Jiba"
   },
   {
     "code": "kaj",
@@ -2436,16 +2704,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Jju"
   },
   {
     "code": "aju",
     "name": "Judeo-Moroccan Arabic",
     "iso639_3": "aju",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Judeo-Moroccan Arabic"
   },
   {
     "code": "vmc",
@@ -2454,7 +2724,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Juxtlahuaca Mixtec"
   },
   {
     "code": "kbd",
@@ -2463,7 +2734,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kabardian"
   },
   {
     "code": "lkb",
@@ -2472,7 +2744,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kabras"
   },
   {
     "code": "kea",
@@ -2481,7 +2754,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kabuverdianu"
   },
   {
     "code": "kab",
@@ -2490,7 +2764,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kabyle"
   },
   {
     "code": "gjk",
@@ -2499,7 +2774,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kachi Koli"
   },
   {
     "code": "ckr",
@@ -2508,7 +2784,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kairak"
   },
   {
     "code": "ijn",
@@ -2517,7 +2794,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kalabari"
   },
   {
     "code": "kls",
@@ -2526,7 +2804,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kalasha"
   },
   {
     "code": "kln",
@@ -2535,7 +2814,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kalenjin"
   },
   {
     "code": "xka",
@@ -2544,7 +2824,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kalkoti"
   },
   {
     "code": "kam",
@@ -2553,7 +2834,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kamba"
   },
   {
     "code": "kcq",
@@ -2562,7 +2844,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kamo"
   },
   {
     "code": "bjj",
@@ -2571,7 +2854,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kanauji"
   },
   {
     "code": "kbl",
@@ -2580,7 +2864,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kanembu"
   },
   {
     "code": "kn",
@@ -2589,7 +2874,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kannada"
   },
   {
     "code": "kai",
@@ -2598,7 +2884,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Karekare"
   },
   {
     "code": "ks",
@@ -2607,7 +2894,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kashmiri"
   },
   {
     "code": "tkt",
@@ -2616,7 +2904,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kathoriya Tharu"
   },
   {
     "code": "bsh",
@@ -2625,7 +2914,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kati"
   },
   {
     "code": "kk",
@@ -2634,7 +2924,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kazakh"
   },
   {
     "code": "eyo",
@@ -2643,7 +2934,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Keiyo"
   },
   {
     "code": "khg",
@@ -2652,7 +2944,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Khams Tibetan"
   },
   {
     "code": "ogo",
@@ -2661,7 +2954,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Khana"
   },
   {
     "code": "xhe",
@@ -2670,7 +2964,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Khetrani"
   },
   {
     "code": "km",
@@ -2679,7 +2974,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Khmer"
   },
   {
     "code": "khw",
@@ -2688,7 +2984,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Khowar"
   },
   {
     "code": "zga",
@@ -2697,7 +2994,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kinga"
   },
   {
     "code": "kfk",
@@ -2706,7 +3004,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kinnauri"
   },
   {
     "code": "rw",
@@ -2715,7 +3014,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kinyarwanda"
   },
   {
     "code": "ky",
@@ -2724,7 +3024,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kirghiz"
   },
   {
     "code": "fkk",
@@ -2733,7 +3034,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kirya-Konzəl"
   },
   {
     "code": "thq",
@@ -2742,7 +3044,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kochila Tharu"
   },
   {
     "code": "plk",
@@ -2751,7 +3054,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kohistani Shina"
   },
   {
     "code": "bcs",
@@ -2760,7 +3064,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kohumono"
   },
   {
     "code": "trp",
@@ -2769,7 +3074,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kok Borok"
   },
   {
     "code": "kol",
@@ -2778,7 +3084,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kol (Papua New Guinea)"
   },
   {
     "code": "bkm",
@@ -2787,7 +3094,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kom (Cameroon)"
   },
   {
     "code": "kmy",
@@ -2796,7 +3104,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Koma"
   },
   {
     "code": "knn",
@@ -2805,7 +3114,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Konkani"
   },
   {
     "code": "koo",
@@ -2814,7 +3124,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Konzo"
   },
   {
     "code": "ko",
@@ -2826,7 +3137,8 @@
     ],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Korean"
   },
   {
     "code": "kfp",
@@ -2835,7 +3147,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Korwa"
   },
   {
     "code": "kfe",
@@ -2844,7 +3157,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kota (India)"
   },
   {
     "code": "eko",
@@ -2853,7 +3167,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Koti"
   },
   {
     "code": "ksd",
@@ -2862,7 +3177,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kuanua"
   },
   {
     "code": "kj",
@@ -2871,7 +3187,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kuanyama"
   },
   {
     "code": "uki",
@@ -2880,7 +3197,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kui (India)"
   },
   {
     "code": "bbu",
@@ -2889,7 +3207,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kulung (Nigeria)"
   },
   {
     "code": "kto",
@@ -2898,7 +3217,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kuot"
   },
   {
     "code": "kuh",
@@ -2907,7 +3227,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kushi"
   },
   {
     "code": "kwm",
@@ -2916,7 +3237,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kwambi"
   },
   {
     "code": "nmg",
@@ -2925,7 +3247,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Kwasio"
   },
   {
     "code": "lla",
@@ -2934,7 +3257,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lala-Roba"
   },
   {
     "code": "hia",
@@ -2943,7 +3267,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lamang"
   },
   {
     "code": "lo",
@@ -2952,7 +3277,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lao"
   },
   {
     "code": "alo",
@@ -2961,7 +3287,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Larike-Wakasihu"
   },
   {
     "code": "lss",
@@ -2970,7 +3297,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lasi"
   },
   {
     "code": "ltg",
@@ -2979,7 +3307,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Latgalian"
   },
   {
     "code": "lv",
@@ -2988,16 +3317,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Latvian"
   },
   {
     "code": "apc",
     "name": "Levantine Arabic",
     "iso639_3": "apc",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Levantine Arabic"
   },
   {
     "code": "ste",
@@ -3006,7 +3337,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Liana-Seti"
   },
   {
     "code": "xpe",
@@ -3015,7 +3347,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Liberia Kpelle"
   },
   {
     "code": "lir",
@@ -3024,16 +3357,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Liberian English"
   },
   {
     "code": "ayl",
     "name": "Libyan Arabic",
     "iso639_3": "ayl",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Libyan Arabic"
   },
   {
     "code": "lij",
@@ -3042,7 +3377,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ligurian"
   },
   {
     "code": "mgi",
@@ -3051,7 +3387,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lijili"
   },
   {
     "code": "ln",
@@ -3060,7 +3397,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lingala"
   },
   {
     "code": "lt",
@@ -3069,7 +3407,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lithuanian"
   },
   {
     "code": "lrk",
@@ -3078,7 +3417,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Loarki"
   },
   {
     "code": "rag",
@@ -3087,7 +3427,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Logooli"
   },
   {
     "code": "src",
@@ -3096,7 +3437,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Logudorese Sardinian"
   },
   {
     "code": "qvj",
@@ -3105,7 +3447,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Loja Highland Quichua"
   },
   {
     "code": "loa",
@@ -3114,7 +3457,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Loloda"
   },
   {
     "code": "lnu",
@@ -3123,7 +3467,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Longuda"
   },
   {
     "code": "ztp",
@@ -3132,7 +3477,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Loxicha Zapotec"
   },
   {
     "code": "lua",
@@ -3141,7 +3487,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Luba-Lulua"
   },
   {
     "code": "luo",
@@ -3150,7 +3497,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Luo"
   },
   {
     "code": "lus",
@@ -3159,7 +3507,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Lushai"
   },
   {
     "code": "lb",
@@ -3168,7 +3517,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Luxembourgish"
   },
   {
     "code": "ffm",
@@ -3177,7 +3527,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Maasina Fulfulde"
   },
   {
     "code": "mde",
@@ -3186,7 +3537,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Maba (Chad)"
   },
   {
     "code": "rup",
@@ -3195,7 +3547,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Macedo-Romanian"
   },
   {
     "code": "mk",
@@ -3204,7 +3557,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Macedonian"
   },
   {
     "code": "mxu",
@@ -3213,7 +3567,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mada (Cameroon)"
   },
   {
     "code": "maf",
@@ -3222,7 +3577,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mafa"
   },
   {
     "code": "mai",
@@ -3231,7 +3587,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Maithili"
   },
   {
     "code": "ms",
@@ -3240,7 +3597,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Malay"
   },
   {
     "code": "ml",
@@ -3249,7 +3607,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Malayalam"
   },
   {
     "code": "gcc",
@@ -3258,7 +3617,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mali"
   },
   {
     "code": "tcf",
@@ -3267,7 +3627,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Malinaltepec Me'phaa"
   },
   {
     "code": "mt",
@@ -3276,7 +3637,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Maltese"
   },
   {
     "code": "tbf",
@@ -3285,7 +3647,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mandara"
   },
   {
     "code": "mfv",
@@ -3294,7 +3657,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mandjak"
   },
   {
     "code": "mqy",
@@ -3303,7 +3667,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Manggarai"
   },
   {
     "code": "mni",
@@ -3312,7 +3677,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Manipuri"
   },
   {
     "code": "msw",
@@ -3321,7 +3687,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mansoanka"
   },
   {
     "code": "gv",
@@ -3330,7 +3697,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Manx"
   },
   {
     "code": "mi",
@@ -3339,7 +3707,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Maori"
   },
   {
     "code": "mr",
@@ -3348,7 +3717,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Marathi"
   },
   {
     "code": "mrt",
@@ -3357,7 +3727,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Marghi Central"
   },
   {
     "code": "mfm",
@@ -3366,7 +3737,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Marghi South"
   },
   {
     "code": "mrr",
@@ -3375,7 +3747,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Maria (India)"
   },
   {
     "code": "mve",
@@ -3384,7 +3757,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Marwari (Pakistan)"
   },
   {
     "code": "mcn",
@@ -3393,7 +3767,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Masana"
   },
   {
     "code": "msh",
@@ -3402,7 +3777,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Masikoro Malagasy"
   },
   {
     "code": "mcf",
@@ -3411,7 +3787,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Matsés"
   },
   {
     "code": "zpy",
@@ -3420,7 +3797,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mazaltepec Zapotec"
   },
   {
     "code": "vmz",
@@ -3429,7 +3807,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mazatlán Mazatec"
   },
   {
     "code": "mzl",
@@ -3438,7 +3817,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mazatlán Mixe"
   },
   {
     "code": "mfo",
@@ -3447,7 +3827,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mbe"
   },
   {
     "code": "mbo",
@@ -3456,7 +3837,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mbo (Cameroon)"
   },
   {
     "code": "mdd",
@@ -3465,7 +3847,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mbum"
   },
   {
     "code": "byv",
@@ -3474,7 +3857,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Medumba"
   },
   {
     "code": "mek",
@@ -3483,7 +3867,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mekeo"
   },
   {
     "code": "mer",
@@ -3492,16 +3877,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Meru"
   },
   {
     "code": "acm",
     "name": "Mesopotamian Arabic",
     "iso639_3": "acm",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mesopotamian Arabic"
   },
   {
     "code": "mtr",
@@ -3510,7 +3897,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mewari"
   },
   {
     "code": "nan",
@@ -3519,7 +3907,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Min Nan Chinese"
   },
   {
     "code": "xmf",
@@ -3528,7 +3917,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mingrelian"
   },
   {
     "code": "vmm",
@@ -3537,7 +3927,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mitlatongo Mixtec"
   },
   {
     "code": "mkf",
@@ -3546,7 +3937,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Miya"
   },
   {
     "code": "bri",
@@ -3555,7 +3947,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mokpwe"
   },
   {
     "code": "mdf",
@@ -3564,7 +3957,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Moksha"
   },
   {
     "code": "ver",
@@ -3573,7 +3967,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mom Jango"
   },
   {
     "code": "mn",
@@ -3582,16 +3977,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mongolian"
   },
   {
     "code": "ary",
     "name": "Moroccan Arabic",
     "iso639_3": "ary",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Moroccan Arabic"
   },
   {
     "code": "meu",
@@ -3600,7 +3997,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Motu"
   },
   {
     "code": "mcx",
@@ -3609,7 +4007,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mpiemo"
   },
   {
     "code": "mgg",
@@ -3618,7 +4017,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mpumpong"
   },
   {
     "code": "mua",
@@ -3627,7 +4027,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mundang"
   },
   {
     "code": "mhk",
@@ -3636,7 +4037,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Mungaka"
   },
   {
     "code": "mse",
@@ -3645,7 +4047,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Musey"
   },
   {
     "code": "mug",
@@ -3654,7 +4057,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Musgu"
   },
   {
     "code": "mui",
@@ -3663,7 +4067,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Musi"
   },
   {
     "code": "mne",
@@ -3672,16 +4077,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Naba"
   },
   {
     "code": "ars",
     "name": "Najdi Arabic",
     "iso639_3": "ars",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Najdi Arabic"
   },
   {
     "code": "nal",
@@ -3690,7 +4097,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nalik"
   },
   {
     "code": "nmz",
@@ -3699,7 +4107,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nawdm"
   },
   {
     "code": "ng",
@@ -3708,7 +4117,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ndonga"
   },
   {
     "code": "nap",
@@ -3717,7 +4127,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Neapolitan"
   },
   {
     "code": "npi",
@@ -3726,7 +4137,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nepali"
   },
   {
     "code": "nbh",
@@ -3735,7 +4147,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ngamo"
   },
   {
     "code": "anc",
@@ -3744,7 +4157,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ngas"
   },
   {
     "code": "nnh",
@@ -3753,7 +4167,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ngiemboon"
   },
   {
     "code": "ngi",
@@ -3762,7 +4177,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ngizim"
   },
   {
     "code": "jgo",
@@ -3771,7 +4187,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ngomba"
   },
   {
     "code": "nla",
@@ -3780,7 +4197,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ngombale"
   },
   {
     "code": "fuv",
@@ -3789,7 +4207,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nigerian Fulfulde"
   },
   {
     "code": "pcm",
@@ -3798,7 +4217,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nigerian Pidgin"
   },
   {
     "code": "noe",
@@ -3807,7 +4227,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nimadi"
   },
   {
     "code": "fia",
@@ -3816,16 +4237,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nobiin"
   },
   {
     "code": "ayp",
     "name": "North Mesopotamian Arabic",
     "iso639_3": "ayp",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "North Mesopotamian Arabic"
   },
   {
     "code": "max",
@@ -3834,7 +4257,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "North Moluccan Malay"
   },
   {
     "code": "bmm",
@@ -3843,7 +4267,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northern Betsimisaraka Malagasy"
   },
   {
     "code": "hno",
@@ -3852,7 +4277,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northern Hindko"
   },
   {
     "code": "kmr",
@@ -3861,7 +4287,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northern Kurdish"
   },
   {
     "code": "pmq",
@@ -3870,7 +4297,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northern Pame"
   },
   {
     "code": "pbu",
@@ -3879,7 +4307,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northern Pashto"
   },
   {
     "code": "uzn",
@@ -3888,7 +4317,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northern Uzbek"
   },
   {
     "code": "gya",
@@ -3897,7 +4327,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Northwest Gbaya"
   },
   {
     "code": "no",
@@ -3906,7 +4337,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Norwegian"
   },
   {
     "code": "nb",
@@ -3915,7 +4347,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Norwegian Bokmål"
   },
   {
     "code": "nn",
@@ -3924,7 +4357,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Norwegian Nynorsk"
   },
   {
     "code": "ncf",
@@ -3933,7 +4367,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Notsi"
   },
   {
     "code": "yes",
@@ -3942,7 +4377,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nyankpa"
   },
   {
     "code": "nyu",
@@ -3951,7 +4387,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nyungwe"
   },
   {
     "code": "nja",
@@ -3960,7 +4397,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nzanyi"
   },
   {
     "code": "hux",
@@ -3969,7 +4407,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Nüpode Huitoto"
   },
   {
     "code": "oc",
@@ -3978,7 +4417,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Occitan"
   },
   {
     "code": "odk",
@@ -3987,7 +4427,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Od"
   },
   {
     "code": "ory",
@@ -3996,7 +4437,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Odia"
   },
   {
     "code": "odu",
@@ -4005,16 +4447,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Odual"
   },
   {
     "code": "acx",
     "name": "Omani Arabic",
     "iso639_3": "acx",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Omani Arabic"
   },
   {
     "code": "nlv",
@@ -4023,7 +4467,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Orizaba Nahuatl"
   },
   {
     "code": "orc",
@@ -4032,7 +4477,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Orma"
   },
   {
     "code": "oru",
@@ -4041,7 +4487,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ormuri"
   },
   {
     "code": "om",
@@ -4050,7 +4497,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Oromo"
   },
   {
     "code": "phr",
@@ -4059,7 +4507,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pahari-Potwari"
   },
   {
     "code": "pwn",
@@ -4068,7 +4517,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Paiwan"
   },
   {
     "code": "pa",
@@ -4077,7 +4527,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Panjabi"
   },
   {
     "code": "pmy",
@@ -4086,7 +4537,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Papuan Malay"
   },
   {
     "code": "kvx",
@@ -4095,7 +4547,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Parkari Koli"
   },
   {
     "code": "nso",
@@ -4104,7 +4557,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pedi"
   },
   {
     "code": "pip",
@@ -4113,7 +4567,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pero"
   },
   {
     "code": "fa",
@@ -4124,7 +4579,8 @@
     ],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Persian"
   },
   {
     "code": "pex",
@@ -4133,7 +4589,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Petats"
   },
   {
     "code": "phl",
@@ -4142,7 +4599,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Phalura"
   },
   {
     "code": "pms",
@@ -4151,7 +4609,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Piemontese"
   },
   {
     "code": "piy",
@@ -4160,7 +4619,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Piya-Kwonci"
   },
   {
     "code": "plt",
@@ -4169,7 +4629,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Plateau Malagasy"
   },
   {
     "code": "pl",
@@ -4178,7 +4639,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Polish"
   },
   {
     "code": "poc",
@@ -4187,7 +4649,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Poqomam"
   },
   {
     "code": "pt",
@@ -4196,7 +4659,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Portuguese"
   },
   {
     "code": "fuc",
@@ -4205,7 +4669,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pulaar"
   },
   {
     "code": "fuf",
@@ -4214,7 +4679,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pular"
   },
   {
     "code": "qxp",
@@ -4223,7 +4689,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Puno Quechua"
   },
   {
     "code": "ps",
@@ -4232,7 +4699,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pushto"
   },
   {
     "code": "pko",
@@ -4241,7 +4709,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Pökoot"
   },
   {
     "code": "byx",
@@ -4250,7 +4719,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Qaqet"
   },
   {
     "code": "chq",
@@ -4259,7 +4729,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Quiotepec Chinantec"
   },
   {
     "code": "thr",
@@ -4268,7 +4739,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rana Tharu"
   },
   {
     "code": "lag",
@@ -4277,7 +4749,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rangi"
   },
   {
     "code": "kyx",
@@ -4286,7 +4759,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rapoisi"
   },
   {
     "code": "rth",
@@ -4295,7 +4769,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ratahan"
   },
   {
     "code": "zor",
@@ -4304,7 +4779,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rayón Zoque"
   },
   {
     "code": "ro",
@@ -4313,7 +4789,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Romanian"
   },
   {
     "code": "rm",
@@ -4322,7 +4799,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Romansh"
   },
   {
     "code": "rof",
@@ -4331,7 +4809,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rombo"
   },
   {
     "code": "roo",
@@ -4340,7 +4819,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rotokas"
   },
   {
     "code": "dru",
@@ -4349,7 +4829,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Rukai"
   },
   {
     "code": "ru",
@@ -4358,7 +4839,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Russian"
   },
   {
     "code": "quv",
@@ -4367,16 +4849,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sacapulteco"
   },
   {
     "code": "aec",
     "name": "Saidi Arabic",
     "iso639_3": "aec",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Saidi Arabic"
   },
   {
     "code": "skg",
@@ -4385,7 +4869,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sakalava Malagasy"
   },
   {
     "code": "szy",
@@ -4394,7 +4879,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sakizaya"
   },
   {
     "code": "sau",
@@ -4403,7 +4889,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Saleman"
   },
   {
     "code": "ccg",
@@ -4412,7 +4899,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Samba Daka"
   },
   {
     "code": "ndi",
@@ -4421,7 +4909,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Samba Leko"
   },
   {
     "code": "pow",
@@ -4430,7 +4919,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "San Felipe Otlaltepec Popoloca"
   },
   {
     "code": "hue",
@@ -4439,7 +4929,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "San Francisco Del Mar Huave"
   },
   {
     "code": "poe",
@@ -4448,7 +4939,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "San Juan Atzingo Popoloca"
   },
   {
     "code": "trq",
@@ -4457,7 +4949,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "San Martín Itunyoso Triqui"
   },
   {
     "code": "mig",
@@ -4466,7 +4959,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "San Miguel El Grande Mixtec"
   },
   {
     "code": "ssi",
@@ -4475,7 +4969,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sansi"
   },
   {
     "code": "sa",
@@ -4484,7 +4979,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sanskrit"
   },
   {
     "code": "qxt",
@@ -4493,7 +4989,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Santa Ana de Tusi Pasco Quechua"
   },
   {
     "code": "ztn",
@@ -4502,7 +4999,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Santa Catarina Albarradas Zapotec"
   },
   {
     "code": "sat",
@@ -4511,7 +5009,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Santali"
   },
   {
     "code": "qus",
@@ -4520,7 +5019,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Santiago del Estero Quichua"
   },
   {
     "code": "sps",
@@ -4529,7 +5029,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Saposa"
   },
   {
     "code": "skr",
@@ -4538,7 +5039,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Saraiki"
   },
   {
     "code": "sc",
@@ -4547,7 +5049,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sardinian"
   },
   {
     "code": "say",
@@ -4556,7 +5059,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Saya"
   },
   {
     "code": "trv",
@@ -4565,7 +5069,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sediq"
   },
   {
     "code": "sr",
@@ -4574,7 +5079,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Serbian"
   },
   {
     "code": "sei",
@@ -4583,7 +5089,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Seri"
   },
   {
     "code": "scl",
@@ -4592,7 +5099,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Shina"
   },
   {
     "code": "sn",
@@ -4601,7 +5109,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Shona"
   },
   {
     "code": "sjr",
@@ -4610,7 +5119,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Siar-Lak"
   },
   {
     "code": "nco",
@@ -4619,7 +5129,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sibe"
   },
   {
     "code": "scn",
@@ -4628,7 +5139,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sicilian"
   },
   {
     "code": "qws",
@@ -4637,7 +5149,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sihuas Ancash Quechua"
   },
   {
     "code": "sip",
@@ -4646,7 +5159,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sikkimese"
   },
   {
     "code": "snc",
@@ -4655,7 +5169,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sinaugoro"
   },
   {
     "code": "sd",
@@ -4664,7 +5179,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sindhi"
   },
   {
     "code": "sbn",
@@ -4673,7 +5189,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sindhi Bhil"
   },
   {
     "code": "si",
@@ -4682,7 +5199,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sinhala"
   },
   {
     "code": "xti",
@@ -4691,7 +5209,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sinicahua Mixtec"
   },
   {
     "code": "qum",
@@ -4700,7 +5219,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sipacapense"
   },
   {
     "code": "siw",
@@ -4709,7 +5229,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Siwai"
   },
   {
     "code": "sk",
@@ -4718,7 +5239,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Slovak"
   },
   {
     "code": "sl",
@@ -4727,7 +5249,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Slovenian"
   },
   {
     "code": "sol",
@@ -4736,7 +5259,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Solos"
   },
   {
     "code": "so",
@@ -4745,7 +5269,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Somali"
   },
   {
     "code": "snk",
@@ -4754,7 +5279,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Soninke"
   },
   {
     "code": "giz",
@@ -4763,7 +5289,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "South Giziga"
   },
   {
     "code": "cpy",
@@ -4772,7 +5299,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "South Ucayali Ashéninka"
   },
   {
     "code": "mxy",
@@ -4781,7 +5309,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Southeastern Nochixtlán Mixtec"
   },
   {
     "code": "bzc",
@@ -4790,7 +5319,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Southern Betsimisaraka Malagasy"
   },
   {
     "code": "pbt",
@@ -4799,7 +5329,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Southern Pashto"
   },
   {
     "code": "qup",
@@ -4808,7 +5339,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Southern Pastaza Quechua"
   },
   {
     "code": "vmp",
@@ -4817,7 +5349,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Soyaltepec Mazatec"
   },
   {
     "code": "es",
@@ -4826,16 +5359,22 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Spanish"
   },
   {
     "code": "arb",
     "name": "Standard Arabic",
     "iso639_3": "arb",
-    "aliases": [],
-    "direction": "auto",
+    "aliases": [
+      "العربية",
+      "Arabic",
+      "ar"
+    ],
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Standard Arabic"
   },
   {
     "code": "zgh",
@@ -4844,16 +5383,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Standard Moroccan Tamazight"
   },
   {
     "code": "apd",
     "name": "Sudanese Arabic",
     "iso639_3": "apd",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sudanese Arabic"
   },
   {
     "code": "sua",
@@ -4862,7 +5403,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Sulka"
   },
   {
     "code": "sva",
@@ -4871,7 +5413,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Svan"
   },
   {
     "code": "sw",
@@ -4880,7 +5423,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Swahili"
   },
   {
     "code": "sv",
@@ -4889,7 +5433,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Swedish"
   },
   {
     "code": "rob",
@@ -4898,7 +5443,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tae'"
   },
   {
     "code": "thv",
@@ -4907,7 +5453,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tahaggart Tamahaq"
   },
   {
     "code": "dav",
@@ -4916,7 +5463,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Taita"
   },
   {
     "code": "tg",
@@ -4925,7 +5473,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tajik"
   },
   {
     "code": "ta",
@@ -4934,7 +5483,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tamil"
   },
   {
     "code": "tdx",
@@ -4943,7 +5493,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tandroy-Mahafaly Malagasy"
   },
   {
     "code": "tan",
@@ -4952,7 +5503,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tangale"
   },
   {
     "code": "txy",
@@ -4961,7 +5513,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tanosy Malagasy"
   },
   {
     "code": "yer",
@@ -4970,7 +5523,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tarok"
   },
   {
     "code": "tt",
@@ -4979,7 +5533,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tatar"
   },
   {
     "code": "tuq",
@@ -4988,7 +5543,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tedaga"
   },
   {
     "code": "te",
@@ -4997,7 +5553,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Telugu"
   },
   {
     "code": "kdh",
@@ -5006,7 +5563,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tem"
   },
   {
     "code": "tio",
@@ -5015,7 +5573,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Teop"
   },
   {
     "code": "cux",
@@ -5024,7 +5583,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tepeuxila Cuicatec"
   },
   {
     "code": "cte",
@@ -5033,7 +5593,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tepinapa Chinantec"
   },
   {
     "code": "ttr",
@@ -5042,7 +5603,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tera"
   },
   {
     "code": "buo",
@@ -5051,7 +5613,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Terei"
   },
   {
     "code": "twu",
@@ -5060,7 +5623,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Termanu"
   },
   {
     "code": "tkg",
@@ -5069,7 +5633,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tesaka Malagasy"
   },
   {
     "code": "nhg",
@@ -5078,7 +5643,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tetelcingo Nahuatl"
   },
   {
     "code": "cut",
@@ -5087,7 +5653,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Teutila Cuicatec"
   },
   {
     "code": "th",
@@ -5096,7 +5663,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Thai"
   },
   {
     "code": "bo",
@@ -5105,7 +5673,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tibetan"
   },
   {
     "code": "mtx",
@@ -5114,7 +5683,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tidaá Mixtec"
   },
   {
     "code": "tvo",
@@ -5123,7 +5693,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tidore"
   },
   {
     "code": "tgc",
@@ -5132,7 +5703,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tigak"
   },
   {
     "code": "tig",
@@ -5141,7 +5713,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tigre"
   },
   {
     "code": "ti",
@@ -5150,7 +5723,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tigrinya"
   },
   {
     "code": "zts",
@@ -5159,7 +5733,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tilquiapan Zapotec"
   },
   {
     "code": "tpz",
@@ -5168,7 +5743,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tinputz"
   },
   {
     "code": "tpl",
@@ -5177,7 +5753,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tlacoapa Me'phaa"
   },
   {
     "code": "ctl",
@@ -5186,7 +5763,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tlacoatzintepec Chinantec"
   },
   {
     "code": "tli",
@@ -5195,7 +5773,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tlingit"
   },
   {
     "code": "tok",
@@ -5204,7 +5783,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Toki Pona"
   },
   {
     "code": "tqp",
@@ -5213,7 +5793,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tomoip"
   },
   {
     "code": "tdn",
@@ -5222,7 +5803,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tondano"
   },
   {
     "code": "txs",
@@ -5231,7 +5813,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tonsea"
   },
   {
     "code": "ttj",
@@ -5240,7 +5823,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tooro"
   },
   {
     "code": "ttu",
@@ -5249,7 +5833,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Torau"
   },
   {
     "code": "trw",
@@ -5258,7 +5843,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Torwali"
   },
   {
     "code": "xmw",
@@ -5267,7 +5853,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tsimihety Malagasy"
   },
   {
     "code": "lto",
@@ -5276,7 +5863,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tsotso"
   },
   {
     "code": "tn",
@@ -5285,7 +5873,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tswana"
   },
   {
     "code": "tuy",
@@ -5294,7 +5883,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tugen"
   },
   {
     "code": "bag",
@@ -5303,7 +5893,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tuki"
   },
   {
     "code": "tul",
@@ -5312,7 +5903,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tula"
   },
   {
     "code": "tcy",
@@ -5321,7 +5913,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tulu"
   },
   {
     "code": "tvu",
@@ -5330,7 +5923,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tunen"
   },
   {
     "code": "lcm",
@@ -5339,16 +5933,18 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tungag"
   },
   {
     "code": "aeb",
     "name": "Tunisian Arabic",
     "iso639_3": "aeb",
     "aliases": [],
-    "direction": "auto",
+    "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tunisian Arabic"
   },
   {
     "code": "tui",
@@ -5357,7 +5953,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tupuri"
   },
   {
     "code": "tuv",
@@ -5366,7 +5963,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Turkana"
   },
   {
     "code": "tr",
@@ -5375,7 +5973,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Turkish"
   },
   {
     "code": "tk",
@@ -5384,7 +5983,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Turkmen"
   },
   {
     "code": "mtu",
@@ -5393,7 +5993,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Tututepec Mixtec"
   },
   {
     "code": "tw",
@@ -5402,7 +6003,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Twi"
   },
   {
     "code": "byc",
@@ -5411,7 +6013,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ubaghara"
   },
   {
     "code": "ug",
@@ -5420,7 +6023,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Uighur"
   },
   {
     "code": "uk",
@@ -5429,7 +6033,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ukrainian"
   },
   {
     "code": "umb",
@@ -5438,7 +6043,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Umbundu"
   },
   {
     "code": "hsb",
@@ -5447,7 +6053,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Upper Sorbian"
   },
   {
     "code": "ur",
@@ -5456,7 +6063,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Urdu"
   },
   {
     "code": "ush",
@@ -5465,7 +6073,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ushojo"
   },
   {
     "code": "uz",
@@ -5474,7 +6083,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Uzbek"
   },
   {
     "code": "vai",
@@ -5483,7 +6093,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Vai"
   },
   {
     "code": "vi",
@@ -5492,7 +6103,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Vietnamese"
   },
   {
     "code": "vot",
@@ -5501,7 +6113,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Votic"
   },
   {
     "code": "vro",
@@ -5510,7 +6123,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Võro"
   },
   {
     "code": "wci",
@@ -5519,7 +6133,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Waci Gbe"
   },
   {
     "code": "kxp",
@@ -5528,7 +6143,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wadiyara Koli"
   },
   {
     "code": "wja",
@@ -5537,7 +6153,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Waja"
   },
   {
     "code": "wbl",
@@ -5546,7 +6163,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wakhi"
   },
   {
     "code": "lwg",
@@ -5555,7 +6173,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wanga"
   },
   {
     "code": "juk",
@@ -5564,7 +6183,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wapan"
   },
   {
     "code": "wji",
@@ -5573,7 +6193,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Warji"
   },
   {
     "code": "cy",
@@ -5582,7 +6203,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Welsh"
   },
   {
     "code": "weo",
@@ -5591,7 +6213,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wemale"
   },
   {
     "code": "fy",
@@ -5600,7 +6223,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Frisian"
   },
   {
     "code": "pua",
@@ -5609,7 +6233,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Highland Purepecha"
   },
   {
     "code": "jmx",
@@ -5618,7 +6243,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Juxtlahuaca Mixtec"
   },
   {
     "code": "mlq",
@@ -5627,7 +6253,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Maninkakan"
   },
   {
     "code": "mrj",
@@ -5636,7 +6263,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Mari"
   },
   {
     "code": "fuh",
@@ -5645,7 +6273,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Niger Fulfulde"
   },
   {
     "code": "pnb",
@@ -5654,7 +6283,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Western Panjabi"
   },
   {
     "code": "wo",
@@ -5663,7 +6293,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wolof"
   },
   {
     "code": "udl",
@@ -5672,7 +6303,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Wuzlam"
   },
   {
     "code": "ztg",
@@ -5681,7 +6313,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Xanaguía Zapotec"
   },
   {
     "code": "xh",
@@ -5690,7 +6323,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Xhosa"
   },
   {
     "code": "ekr",
@@ -5699,7 +6333,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yace"
   },
   {
     "code": "sah",
@@ -5708,7 +6343,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yakut"
   },
   {
     "code": "jal",
@@ -5717,7 +6353,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yalahatan"
   },
   {
     "code": "qur",
@@ -5726,7 +6363,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yanahuanca Pasco Quechua"
   },
   {
     "code": "yav",
@@ -5735,7 +6373,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yangben"
   },
   {
     "code": "yaq",
@@ -5744,7 +6383,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yaqui"
   },
   {
     "code": "qux",
@@ -5753,7 +6393,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yauyos Quechua"
   },
   {
     "code": "ets",
@@ -5762,7 +6403,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yekhee"
   },
   {
     "code": "yi",
@@ -5771,7 +6413,8 @@
     "aliases": [],
     "direction": "rtl",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yiddish"
   },
   {
     "code": "ydg",
@@ -5780,7 +6423,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yidgha"
   },
   {
     "code": "yo",
@@ -5789,7 +6433,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yoruba"
   },
   {
     "code": "mab",
@@ -5798,7 +6443,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Yutanduchi Mixtec"
   },
   {
     "code": "nhi",
@@ -5807,7 +6453,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Zacatlán-Ahuacatlán-Tepetzintla Nahuatl"
   },
   {
     "code": "dje",
@@ -5816,7 +6463,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Zarma"
   },
   {
     "code": "zza",
@@ -5825,7 +6473,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Zaza"
   },
   {
     "code": "zu",
@@ -5834,7 +6483,8 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Zulu"
   },
   {
     "code": "aom",
@@ -5843,6 +6493,7 @@
     "aliases": [],
     "direction": "auto",
     "variants": [],
-    "is_auto": false
+    "is_auto": false,
+    "model_name": "Ömie"
   }
 ]

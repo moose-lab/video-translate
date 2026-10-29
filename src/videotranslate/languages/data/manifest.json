@@ -3,5 +3,8 @@
   "commit": "08be0b4ccbac3e13e374e86fbfead4b4cac343e2",
   "license": "Apache-2.0",
   "source_sha256": "905385ab8991620a9cd05fc63166f44ef9b9b2130222ea81c2cda02b9df03109",
-  "catalog_sha256": "df3ee00a50afc31d76d4126ed70e546b07dff75f5b9c7b427fb0ad20b699a7fe"
+  "catalog_sha256": "3503f53521ff4cce8f76ff748783f50d0ad5faf0de23f10314589e85b611aaec",
+  "gradio_schema": "https://k2-fsa-omnivoice.hf.space/gradio_api/info",
+  "gradio_schema_sha256": "bc37a3b0587f94c02cedba9da52f1c4866c3fb911833f8c201a6f003950ebcd1",
+  "gradio_enum_sha256": "4a12649f34b2894b12802c6f6d134fe3cd1cc30e6291e9d499d82a28ad4e67a5"
 }

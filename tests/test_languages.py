@@ -77,3 +77,57 @@ def test_default_catalog_includes_auto_and_manifest_hash_matches(client_factory)
             r"^\|\s*\d+\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|", source.read_text(), re.M
         )
         assert [(r["name"], r["code"], r["iso639_3"]) for r in catalog()[1:]] == rows
+
+
+def test_model_names_match_actual_gradio_enum_without_unicode_normalization():
+    import json
+    from pathlib import Path
+
+    from videotranslate.languages.catalog import catalog
+
+    schema = Path("/tmp/videotranslate-omnivoice-api.json")
+    if schema.exists():
+        enums = json.loads(schema.read_text())["named_endpoints"]["/_clone_fn"]["parameters"][1][
+            "type"
+        ]["enum"]
+        assert [row["model_name"] for row in catalog()] == enums
+
+
+def test_pinned_gradio_enum_is_available_offline_and_preserves_mismatch():
+    import hashlib
+    import json
+    from pathlib import Path
+
+    from videotranslate.languages.catalog import catalog, resolve
+
+    data = Path(__file__).parents[1] / "src/videotranslate/languages/data"
+    enum_path = data / "gradio_enum.json"
+    enums = json.loads(enum_path.read_text())
+    assert [row["model_name"] for row in catalog()] == enums
+    assert resolve("ldb")["name"] == "Du\u0303ya"
+    assert resolve("ldb")["model_name"] == "Du\u0303Ya"
+    assert (
+        hashlib.sha256(enum_path.read_bytes()).hexdigest()
+        == json.loads((data / "manifest.json").read_text())["gradio_enum_sha256"]
+    )
+
+
+def test_rtl_aliases_variants_and_pagination_are_explicit(client_factory, register):
+    from videotranslate.languages.catalog import resolve
+
+    assert resolve("العربية")["direction"] == "rtl"
+    assert resolve("en-us")["tag"] == "en-US"
+    client = client_factory()
+    response = client.get(
+        "/api/languages", params={"include_auto": False, "limit": 10, "offset": 640}
+    )
+    assert response.json()["total"] == 646 and len(response.json()["items"]) == 6
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    response = client.post(
+        "/api/projects",
+        headers=headers,
+        json={"name": "Film", "target_languages": ["zh-Hans", "zh-Hant"]},
+    )
+    assert response.status_code == 201
+    assert response.json()["target_languages"] == ["zh-Hans", "zh-Hant"]
