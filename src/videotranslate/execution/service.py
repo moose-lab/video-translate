@@ -11,7 +11,7 @@ from ..errors import APIError
 from ..models.core import Project, utcnow
 from ..models.execution import RunAttempt, RunRequestKey, StageRun
 from ..routes.projects import owned_project
-from .contracts import FailureCode, RunCreate, StageFailure, StageResult
+from .contracts import FailureCode, RunCreate, StageFailure, StageResult, safe_identifier
 from .events import append_event
 from .inputs import fingerprint, initialize_inputs, is_current, lock_project, set_inputs
 from .registry import STAGES, get_stage
@@ -26,6 +26,7 @@ def create_run(
     *,
     registry=None,
     reuse_active=False,
+    guarded_command=False,
 ):
     project = lock_project(db, owned_project(db, workspace_id, project_id))
     if idempotency_key is not None and (
@@ -36,6 +37,8 @@ def create_run(
     ):
         raise APIError(422, "INVALID_IDEMPOTENCY_KEY", "Invalid idempotency key")
     definition = get_stage(request.stage, registry)
+    if definition.command_only and not guarded_command:
+        raise APIError(422, "COMMAND_REQUIRED", "This stage requires a guarded command")
     options = definition.validate_options(request.options)
     initialize_inputs(db, project)
     snapshot = definition.resolve_inputs(db, project, request)
@@ -64,7 +67,12 @@ def create_run(
             if prior.request_fingerprint != request_fingerprint:
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Key was used with different inputs")
             return prior
-    scope = ":".join(filter(None, [request.stage, request.target_language, request.segment_id]))
+    suffix = (
+        safe_identifier(definition.scope_suffix(request), 60) if definition.scope_suffix else None
+    )
+    scope = ":".join(
+        filter(None, [request.stage, request.target_language, request.segment_id, suffix])
+    )
     if idempotency_key is None or request.stage in {"extract", "separate"}:
         # The creation signature above remains immutable for keyed requests.
         # Cache matching instead uses the run's current retried dependencies and

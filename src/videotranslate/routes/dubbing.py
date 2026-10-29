@@ -8,8 +8,17 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..dubbing import contracts as c
-from ..dubbing import imports, segments, source, speakers, timeline, translations
+from ..dubbing import (
+    imports,
+    segments,
+    source,
+    speakers,
+    timeline,
+    translation_workflow,
+    translations,
+)
 from ..dubbing.ownership import owned, project_for, scope
+from ..dubbing.translation_contracts import SuggestionApply, TranslateCommand
 from ..errors import APIError
 from ..models.dubbing import (
     ContextRevision,
@@ -22,6 +31,7 @@ from ..models.dubbing import (
     TranscriptRevision,
     TranslationRevision,
 )
+from ..models.translation import TranslationCommand
 from ..security import Identity, require_csrf, require_identity
 
 
@@ -427,3 +437,53 @@ def list_tracks(
     project = project_for(db, identity, project_id)
     rows, total = timeline.paged(db, scope(LanguageTrack, project), LanguageTrack, limit, offset)
     return {"items": [translations.track_json(row) for row in rows], "total": total}
+
+
+@router.post("/language-tracks/{tag}/translate", status_code=202)
+def translate_target(
+    project_id: str,
+    tag: str,
+    body: TranslateCommand,
+    request: Request,
+    identity: Identity = Depends(require_csrf),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id, write=True)
+    result = translation_workflow.command(
+        db, project, tag, body, identity.user.id, request.app.state.settings
+    )
+    db.commit()
+    return result
+
+
+@router.get("/language-tracks/{tag}/translate/{command_id}")
+def translation_command(
+    project_id: str,
+    tag: str,
+    command_id: str,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id)
+    track = translations.track_for(db, project, tag)
+    intent = owned(db, TranslationCommand, project, command_id)
+    if intent.track_id != track.id:
+        raise APIError(404, "NOT_FOUND", "Resource not found")
+    return translation_workflow.command_json(db, project, intent)
+
+
+@router.post("/language-tracks/{tag}/translate/{command_id}/apply-suggestion")
+def apply_translation_suggestion(
+    project_id: str,
+    tag: str,
+    command_id: str,
+    body: SuggestionApply,
+    identity: Identity = Depends(require_csrf),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id, write=True)
+    result = translation_workflow.apply_suggestion(
+        db, project, tag, command_id, body, identity.user.id
+    )
+    db.commit()
+    return result

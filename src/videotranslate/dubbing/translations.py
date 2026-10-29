@@ -196,6 +196,7 @@ def write_translation(
         and not state.stale
         and previous.context_revision_id == track.context_revision_id
         and previous.mode == track.mode
+        and previous.provenance == provenance
     ):
         return state
     revision = TranslationRevision(

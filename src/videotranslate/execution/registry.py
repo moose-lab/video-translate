@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
+from ..dubbing import remote_translation
 from ..dubbing.analysis import (
     extract_handler,
     extract_inputs,
@@ -43,6 +44,8 @@ class StageDefinition:
     handle: Callable[["RunContext"], StageResult]
     publish: Callable[[Session, StageRun, StageResult], None] | None = None
     publication_guard: Callable[[Session, StageRun], bool] | None = None
+    command_only: bool = False
+    scope_suffix: Callable[[RunCreate], str] | None = None
 
 
 def probe_options(options):
@@ -101,3 +104,17 @@ def get_stage(name: str, registry=None) -> StageDefinition:
     if stage is None:
         raise APIError(422, "STAGE_UNAVAILABLE", "Stage is not implemented")
     return stage
+
+
+for _phase in ("context", "draft", "critique", "rewrite", "shorten"):
+    _name = "translation_" + _phase
+    STAGES[_name] = StageDefinition(
+        _name,
+        remote_translation.phase_options,
+        remote_translation.phase_inputs,
+        remote_translation.handler,
+        remote_translation.publish,
+        remote_translation.publication_current,
+        command_only=True,
+        scope_suffix=remote_translation.phase_scope,
+    )

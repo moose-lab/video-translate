@@ -119,6 +119,8 @@ def test_initial_migration_on_clean_database(tmp_path):
             "context_revisions",
             "translation_revisions",
             "translation_states",
+            "translation_commands",
+            "translation_phases",
             "private_operations",
             "prepared_objects",
             "analysis_media",
