@@ -57,31 +57,23 @@ def queue_child(db, project, intent, stage):
 
         snapshot = transcribe_inputs(db, project, RunCreate(stage=stage))
 
-        candidates = db.scalars(
-            scope(StageRun, project).where(
-                StageRun.stage == stage,
-                StageRun.is_stale.is_(False),
-                StageRun.status.in_(
-                    [
-                        "queued",
-                        "running",
-                        "retry_wait",
-                        "failed",
-                        "needs_review",
-                        "cancelling",
-                        "succeeded",
-                    ]
-                ),
-            )
-        )
+        candidates = db.scalars(scope(StageRun, project).where(StageRun.stage == stage))
         for candidate in candidates:
-            if candidate.status == "succeeded":
-                try:
-                    cached_analysis(db, project, candidate.id, snapshot)
-                    reuse = candidate.id
-                    break
-                except APIError:
-                    continue
+            try:
+                cached_analysis(db, project, candidate.id, snapshot)
+                reuse = candidate.id
+                break
+            except APIError:
+                pass
+            if candidate.is_stale or candidate.status not in {
+                "queued",
+                "running",
+                "retry_wait",
+                "failed",
+                "needs_review",
+                "cancelling",
+            }:
+                continue
             prior_intents = db.scalars(
                 scope(WorkflowIntent, project)
                 .join(WorkflowChild, WorkflowChild.workflow_id == WorkflowIntent.id)

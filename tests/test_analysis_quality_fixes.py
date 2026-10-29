@@ -610,3 +610,101 @@ def test_gc_refreshes_manifest_after_waiting_for_project_lock(
     assert collect(ctx) == 0
     with ctx.session_factory() as db:
         assert db.get(PreparedObject, object_id).state == "orphan"
+
+
+@pytest.mark.parametrize("publication_status", ["stale", "failed", "running"])
+def test_prepared_asr_success_ignores_publication_state_but_keeps_manual_edits(
+    dubbing_project, monkeypatch, publication_status
+):
+    from dubbing_helpers import create_line
+
+    from videotranslate.execution.inputs import is_current
+    from videotranslate.models.analysis import PrivateOperation
+
+    client, _, p = dubbing_project
+    selection = selected(dubbing_project)
+    configure_remote(dubbing_project)
+    edited = False
+
+    def edit_during_response():
+        nonlocal edited
+        if not edited:
+            edited = True
+            create_line(dubbing_project, selection, text="Preserved human words")
+
+    provider = recording_provider(monkeypatch, client, on_asr=edit_during_response)
+    first = analysis(dubbing_project)
+    worker = Worker(client.app.state.settings)
+    for _ in range(3):
+        assert worker.run_once()
+    with client.app.state.session_factory.begin() as db:
+        run = db.scalar(
+            select(StageRun).where(StageRun.project_id == p["id"], StageRun.stage == "transcribe")
+        )
+        op = db.scalar(select(PrivateOperation).where(PrivateOperation.run_id == run.id))
+        assert run.status == "stale" and op.phase == "prepared"
+        assert run.remote_state == "completed" and is_current(
+            db, db.get(Project, p["id"]), run.dependency_snapshot
+        )
+        # A cache committed before a failing/pending publisher is equally real.
+        run.status = publication_status
+    before = timeline(dubbing_project)
+    second = analysis(dubbing_project)
+    assert first["id"] != second["id"]
+    assert worker.run_once()
+    after = timeline(dubbing_project)
+    assert after["segments"] == before["segments"] and after["cast"] == before["cast"]
+    assert after["transcript"]["id"] == before["transcript"]["id"]
+    assert len([url for url in provider.posts if "/hf-inference/" in url]) == 1
+
+
+def test_analysis_cache_requires_valid_owned_payload_and_current_inference_inputs(
+    dubbing_project, monkeypatch
+):
+    from copy import deepcopy
+
+    from videotranslate.dubbing.analysis import cached_analysis
+    from videotranslate.errors import APIError
+    from videotranslate.execution.inputs import set_inputs
+    from videotranslate.models.analysis import PrivateOperation
+
+    client, headers, p = dubbing_project
+    completed(dubbing_project, monkeypatch)
+    other = client.post("/api/projects", headers=headers, json={"name": "Another project"}).json()
+    with client.app.state.session_factory.begin() as db:
+        project = db.get(Project, p["id"])
+        run = db.scalar(
+            select(StageRun).where(StageRun.project_id == p["id"], StageRun.stage == "transcribe")
+        )
+        operation = db.scalar(select(PrivateOperation).where(PrivateOperation.run_id == run.id))
+        assert cached_analysis(db, project, run.id, run.dependency_snapshot)[1].id == operation.id
+        original = deepcopy(operation.prepared_payload)
+        invalid = [None, {}, original | {"segments": []}, original | {"selection_id": "wrong"}]
+        overflow = deepcopy(original)
+        overflow["segments"][0]["end"] = 9999
+        invalid.append(overflow)
+        for payload in invalid:
+            operation.prepared_payload = payload
+            with pytest.raises(APIError) as error:
+                cached_analysis(db, project, run.id, run.dependency_snapshot)
+            assert error.value.status == 409
+        operation.prepared_payload = original
+        with pytest.raises(APIError) as error:
+            cached_analysis(db, db.get(Project, other["id"]), run.id, run.dependency_snapshot)
+        assert error.value.status == 404
+        for key in (
+            "source.selection",
+            "output.separate",
+            "source.language",
+            "provider.transcription",
+        ):
+            with db.begin_nested() as savepoint:
+                set_inputs(db, project, {key: "changed inference input"})
+                with pytest.raises(APIError) as error:
+                    cached_analysis(db, project, run.id, run.dependency_snapshot)
+                assert error.value.status == 409
+                savepoint.rollback()
+        # A changed request generation cannot borrow the prior private result.
+        run.request_key = "another-generation"
+        with pytest.raises(APIError):
+            cached_analysis(db, project, run.id, run.dependency_snapshot)

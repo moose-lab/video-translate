@@ -39,14 +39,30 @@ def cached_analysis(db, project, source_run_id, snapshot):
     operation = current_operation(db, source)
     if (
         source.stage != "transcribe"
-        or source.status != "succeeded"
-        or source.is_stale
         or source.dependency_snapshot != snapshot
         or not is_current(db, project, snapshot)
         or operation is None
         or operation.phase != "prepared"
     ):
         raise APIError(409, "INPUT_REQUIRED", "Source analysis cache is unavailable")
+    # Publication status includes editor guards, which are deliberately absent
+    # from inference inputs. A rejected publisher cannot invalidate paid success.
+    from ..execution.prepared import bounded
+    from .analysis_contracts import NormalizedTranscript
+
+    selection = current_selection(db, project)
+    try:
+        payload = NormalizedTranscript.model_validate(operation.prepared_payload)
+        if payload.selection_id != selection.id:
+            raise ValueError("Cached selection differs")
+        working_timings(
+            [row.model_dump() for row in payload.segments],
+            selection.end_ms - selection.start_ms,
+            operation.provider,
+        )
+        bounded(operation.public_facts, 65536)
+    except ValueError:
+        raise APIError(409, "INPUT_REQUIRED", "Source analysis cache is unavailable") from None
     return source, operation
 
 
