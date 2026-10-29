@@ -7,7 +7,7 @@ adapters; production requires PostgreSQL and private S3-compatible storage.
 The inherited worker/probe tests initially produced 6 failures and 7 passes because the worker and
 probe modules did not exist. After implementation the same tests passed. Additional regression tests
 cover a provider model identifier containing a colon, SSE cursor resumption and session expiry,
-cooperative worker shutdown, recovery of an already submitted remote job, expired lease retirement
+real worker SIGTERM and independent restart, stale and cancelled remote-job recovery, expired lease retirement
 after project deletion, and FFprobe timeout cleanup. Recording handlers are test doubles, not inference.
 
 A dedicated throwaway PostgreSQL 14.18 `execution_test` database was migrated independently. Real
@@ -22,7 +22,7 @@ including English to Chinese/Japanese, remain future work.
 
 Recorded local commands for this increment:
 
-- `uv run pytest -q`: 137 passed.
+- `uv run pytest -q`: 139 passed.
 - `uv run ruff check src tests alembic`, `uv run ruff format --check src tests alembic`,
   `uv run python -m compileall -q src`, and `git diff --check`: passed.
 - PostgreSQL `alembic downgrade base`, `upgrade head`, and `alembic check`: passed in the isolated

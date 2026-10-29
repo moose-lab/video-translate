@@ -347,3 +347,97 @@ def test_deleted_project_expired_local_lease_is_retired(execution_project):
     with sf() as db:
         run = db.get(StageRun, run_id)
         assert run.lease_token is None and run.status == "cancelled"
+
+
+def test_sigterm_releases_local_work_for_independent_restart(execution_project, tmp_path):
+    import json
+    import os
+    import subprocess
+    import sys
+    import time
+
+    client, headers, project = execution_project
+    run = client.post(
+        f"/api/projects/{project['id']}/runs", json={"stage": "probe"}, headers=headers
+    ).json()
+    executable = tmp_path / "ffprobe"
+    marker = tmp_path / "started"
+    executable.write_text(
+        '#!/usr/bin/env python3\nimport os, time\nopen(os.environ["VT_TEST_MARKER"], "w").close()\ntime.sleep(60)\n'
+    )
+    executable.chmod(0o755)
+    settings = client.app.state.settings
+    env = os.environ | {
+        "VT_ENVIRONMENT": "test",
+        "VT_DATABASE_URL": settings.database_url.get_secret_value(),
+        "VT_STORAGE_BACKEND": "local",
+        "VT_LOCAL_STORAGE_ROOT": str(settings.local_storage_root),
+    }
+    command = [sys.executable, "-m", "videotranslate.execution.worker"]
+    slow_env = env | {"PATH": f"{tmp_path}:{os.environ['PATH']}", "VT_TEST_MARKER": str(marker)}
+    process = subprocess.Popen(
+        command, env=slow_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+    try:
+        deadline = time.monotonic() + 10
+        while not marker.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert marker.exists(), "worker did not start probe"
+        process.terminate()
+        _, error = process.communicate(timeout=10)
+        assert process.returncode == 0, error
+        resumed = subprocess.run(
+            command + ["--once"], env=env, capture_output=True, text=True, timeout=20
+        )
+        assert resumed.returncode == 0, resumed.stderr
+        assert json.loads(resumed.stdout)["claimed"] is True
+        response = client.get(f"/api/runs/{run['id']}").json()
+        assert response["status"] == "succeeded"
+        assert [a["outcome"] for a in response["attempts"]] == ["lease_expired", "succeeded"]
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
+def test_recovered_stale_remote_job_polls_and_never_publishes(execution_project):
+    from videotranslate.execution.context import RunContext
+    from videotranslate.execution.inputs import set_inputs
+    from videotranslate.execution.registry import STAGES, StageDefinition
+    from videotranslate.execution.service import claim_run
+    from videotranslate.execution.worker import Worker
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    with sf.begin() as db:
+        lease = claim_run(db, "first")
+    context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, run_id, lease.lease_token
+    )
+    context.begin_submission("test-provider", "test-model")
+    context.record_submission("job-1")
+    with sf.begin() as db:
+        set_inputs(db, db.get(Project, project["id"]), {"source.video": "changed"})
+        db.get(StageRun, run_id).lease_expires_at = utcnow() - timedelta(seconds=1)
+    calls, published = [], []
+
+    def poll(ctx):
+        calls.append(ctx.remote_checkpoint())
+        return StageResult({"duration_ms": 1})
+
+    stage = STAGES["probe"]
+    registry = {
+        "probe": StageDefinition(
+            "probe",
+            stage.validate_options,
+            stage.resolve_inputs,
+            poll,
+            lambda *args: published.append(True),
+        )
+    }
+    assert Worker(client.app.state.settings, registry=registry).run_once()
+    assert calls == ["job-1"] and published == []
+    with sf() as db:
+        run = db.get(StageRun, run_id)
+        assert run.status == "stale" and run.remote_state == "completed"
