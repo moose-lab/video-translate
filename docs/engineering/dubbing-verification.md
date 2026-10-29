@@ -317,3 +317,9 @@ uv lock --check
 git diff --check
 # exit 0.
 ```
+
+## Independent review closure
+
+Independent specification and quality reviewers passed code`84dfeff` after reproducing and verifying the source-proof, ordering, role-lineage and safe-validation fixes. Controller independently reran303 tests with the isolated PostgreSQL opt-in (87.33s), Ruff/format (75 files), compile and lock checks; all passed. The reviewer independently measured the1,000-cue source/target application and verified rollback after a staged failure. No real inference or user-preview migration occurred.
+
+The controller inspected only the live preview schema through a read-only SQLite connection against a pinned`67ff839` metadata archive:14 tables, no Alembic version table, and zero baseline-3 schema differences. No credential row/value or server key was read by that inspection. This identifies a verified starting point for the later backed-up protected upgrade; it is not evidence that the preview is already running the new domain.
