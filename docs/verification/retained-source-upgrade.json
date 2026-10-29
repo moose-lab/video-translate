@@ -1,0 +1,22 @@
+{
+  "code_revision": "70ae7789ec5fa460b51a0cf8069010e1cb3604a3",
+  "schema_revision": "0007_prepared_object_lifecycle",
+  "baseline_verified": true,
+  "restricted_backup_created": true,
+  "metadata_parity": true,
+  "all_existing_row_counts_unchanged": {
+    "projects": 1,
+    "assets": 3,
+    "stage_runs": 3,
+    "private_operations": 2,
+    "source_selections": 1,
+    "analysis_media": 1,
+    "prepared_objects": 2,
+    "project_events": 15
+  },
+  "saved_remote_id_retained": true,
+  "terminal_manifest_unchanged": true,
+  "server_secret_unchanged": true,
+  "protected_preview_used": false,
+  "new_model_calls": 0
+}
