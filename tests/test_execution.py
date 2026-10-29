@@ -143,3 +143,74 @@ def test_database_rejects_cross_workspace_execution_rows(
         )
         with pytest.raises(IntegrityError):
             db.commit()
+
+
+def test_successful_retry_reuses_current_inputs_without_changing_idempotency_history(
+    execution_project, tiny_mp4
+):
+    from videotranslate.execution.worker import Worker
+
+    client, headers, project = execution_project
+    url = f"/api/projects/{project['id']}/runs"
+    keyed = headers | {"Idempotency-Key": "original-request"}
+    run = client.post(url, json={"stage": "probe"}, headers=keyed).json()
+    assert Worker(client.app.state.settings).run_once()
+    assert client.get(f"/api/runs/{run['id']}").json()["status"] == "succeeded"
+    upload = client.post(
+        f"/api/projects/{project['id']}/source",
+        files={"file": ("new.mp4", tiny_mp4 + b"changed", "video/mp4")},
+        headers=headers,
+    )
+    assert upload.status_code == 201
+    assert client.post(f"/api/runs/{run['id']}/retry", json={}, headers=headers).status_code == 200
+    assert Worker(client.app.state.settings).run_once()
+    assert client.get(f"/api/runs/{run['id']}").json()["status"] == "succeeded"
+    reused = client.post(url, json={"stage": "probe"}, headers=headers)
+    assert reused.status_code == 201 and reused.json()["id"] == run["id"]
+    conflict = client.post(url, json={"stage": "probe"}, headers=keyed)
+    assert (
+        conflict.status_code == 409 and conflict.json()["error"]["code"] == "IDEMPOTENCY_CONFLICT"
+    )
+
+
+def test_cache_uses_normalized_options_and_exact_scope(execution_project):
+    from videotranslate.execution.contracts import RunCreate, StageResult
+    from videotranslate.execution.registry import STAGES, StageDefinition
+    from videotranslate.execution.service import claim_run, create_run, finish_run
+    from videotranslate.models.core import Project
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    base = STAGES["probe"]
+    registry = {
+        "probe": StageDefinition("probe", lambda options: options, base.resolve_inputs, base.handle)
+    }
+    with sf.begin() as db:
+        p = db.get(Project, project["id"])
+        first = create_run(
+            db,
+            p.workspace_id,
+            p.id,
+            RunCreate(stage="probe", options={"a": 1, "nested": {"x": 2, "y": 3}}),
+            registry=registry,
+        ).id
+    with sf.begin() as db:
+        lease = claim_run(db, "test", registry=registry)
+        assert finish_run(db, first, lease.lease_token, StageResult({}), registry=registry)
+    with sf.begin() as db:
+        p = db.get(Project, project["id"])
+        reordered = create_run(
+            db,
+            p.workspace_id,
+            p.id,
+            RunCreate(stage="probe", options={"nested": {"y": 3, "x": 2}, "a": 1}),
+            registry=registry,
+        )
+        changed = create_run(
+            db,
+            p.workspace_id,
+            p.id,
+            RunCreate(stage="probe", options={"a": 1, "nested": {"x": 2, "y": 4}}),
+            registry=registry,
+        )
+        assert reordered.id == first and changed.id != first

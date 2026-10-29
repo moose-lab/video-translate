@@ -53,19 +53,32 @@ def create_run(
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Key was used with different inputs")
             return prior
     scope = ":".join(filter(None, [request.stage, request.target_language, request.segment_id]))
-    prior = db.scalar(
-        select(StageRun)
-        .where(
-            StageRun.project_id == project.id,
-            StageRun.scope_key == scope,
-            StageRun.request_fingerprint == request_fingerprint,
-            StageRun.status == "succeeded",
-            StageRun.is_stale.is_(False),
+    if idempotency_key is None:
+        # The creation signature above remains immutable for keyed requests.
+        # Cache matching instead uses the run's current retried dependencies and
+        # normalized options; canonical hashes ignore dictionary key order.
+        candidates = db.scalars(
+            select(StageRun)
+            .where(
+                StageRun.workspace_id == workspace_id,
+                StageRun.project_id == project.id,
+                StageRun.stage == request.stage,
+                StageRun.scope_key == scope,
+                StageRun.target_language == request.target_language,
+                StageRun.segment_id == request.segment_id,
+                StageRun.dependency_fingerprint == dependency_fingerprint,
+                StageRun.status == "succeeded",
+                StageRun.is_stale.is_(False),
+            )
+            .order_by(StageRun.created_at.desc(), StageRun.id)
         )
-        .order_by(StageRun.created_at.desc())
-    )
-    if prior and idempotency_key is None:
-        return prior
+        options_fingerprint = fingerprint(options)
+        for prior in candidates:
+            if (
+                prior.dependency_snapshot == snapshot
+                and fingerprint(prior.options) == options_fingerprint
+            ):
+                return prior
     run = StageRun(
         workspace_id=workspace_id,
         project_id=project.id,
