@@ -33,4 +33,8 @@ The source is an English technical explainer. It exercises technical terminology
 
 ## Current status
 
-Source metadata verified. Acquisition, real model runs, product workflow, outputs and review are pending. This document defines the test; it does not claim it passed.
+Source acquired at `/tmp/videotranslate-fixtures/SIZsFGvtClM-original.mp4` for later fresh product upload. Acquisition selected YouTube formats398+140 and remuxed them without generation: 25,861,753 bytes, 1280×720 AV1 video and AAC stereo44.1kHz, English audio metadata. FFprobe reports700.406712 seconds. SHA-256: `18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f`. Original absolute stream1 is audio ordinal0; select that original English track.
+
+Full source decode completed with FFmpeg exit0, explicitly mapping its video and English audio to a null sink. Publisher captions were separately acquired at `/tmp/videotranslate-fixtures/SIZsFGvtClM.en.vtt`. These checks establish a readable input and independent reference, not translated-output quality.
+
+Acquisition and source probing are preparation only. Real model runs, product workflow, translated outputs and quality review remain pending. This document defines the test; it does not claim it passed.
