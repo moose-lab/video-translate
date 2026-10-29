@@ -130,7 +130,7 @@ def discover_prefix(http, base_url, endpoint):
     raise ValueError("Provider schema unavailable or endpoint unsupported")
 
 
-def resolve_space(http, space_id):
+def resolve_space(http, space_id, *, expected_revision=None):
     from urllib.parse import urlsplit
 
     from .network import validate_url
@@ -143,6 +143,8 @@ def resolve_space(http, space_id):
         info = json.loads(
             http.get("https://huggingface.co/api/spaces/" + space_id, max_bytes=1024 * 1024)
         )
+        if expected_revision is not None and info.get("sha") != expected_revision:
+            raise ValueError()
         host = info["host"]
         if not isinstance(host, str):
             raise ValueError()
@@ -178,6 +180,7 @@ def validate_endpoint_schema(info, adapter):
             ["Audio", "Textbox"],
         ),
         "demucs": ("/predict", ["audio"], ["Audio", "Audio"]),
+        "demucs_multistem": ("/process", ["input_0", "input_1"], ["Audio"] * 4),
     }
     if adapter not in specs:
         raise ValueError("Unsupported Gradio adapter")
@@ -193,5 +196,24 @@ def validate_endpoint_schema(info, adapter):
             "Instrumental",
         ]:
             raise ValueError()
-    except (KeyError, TypeError, ValueError):
+        if adapter == "demucs_multistem":
+            audio, model = spec["parameters"]
+            if (
+                [x.get("component") for x in spec["parameters"]] != ["Audio", "Dropdown"]
+                or [x.get("label") for x in spec["returns"]] != ["Drums", "Bass", "Vocals", "Other"]
+                or model["type"].get("type") != "string"
+                or "htdemucs" not in model["type"].get("enum", [])
+            ):
+                raise ValueError()
+            for item in [audio, *spec["returns"]]:
+                data = item["type"]
+                if (
+                    data.get("type") != "object"
+                    or data.get("title") != "FileData"
+                    or data["properties"]["path"].get("type") != "string"
+                    or "path" not in data.get("required", [])
+                    or item["python_type"].get("type") != "filepath"
+                ):
+                    raise ValueError()
+    except (KeyError, TypeError, ValueError, AttributeError):
         raise ValueError("Incompatible provider schema") from None

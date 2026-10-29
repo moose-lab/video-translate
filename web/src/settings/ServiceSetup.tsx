@@ -59,10 +59,10 @@ const services = [
     slot: "separation",
     name: "背景分离",
     desc: "将人声与背景声音分开",
-    adapter: "demucs",
-    space_id: "kajise/Demucs_v4-FT_2s",
-    endpoint: "https://kajise-demucs-v4-ft-2s.hf.space",
-    model: "htdemucs_ft",
+    adapter: "demucs_multistem",
+    space_id: "teamup-tech/Demucs",
+    endpoint: "https://teamup-tech-demucs.hf.space",
+    model: "htdemucs",
     credential_ref: null,
   },
   {
@@ -183,6 +183,16 @@ export default function ServiceSetup({
     setInvalid(false);
     try {
       const current = settings.providers[s.slot];
+      // Recommendations apply to new setup. Existing selections change explicitly.
+      if (!edited && s.slot === "separation" && current?.revision) {
+        edited = {
+          adapter: current.adapter,
+          endpoint: current.endpoint ?? "",
+          model: current.model ?? "",
+          space_id: current.space_id,
+          credential_ref: current.credential_ref,
+        };
+      }
       const saved = await api<Settings["providers"][string]>(
         "/providers/" + s.slot,
         {
@@ -515,6 +525,30 @@ function ServiceCard({
       </div>
       <details>
         <summary>查看连接信息</summary>
+        {service.slot === "separation" && (
+          <>
+            <label>
+              背景分离服务类型
+              <select value={adapter} disabled={pending} onChange={(e) => {
+                const multistem = e.target.value === "demucs_multistem";
+                setAdapter(e.target.value);
+                setSpaceId(multistem ? "teamup-tech/Demucs" : "kajise/Demucs_v4-FT_2s");
+                setEndpoint(multistem ? "https://teamup-tech-demucs.hf.space" : "https://kajise-demucs-v4-ft-2s.hf.space");
+                setModel(multistem ? "htdemucs" : "htdemucs_ft");
+                setCredentialRef("");
+              }}>
+                <option value="demucs_multistem">Demucs 四轨（推荐新配置）</option>
+                <option value="demucs">Demucs 原两轨配置</option>
+              </select>
+            </label>
+            {adapter === "demucs_multistem" ? (
+              <p>远程返回鼓、贝斯、人声与其他四轨；背景由鼓、贝斯与其他按原音量相加。公开服务，无需令牌。已有一次独立 5 秒文件验证；产品流程推理尚未验证，连接检查仅检查元数据。</p>
+            ) : (
+              <p>保留原两轨接口与已有任务。</p>
+            )}
+            <p>若公开结果文件无法访问，请检查服务或结果，更新 Hugging Face 令牌不能解决公开文件权限。</p>
+          </>
+        )}
         {service.slot === "transcription" && (
           <label>
             源识别服务类型
@@ -557,16 +591,16 @@ function ServiceCard({
             </select>
           </label>
         ) : (
-          <p>服务：{service.adapter}</p>
+          <p>服务：{adapter}</p>
         )}
         {"space_id" in service && adapter !== "hf_asr" && (
           <p>
             <a
               href={
                 "https://huggingface.co/spaces/" +
-                encodeURIComponent(service.space_id.split("/")[0]) +
+                encodeURIComponent(spaceId.split("/")[0]) +
                 "/" +
-                encodeURIComponent(service.space_id.split("/")[1])
+                encodeURIComponent(spaceId.split("/")[1])
               }
               target="_blank"
               rel="noreferrer noopener"
@@ -596,7 +630,7 @@ function ServiceCard({
             <input
               aria-invalid={(fieldError && invalid) || undefined}
               aria-describedby={fieldError ? "setup-error" : undefined}
-              readOnly={service.slot === "transcription"}
+              readOnly={service.slot === "transcription" || adapter === "demucs_multistem"}
               value={spaceId}
               onChange={(e) => setSpaceId(e.target.value)}
             />
@@ -639,7 +673,7 @@ function ServiceCard({
           <input
             aria-invalid={(fieldError && invalid) || undefined}
             aria-describedby={fieldError ? "setup-error" : undefined}
-            readOnly={service.slot === "transcription"}
+            readOnly={service.slot === "transcription" || adapter === "demucs_multistem"}
             value={endpoint}
             onChange={(e) => setEndpoint(e.target.value)}
           />

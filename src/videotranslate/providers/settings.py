@@ -25,6 +25,7 @@ def validate_controls(adapter, controls):
         "omnivoice": {"ns", "gs", "dn", "sp", "du", "pp", "po"},
         "nvidia_stream": {"max_speakers"},
         "demucs": set(),
+        "demucs_multistem": set(),
         "hf_router": set(),
         "hf_asr": set(),
         "openai_compatible": set(),
@@ -87,7 +88,7 @@ def capability_contract(slot, adapter, schema=None, model=None):
         stage=slot,
         language_support="unsupported" if adapter == "nvidia_stream" else "unknown",
         supported_languages=tuple(supported),
-        resumable=adapter in {"omnivoice", "demucs"},
+        resumable=adapter in {"omnivoice", "demucs", "demucs_multistem"},
         cancel_supported=False,
         max_duration_seconds=120 if adapter == "nvidia_stream" else None,
         controls=controls,
@@ -108,10 +109,32 @@ def capability_contract(slot, adapter, schema=None, model=None):
                 "task_route": "hf-inference/models/{model}",
             }
         )
+    if adapter == "demucs_multistem":
+        from .demucs import MULTISTEM_REVISION, output_mapping
+
+        result.update(
+            {
+                "outputs": list(output_mapping(adapter)),
+                "instrumental_sources": ["drums", "bass", "other"],
+                "published_outputs": ["vocals", "instrumental"],
+                "api_name": "process",
+                "model": "htdemucs",
+                "space_revision": MULTISTEM_REVISION,
+                "credential_mode": "public_demo",
+            }
+        )
     return result
 
 
 def preset_supported(adapter, model, space_id, endpoint):
+    if adapter == "demucs_multistem":
+        from .demucs import MULTISTEM_HOST, MULTISTEM_SPACE
+
+        return (
+            model == "htdemucs"
+            and space_id == MULTISTEM_SPACE
+            and (endpoint is None or endpoint.rstrip("/") == MULTISTEM_HOST)
+        )
     models = {
         "nvidia_stream": "nemotron-diarization",
         "omnivoice": "OmniVoice",

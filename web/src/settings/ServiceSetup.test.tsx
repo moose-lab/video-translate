@@ -166,3 +166,52 @@ it("late provider check cannot restore an old credential verification", async ()
   await screen.findByText("服务可连接");
   expect(screen.queryByText("账号验证通过；实际推理权限未验证。")).toBeNull();
 });
+
+it("offers the explicit public four-stem profile for new configuration", async () => {
+  const user = userEvent.setup();
+  const bodies: Record<string, unknown>[] = [];
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    if (String(input).endsWith("/provider-settings")) return ok({
+      credentials: { huggingface: { revision: 0, configured: false }, translation: { revision: 0, configured: false } }, providers: {},
+    });
+    const body = JSON.parse(String(init?.body));
+    bodies.push(body);
+    return ok({ ...body, revision: 1 });
+  });
+  render(<ServiceSetup csrf="fake" logout={() => {}} />);
+  await screen.findByLabelText("Hugging Face 访问令牌");
+  await user.click(screen.getAllByText("查看连接信息")[0]);
+  const profile = screen.getByLabelText("背景分离服务类型") as HTMLSelectElement;
+  expect(profile.value).toBe("demucs_multistem");
+  expect(screen.getAllByRole("button", { name: "保存默认设置" })).toHaveLength(5);
+  await user.click(screen.getByRole("button", { name: "保存背景分离设置", hidden: true }));
+  await waitFor(() => expect(bodies).toHaveLength(1));
+  expect(bodies[0]).toMatchObject({ adapter: "demucs_multistem", model: "htdemucs", space_id: "teamup-tech/Demucs", endpoint: "https://teamup-tech-demucs.hf.space", credential_ref: null });
+  expect(screen.getByText(/鼓、贝斯与其他/)).toBeTruthy();
+  expect(screen.getByText(/更新 Hugging Face 令牌不能解决公开文件权限/)).toBeTruthy();
+});
+
+it("keeps saved two-stem settings until the owner explicitly selects four stems", async () => {
+  const user = userEvent.setup();
+  const legacy = { revision: 7, adapter: "demucs", model: "htdemucs_ft", space_id: "kajise/Demucs_v4-FT_2s", endpoint: "https://kajise-demucs-v4-ft-2s.hf.space", credential_ref: null };
+  const bodies: Record<string, unknown>[] = [];
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    if (String(input).endsWith("/provider-settings")) return ok({ credentials: { huggingface: { revision: 0, configured: false }, translation: { revision: 0, configured: false } }, providers: { separation: legacy } });
+    const body = JSON.parse(String(init?.body));
+    bodies.push(body);
+    return ok({ ...body, revision: 8 });
+  });
+  render(<ServiceSetup csrf="fake" logout={() => {}} />);
+  await screen.findByLabelText("Hugging Face 访问令牌");
+  await user.click(screen.getAllByText("查看连接信息")[0]);
+  const profile = screen.getByLabelText("背景分离服务类型") as HTMLSelectElement;
+  expect(profile.value).toBe("demucs");
+  expect((screen.getByLabelText("背景分离模型") as HTMLInputElement).value).toBe("htdemucs_ft");
+  await user.click(screen.getAllByRole("button", { name: "保存默认设置" })[0]);
+  await waitFor(() => expect(bodies).toHaveLength(1));
+  expect(bodies[0]).toMatchObject(legacy);
+  await user.selectOptions(profile, "demucs_multistem");
+  expect((screen.getByLabelText("背景分离模型") as HTMLInputElement).value).toBe("htdemucs");
+  expect((screen.getByLabelText("背景分离 Space ID") as HTMLInputElement).value).toBe("teamup-tech/Demucs");
+  expect(screen.getAllByRole("link", { name: "查看服务来源", hidden: true })[0].getAttribute("href")).toContain("teamup-tech/Demucs");
+});

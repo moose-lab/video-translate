@@ -40,7 +40,13 @@ class ProviderBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(ge=0)
     adapter: Literal[
-        "hf_router", "openai_compatible", "omnivoice", "demucs", "nvidia_stream", "hf_asr"
+        "hf_router",
+        "openai_compatible",
+        "omnivoice",
+        "demucs",
+        "demucs_multistem",
+        "nvidia_stream",
+        "hf_asr",
     ]
     endpoint: str | None = Field(default=None, max_length=300)
     space_id: str | None = Field(default=None, max_length=150)
@@ -188,7 +194,7 @@ def put_provider(
     if slot not in SLOTS:
         raise APIError(404, "NOT_FOUND", "Resource not found")
     allowed_adapters = {
-        "separation": {"demucs"},
+        "separation": {"demucs", "demucs_multistem"},
         "transcription": {"nvidia_stream", "hf_asr"},
         "translation": {"hf_router", "openai_compatible"},
         "synthesis": {"omnivoice"},
@@ -200,6 +206,7 @@ def put_provider(
         "openai_compatible": {"translation", None},
         "omnivoice": {"huggingface", None},
         "demucs": {None},
+        "demucs_multistem": {None},
         "nvidia_stream": {None},
     }
     if (
@@ -388,17 +395,33 @@ def check_provider(
         checking_account = False
         try:
             if values.get("space_id"):
-                host = resolve_space(client, values["space_id"])
+                from ..providers.demucs import MULTISTEM_HOST, MULTISTEM_REVISION
+
+                host = resolve_space(
+                    client,
+                    values["space_id"],
+                    expected_revision=MULTISTEM_REVISION
+                    if values["adapter"] == "demucs_multistem"
+                    else None,
+                )
                 if values.get("endpoint") and values["endpoint"].rstrip("/") != host:
                     raise ValueError("Space endpoint mismatch")
-                if values["adapter"] in {"omnivoice", "demucs"}:
-                    endpoint = "/_clone_fn" if values["adapter"] == "omnivoice" else "/predict"
+                if values["adapter"] == "demucs_multistem" and host != MULTISTEM_HOST:
+                    raise ValueError("Unsupported Demucs host")
+                if values["adapter"] in {"omnivoice", "demucs", "demucs_multistem"}:
+                    endpoint = {
+                        "omnivoice": "/_clone_fn",
+                        "demucs": "/predict",
+                        "demucs_multistem": "/process",
+                    }[values["adapter"]]
                     import json
 
                     prefix = discover_prefix(client, host, endpoint)
                     schema = json.loads(
                         client.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024)
                     )
+                    if values["adapter"] == "demucs_multistem" and prefix != "/gradio_api":
+                        raise ValueError("Unsupported Demucs API prefix")
                     validate_endpoint_schema(schema, values["adapter"])
                     result["capabilities"] = capability_contract(slot, values["adapter"], schema)
                     result["capabilities"]["api_prefix"] = prefix

@@ -180,6 +180,22 @@ def publication_current(db, run):
     )
 
 
+def failure_action(db, run):
+    """Public artifact access is service/result review, never HF token rotation."""
+    from ..execution.prepared import current_operation
+
+    if run.stage == "separate" and (run.safe_error or {}).get("code") == "CONFIGURATION":
+        operation = current_operation(db, run)
+        if (
+            operation
+            and operation.provider in {"demucs", "demucs_multistem"}
+            and operation.phase == "terminal"
+            and operation.terminal_payload
+        ):
+            return "review_separation_result"
+    return "review_run"
+
+
 def advance_for_run(db, run):
     project = db.get(Project, run.project_id)
     for child in db.scalars(scope(WorkflowChild, project).where(WorkflowChild.run_id == run.id)):
@@ -193,7 +209,7 @@ def advance_for_run(db, run):
                     if run.is_stale
                     else ("cancelled" if run.status == "cancelled" else "failed")
                 )
-                intent.next_action = "review_run"
+                intent.next_action = failure_action(db, run)
             continue
         selection = current_selection(db, project, required=False)
         if not selection or selection.id != intent.selection_id:
@@ -248,4 +264,4 @@ def sync_run_state(db, run):
                 if run.is_stale
                 else ("cancelled" if run.status == "cancelled" else "failed")
             )
-            intent.next_action = "review_run"
+            intent.next_action = failure_action(db, run)

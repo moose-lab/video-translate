@@ -288,10 +288,12 @@ def provider_failure(operations, error):
 
 def separate_handler(context):
     from ..media.audio import validate_audio
+    from ..media.separation import normalize_stem, prepare_outputs, validate_projection
     from ..models.core import Asset
     from ..providers.demucs import (
         PreparedSeparation,
         normalize_stems,
+        output_mapping,
         prepare_separation,
         submit_prepared,
     )
@@ -301,6 +303,7 @@ def separate_handler(context):
     operations = Operations(context)
     if cached := operations.cached():
         return cached
+    context.check_active()
     operation = operations.current()
     http = make_http(context)
     downloads = []
@@ -313,6 +316,7 @@ def separate_handler(context):
                 source = owned(db, Asset, project, media.working_asset_id)
                 config = connection(db, project, "separation")
                 selection = current_selection(db, project)
+            validate_projection(selection.end_ms - selection.start_ms, config.settings["adapter"])
             with tempfile.TemporaryDirectory(prefix="videotranslate-separate-") as directory:
                 audio = Path(directory) / "audio.wav"
                 materialize(context, source, audio, max_bytes=64 * 1024 * 1024)
@@ -321,9 +325,10 @@ def separate_handler(context):
                     audio=audio.read_bytes(),
                     space_id=config.settings["space_id"],
                     model=config.settings["model"],
+                    adapter=config.settings["adapter"],
                 )
             operation = operations.prepare(
-                provider="demucs",
+                provider=config.settings["adapter"],
                 model=config.settings["model"],
                 connection_revision=config.revision,
                 host=prepared.host,
@@ -332,12 +337,29 @@ def separate_handler(context):
                     "reference": prepared.reference,
                     "selection_id": selection.id,
                     "duration_ms": selection.end_ms - selection.start_ms,
+                    "profile": prepared.adapter,
+                    "api_name": prepared.api_name,
+                    "output_mapping": list(prepared.output_mapping),
                 },
             )
+        # Old rows intentionally have no new fields and retain /predict + two stems.
+        profile = operation.request_payload.get("profile", "demucs")
+        api_name = operation.request_payload.get("api_name", "predict")
+        mapping = operation.request_payload.get("output_mapping", ["vocals", "instrumental"])
+        if tuple(mapping) != output_mapping(profile) or api_name != (
+            "process" if profile == "demucs_multistem" else "predict"
+        ):
+            raise StageFailure(FailureCode.CONFIGURATION)
         client = GradioClient(http, operation.host, operation.prefix)
         if operation.phase == "ready":
             prepared = PreparedSeparation(
-                operation.host, operation.prefix, operation.request_payload["reference"]
+                operation.host,
+                operation.prefix,
+                operation.request_payload["reference"],
+                profile,
+                api_name,
+                operation.model,
+                tuple(mapping),
             )
             operations.begin()
             event_id = submit_prepared(http, prepared)
@@ -345,20 +367,26 @@ def separate_handler(context):
             operation = operations.current()
         if operation.phase == "submitting":
             raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
+        context.check_active()
         files = operation.terminal_payload
         if files is None:
-            value = client.poll("predict", operation.remote_id)
+            value = client.poll(api_name, operation.remote_id)
             if value is None:
                 raise StagePending()
             # Cache terminal FileData BEFORE any download (SSE may be consumable once).
             try:
-                files = normalize_stems(value)
+                files = normalize_stems(value, profile)
             except ValueError:
                 operations.failed()
                 raise StageFailure(FailureCode.INVALID_MEDIA) from None
             operations.terminal(files)
-        objects = []
-        for kind in ("vocals", "instrumental"):
+        if set(files) != set(mapping):
+            operations.failed()
+            raise StageFailure(FailureCode.INVALID_MEDIA)
+        normalize_stems([files[k] for k in mapping], profile)
+        stems, objects = {}, []
+        for kind in mapping:
+            context.check_active()
             path = client.download(files[kind])
             downloads.append(path)
             try:
@@ -366,17 +394,62 @@ def separate_handler(context):
                     path,
                     expected_duration_ms=operation.request_payload["duration_ms"],
                     timeout=context.settings.probe_timeout_seconds,
+                    check=context.check_active,
                 )
             except StageFailure as failure:
                 if failure.code in {FailureCode.INVALID_MEDIA, FailureCode.MEDIA_LIMIT}:
                     operations.failed()
                 raise
-            objects.append(store_audio(context, operation.id, audio, kind))
+            stems[kind] = audio
+            if profile == "demucs":
+                # Keep legacy partial-write orphan lineage on a later download failure.
+                with tempfile.TemporaryDirectory(prefix="videotranslate-legacy-stem-") as directory:
+                    normalized = normalize_stem(
+                        audio,
+                        Path(directory) / (kind + ".wav"),
+                        duration_ms=operation.request_payload["duration_ms"],
+                        check=context.check_active,
+                        timeout=context.settings.probe_timeout_seconds,
+                    )
+                    objects.append(store_audio(context, operation.id, normalized, kind))
+        # All four actual files are decoded and hashed before local reconstruction.
+        # CPU and object-store I/O stay outside the short SQL publisher.
+        if profile == "demucs_multistem":
+            with tempfile.TemporaryDirectory(prefix="videotranslate-stems-") as directory:
+                outputs = prepare_outputs(
+                    stems,
+                    directory,
+                    adapter=profile,
+                    duration_ms=operation.request_payload["duration_ms"],
+                    check=context.check_active,
+                    timeout=context.settings.probe_timeout_seconds,
+                )
+                objects = [
+                    store_audio(context, operation.id, audio, kind)
+                    for kind, audio in outputs.items()
+                ]
         return operations.cache(
-            {"objects": objects, "selection_id": operation.request_payload["selection_id"]},
+            {
+                "objects": objects,
+                "selection_id": operation.request_payload["selection_id"],
+                "provenance": {
+                    "profile": profile,
+                    "output_mapping": mapping,
+                    "stems": {kind: audio.metadata() for kind, audio in stems.items()},
+                    "instrumental_sources": ["drums", "bass", "other"]
+                    if profile == "demucs_multistem"
+                    else ["instrumental"],
+                },
+            },
             {"duration_ms": operation.request_payload["duration_ms"], "object_count": 2},
         )
     except Exception as error:
+        from ..providers.contracts import ProviderError
+
+        # These public profiles never send credentials. A file-access 403 after
+        # acceptance needs service/result review, not workspace token rotation.
+        if isinstance(error, ProviderError) and error.code == "auth":
+            error = ProviderError("configuration")
         failure = provider_failure(operations, error)
         if failure:
             raise failure from None

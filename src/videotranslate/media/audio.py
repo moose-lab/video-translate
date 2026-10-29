@@ -26,11 +26,21 @@ class AudioFile:
     channels: int
     byte_size: int
     sha256: str
+    codec: str = "unknown"
+    container: str = "unknown"
 
     def metadata(self):
         return {
             k: getattr(self, k)
-            for k in ("duration_ms", "sample_rate", "channels", "byte_size", "sha256")
+            for k in (
+                "duration_ms",
+                "sample_rate",
+                "channels",
+                "byte_size",
+                "sha256",
+                "codec",
+                "container",
+            )
         }
 
 
@@ -146,7 +156,16 @@ def validate_audio(
         while chunk := source.read(1024 * 1024):
             check()
             digest.update(chunk)
-    return AudioFile(path, duration_ms, rate, channels, path.stat().st_size, digest.hexdigest())
+    return AudioFile(
+        path,
+        duration_ms,
+        rate,
+        channels,
+        path.stat().st_size,
+        digest.hexdigest(),
+        str(stream.get("codec_name", "unknown")),
+        str(info["format"].get("format_name", "unknown")),
+    )
 
 
 def extract_audio(
