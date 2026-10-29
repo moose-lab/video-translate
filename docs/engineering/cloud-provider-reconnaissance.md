@@ -32,3 +32,14 @@ The official ASR contract accepts audio plus `return_timestamps`; validate actua
 No valid configured HF token is available in the app yet. Provide a protected server-side configuration path; do not ask for secrets in chat or extract browser credentials. Service settings must never echo the stored token. These observations made no inference requests and incurred no reported inference usage.
 
 Sources: [timestamped ASR](https://huggingface.co/docs/inference-providers/en/tasks/automatic-speech-recognition), [chat completion](https://huggingface.co/docs/inference-providers/en/tasks/chat-completion).
+
+## Public demo availability check
+
+Agent Reach/Exa discovery found public diarization and separation demos. A direct HF Space metadata check returned `RUNTIME_ERROR` for all four examples below at the time of inspection. They must not be used as assumed working defaults merely because search indexes expose their pages or API examples:
+
+- [vumichien/Whisper_speaker_diarization](https://huggingface.co/spaces/vumichien/Whisper_speaker_diarization), commit `12197ad5878446029c3e9065e5c88b187b30bae8`.
+- [sanchit-gandhi/whisper-jax-diarization](https://huggingface.co/spaces/sanchit-gandhi/whisper-jax-diarization), commit `2b47d3b42c1712253ecd1fbf984c882df0cc161c`.
+- [FahadAlam/Speaker-Diarization](https://huggingface.co/spaces/FahadAlam/Speaker-Diarization), commit `530fef93588fcafbfc78d45a4d969b0fd21eb71e`.
+- [akhaliq/demucs](https://huggingface.co/spaces/akhaliq/demucs), commit `aa628f7485f7ae8dce915c2828b8c3070d3fe498`.
+
+Availability is time-sensitive. Recheck before use. Support a configured HF-hosted endpoint/Space and truthful connection tests; remote deployment templates may install their model dependencies in the cloud, while the SaaS development app and CPU media worker remain free of local inference packages and weights. Do not allocate paid hardware or accept model access terms on the user's behalf as a consequence of discovery.

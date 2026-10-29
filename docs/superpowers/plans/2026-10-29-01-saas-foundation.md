@@ -27,9 +27,9 @@
 
 ## Task 1: Bootstrap and failing auth behavior
 
-- [ ] Create dependency/configuration files, source/test package directories and lock dependencies with `uv sync --extra dev`. No AI inference packages or weights.
-- [ ] Write a minimal test client fixture using a temporary SQLite database, temporary asset directory and `create_app(settings)` as the public factory. Startup creates development/test tables; production uses Alembic.
-- [ ] Add registration behavior test first:
+- [x] Create dependency/configuration files, source/test package directories and lock dependencies with `uv sync --extra dev`. No AI inference packages or weights.
+- [x] Write a minimal test client fixture using a temporary SQLite database, temporary asset directory and `create_app(settings)` as the public factory. Startup creates development/test tables; production uses Alembic.
+- [x] Add registration behavior test first:
 
 ```python
 def test_register_creates_private_workspace_and_http_only_session(client):
@@ -44,13 +44,13 @@ def test_register_creates_private_workspace_and_http_only_session(client):
     assert client.get('/api/auth/me').json()['user']['email'] == 'creator@example.test'
 ```
 
-- [ ] Run `uv run pytest tests/test_auth.py -q` and verify the missing registration behavior fails before implementing it.
-- [ ] Implement config, database models, structured errors, app factory and registration. Use `PasswordHasher().hash(password)` and `secrets.token_urlsafe(32)`; persist only SHA-256 hashes of session and CSRF values. Session expiry is an explicit UTC timestamp. Create the user, workspace and owner membership atomically.
-- [ ] Re-run the test, then commit the verified increment.
+- [x] Run `uv run pytest tests/test_auth.py -q` and verify the missing registration behavior fails before implementing it.
+- [x] Implement config, database models, structured errors, app factory and registration. Use `PasswordHasher().hash(password)` and `secrets.token_urlsafe(32)`; persist only SHA-256 hashes of session and CSRF values. Session expiry is an explicit UTC timestamp. Create the user, workspace and owner membership atomically.
+- [x] Re-run the test, then commit the verified increment.
 
 ## Task 2: Login, CSRF, logout and credential safety
 
-- [ ] Add failing tests for: case-normalized duplicate email; wrong password returning generic 401; password minimum/maximum; name/email validation; expired/revoked session; missing/mismatched CSRF on mutations; successful login after logout; different sessions having different opaque tokens; bounded failed login attempts returning 429.
+- [x] Add failing tests for: case-normalized duplicate email; wrong password returning generic 401; password minimum/maximum; name/email validation; expired/revoked session; missing/mismatched CSRF on mutations; successful login after logout; different sessions having different opaque tokens; bounded failed login attempts returning 429.
 
 ```python
 def test_mutations_require_csrf(authenticated_client):
@@ -62,14 +62,14 @@ def test_mutations_require_csrf(authenticated_client):
     assert allowed.status_code == 201
 ```
 
-- [ ] Run targeted tests and observe failures for the missing protections.
-- [ ] Implement login/logout/me, constant-time CSRF/hash comparisons and bounded persistent login throttling. Cookies use HttpOnly for session, SameSite=Lax, Secure in production and explicit expiry. Auth responses contain user/workspace/CSRF only, never password hash or session token in JSON. `/me` recovers the CSRF token from its matching CSRF cookie without returning the stored hash. Do not trust arbitrary forwarded IP headers.
-- [ ] Normalize Pydantic failures and database conflicts into safe error envelopes without echoing submitted passwords.
-- [ ] Verify `uv run pytest tests/test_auth.py -q`; commit.
+- [x] Run targeted tests and observe failures for the missing protections.
+- [x] Implement login/logout/me, constant-time CSRF/hash comparisons and bounded persistent login throttling. Cookies use HttpOnly for session, SameSite=Lax, Secure in production and explicit expiry. Auth responses contain user/workspace/CSRF only, never password hash or session token in JSON. `/me` recovers the CSRF token from its matching CSRF cookie without returning the stored hash. Do not trust arbitrary forwarded IP headers.
+- [x] Normalize Pydantic failures and database conflicts into safe error envelopes without echoing submitted passwords.
+- [x] Verify `uv run pytest tests/test_auth.py -q`; commit.
 
 ## Task 3: Workspace-isolated project lifecycle
 
-- [ ] Add failing tests for project create/list/detail/rename/soft delete and cross-account list/detail/patch/delete access. Unknown or foreign IDs return 404 without confirming ownership. Project deletion hides associated asset access.
+- [x] Add failing tests for project create/list/detail/rename/soft delete and cross-account list/detail/patch/delete access. Unknown or foreign IDs return 404 without confirming ownership. Project deletion hides associated asset access.
 
 ```python
 def test_other_workspace_cannot_read_project(two_accounts):
@@ -79,15 +79,15 @@ def test_other_workspace_cannot_read_project(two_accounts):
     assert visitor.client.get('/api/projects').json()['items'] == []
 ```
 
-- [ ] Run tests to verify the missing behavior, then implement project routes using the authenticated workspace predicate on every query.
-- [ ] Create fields exactly as the master plan contract. `revision` begins at 1; accepted project changes increment it atomically. `status='draft'` until a source upload. Validate target languages as nonempty strings for now; the language increment adds the canonical catalog without changing stored shape.
-- [ ] Return bounded collection envelopes, user-safe timestamps and opaque IDs. No filesystem paths or credentials.
-- [ ] Verify all auth/project tests; commit.
+- [x] Run tests to verify the missing behavior, then implement project routes using the authenticated workspace predicate on every query.
+- [x] Create fields exactly as the master plan contract. `revision` begins at 1; accepted project changes increment it atomically. `status='draft'` until a source upload. Validate target languages as nonempty strings for now; the language increment adds the canonical catalog without changing stored shape.
+- [x] Return bounded collection envelopes, user-safe timestamps and opaque IDs. No filesystem paths or credentials.
+- [x] Verify all auth/project tests; commit.
 
 ## Task 4: Private media storage and upload
 
-- [ ] Write filesystem storage tests rejecting absolute keys, `..`, separators used to traverse and paths resolving outside the root. Write S3 contract tests against an injected in-process fake client; they test parameter construction and private object behavior, not a claimed live S3 deployment.
-- [ ] Write API tests for real tiny FFmpeg-generated video uploads, expected SHA-256 and byte size, source assignment/revision increment, authenticated content/range access, cross-workspace denial, oversized upload rejection, invalid extension rejection and database/storage cleanup on interrupted upload.
+- [x] Write filesystem storage tests rejecting absolute keys, `..`, separators used to traverse and paths resolving outside the root. Write S3 contract tests against an injected in-process fake client; they test parameter construction and private object behavior, not a claimed live S3 deployment.
+- [x] Write API tests for real tiny FFmpeg-generated video uploads, expected SHA-256 and byte size, source assignment/revision increment, authenticated content/range access, cross-workspace denial, oversized upload rejection, invalid extension rejection and database/storage cleanup on interrupted upload.
 
 ```python
 def test_uploaded_source_is_private_and_downloadable(owner, visitor, tiny_mp4):
@@ -104,19 +104,19 @@ def test_uploaded_source_is_private_and_downloadable(owner, visitor, tiny_mp4):
     assert 'storage_key' not in asset and 'path' not in asset
 ```
 
-- [ ] Run storage/upload tests before implementation.
-- [ ] Implement bounded chunked upload using a spool file, opaque workspace/project/asset storage keys and SHA-256. The original filename is display metadata only. Store asset metadata transactionally and remove newly written objects if persistence fails. Verify extension and declared media type without pretending that this replaces the later media-probe stage.
-- [ ] Implement content responses with authorized byte ranges, correct content type and safe Content-Disposition. Original uploads are private by default; do not set S3 public ACLs.
-- [ ] Implement `LocalStorage` only for development/tests and S3 storage for production. S3 operations accept an injected client for tests. Any presigned read URL has an explicit short expiry and is issued only after workspace authorization.
-- [ ] Verify all server tests; commit.
+- [x] Run storage/upload tests before implementation.
+- [x] Implement bounded chunked upload using a spool file, opaque workspace/project/asset storage keys and SHA-256. The original filename is display metadata only. Store asset metadata transactionally and remove newly written objects if persistence fails. Verify extension and declared media type without pretending that this replaces the later media-probe stage.
+- [x] Implement content responses with authorized byte ranges, correct content type and safe Content-Disposition. Original uploads are private by default; do not set S3 public ACLs.
+- [x] Implement `LocalStorage` only for development/tests and S3 storage for production. S3 operations accept an injected client for tests. Any presigned read URL has an explicit short expiry and is issued only after workspace authorization.
+- [x] Verify all server tests; commit.
 
 ## Task 5: Production settings, migration and documentation
 
-- [ ] Add failing config tests: production refuses SQLite, local filesystem storage, missing secret key, missing public origin and incomplete S3 credentials; development may use explicit local settings. Ensure debug errors are disabled in production.
-- [ ] Add a migration test upgrading an empty database and inspecting the expected tables and uniqueness indexes.
-- [ ] Implement production validation and initial Alembic migration. Provide `.env.example` with variable names and non-secret development defaults only.
-- [ ] Write `README.md` startup/test commands and docs/engineering/sources.md with official FastAPI, SQLAlchemy, Argon2 and upload documentation used. State precisely which foundation behaviors are implemented and that model processing is the next increment.
-- [ ] Run `uv run pytest -q` and `uv run python -m compileall -q src`; inspect git diff and secret exposure. Commit, report changes, tests, RED/GREEN evidence and remaining integration dependencies.
+- [x] Add failing config tests: production refuses SQLite, local filesystem storage, missing secret key, missing public origin and incomplete S3 credentials; development may use explicit local settings. Ensure debug errors are disabled in production.
+- [x] Add a migration test upgrading an empty database and inspecting the expected tables and uniqueness indexes.
+- [x] Implement production validation and initial Alembic migration. Provide `.env.example` with variable names and non-secret development defaults only.
+- [x] Write `README.md` startup/test commands and docs/engineering/sources.md with official FastAPI, SQLAlchemy, Argon2 and upload documentation used. State precisely which foundation behaviors are implemented and that model processing is the next increment.
+- [x] Run `uv run pytest -q` and `uv run python -m compileall -q src`; inspect git diff and secret exposure. Commit, report changes, tests, RED/GREEN evidence and remaining integration dependencies.
 
 ## Review gates
 

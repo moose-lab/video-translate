@@ -63,9 +63,12 @@ class StageDefinition:
     validate_options: Callable[[dict], dict]
     resolve_inputs: Callable[[Session, Project, RunCreate], dict[str, str]]
     handle: Callable[["RunContext"], "StageResult"]
+    publish: Callable[[Session, "StageRun", "StageResult"], None] | None = None
 ```
 
 The registered stage validates options itself; probe accepts no options or target/segment scope. Unknown stages return422 `STAGE_UNAVAILABLE`. Do not queue nonfunctional future stages just to populate the UI.
+
+The optional publisher is a narrow transaction hook for later domain rows (segments, translations and private artifact metadata). Invoke it only after lease and freshness checks inside the same completion transaction, before the success event. A stale/lost-lease handler must never publish domain rows on its own. No network or long media work belongs in that transaction; handlers prepare results first. Probe needs no domain publisher. Protect prepared but unpublished temporary output cleanup on failed publication.
 - [ ] Implement execution models/migration and registry. Run `uv run pytest tests/test_execution.py -q`, observe RED then GREEN; record exact counts and commit.
 
 ## Task 2: Input dependencies, idempotency and transactional events

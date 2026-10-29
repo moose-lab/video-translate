@@ -48,7 +48,7 @@ These are implementation increments inside one approved product, not scope reduc
 
 ## Verification and evidence
 
-- [ ] 1. SaaS foundation tests including cross-user access, CSRF/session expiry and media limits.
+- [x] 1. SaaS foundation tests including cross-user access, CSRF/session expiry and media limits. Independent spec and quality gates passed; see foundation verification.
 - [ ] 2. Concurrent claims, retry classification, restart recovery and stale-output rejection tests.
 - [ ] 3. Catalog parity with upstream set and real provider contract checks.
 - [ ] 4. Multi-speaker edits, reference lineage, translation contexts/locks and selective invalidation tests.
@@ -63,3 +63,5 @@ These are implementation increments inside one approved product, not scope reduc
 2026-10-29: User approved scheme A. Independent repository created; design committed as `4052288`. Working on feature/cloud-dubbing. Existing media samples remain separate acceptance inputs and will not be passed off as new processing runs.
 
 2026-10-29: Foundation implementation committed as `634d14c`; controller reran the complete suite and observed 87 passing tests. Independent specification and quality reviews are required before marking increment 1 verified. User's new source was resolved through Agent Reach's YouTube/yt-dlp path: IBM Technology, “Agentic Engineering: 5 Terms Every AI Developer Should Know”, 700 seconds, English source track and publisher English subtitles. Source evidence and paired-language acceptance criteria live in `docs/engineering/integration-fixture.md`.
+
+2026-10-29: Foundation spec review found unbounded lists; `b77622f` added validated pagination and24 regressions. Independent spec re-review passed. Quality review reproduced blocking upload ownership SQL on the event loop; `6e7a64c` fixed it and added2 regressions. Independent quality re-review passed: original500ms-delay reproduction now has21ms maximum heartbeat gap and201 upload. Controller independently ran113 tests and a live isolated PostgreSQL14.18 migration/auth/isolation/revision-CAS check. Increment1 is verified within its documented scope; no frontend, remote inference or deployed SaaS is claimed. Increment2 durable execution is now being implemented from its detailed plan.

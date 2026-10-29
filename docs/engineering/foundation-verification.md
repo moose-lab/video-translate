@@ -101,6 +101,8 @@ HTTPX 0.28 remains installed for remote provider adapters. See [sources](sources
 
 ## Public interfaces for durable execution
 
+Independent review gates passed after two fixes. The spec reviewer reproduced unbounded project/asset lists; the fix added LIMIT/OFFSET, stable ordering, filtered totals and24 regressions. The separate quality reviewer reproduced a500ms event-loop stall during synchronous ownership lookup in the async upload route. After offloading that query, the reviewer repeated the same delay: both project queries ran on worker threads, maximum heartbeat gap21ms, upload201. The new foreign-upload test also proves404 before consuming or parsing its body. Controller final full-suite rerun:113 tests passed. Review approval applies to the foundation scope, not the remaining SaaS pipeline.
+
 - `config.Settings` and `app.create_app(settings)` construct an explicit runtime.
 - `db.Base`, `make_engine`, `make_session_factory`, and `get_db` establish schema/transaction scope.
 - `models.core.Project`, `Asset`, `User`, `Workspace`, `Membership`, `AuthSession`, `LoginAttempt`,
