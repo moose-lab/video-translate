@@ -49,7 +49,7 @@ These are implementation increments inside one approved product, not scope reduc
 ## Verification and evidence
 
 - [x] 1. SaaS foundation tests including cross-user access, CSRF/session expiry and media limits. Independent spec and quality gates passed; see foundation verification.
-- [ ] 2. Concurrent claims, retry classification, restart recovery and stale-output rejection tests.
+- [x] 2. Concurrent claims, retry classification, restart recovery and stale-output rejection tests. Both independent gates passed at`652c0ce`; real CPU probe and recording-only remote lifecycle evidence are distinguished.
 - [ ] 3. Catalog parity with upstream set and real provider contract checks.
 - [ ] 4. Multi-speaker edits, reference lineage, translation contexts/locks and selective invalidation tests.
 - [ ] 5. Line-level cloud request, cache and QC behavior; no synthetic test result presented as inference.
@@ -67,3 +67,5 @@ These are implementation increments inside one approved product, not scope reduc
 2026-10-29: Foundation spec review found unbounded lists; `b77622f` added validated pagination and24 regressions. Independent spec re-review passed. Quality review reproduced blocking upload ownership SQL on the event loop; `6e7a64c` fixed it and added2 regressions. Independent quality re-review passed: original500ms-delay reproduction now has21ms maximum heartbeat gap and201 upload. Controller independently ran113 tests and a live isolated PostgreSQL14.18 migration/auth/isolation/revision-CAS check. Increment1 is verified within its documented scope; no frontend, remote inference or deployed SaaS is claimed. Increment2 durable execution is now being implemented from its detailed plan.
 
 2026-10-29: Durable execution implemented real worker/probe, persistent runs/attempts/events, exact input invalidation, leases/retries/cancel and remote checkpoints. Independent spec review reproduced two stranded-handle cases after input edits; fixes `195a611`/`363e29c` preserve reconciliation and bounded retry policy. Spec review passed at148tests, with independent live PostgreSQL migration/claim/event-order evidence and separate HTTP API/worker/restart/SSE proof. Separate quality review remains pending; increment2 is not yet marked verified. Cloud service contracts now include reachable HF-hosted NVIDIA diarization and Gradio Demucs alternatives; metadata reachability is not model inference.
+
+2026-10-29: Durable quality review found synchronous SQL inside the async event stream and a stale cache signature after changed-input retry. Fixes `5dfff7d` and `652c0ce` passed independent reproduction: slow-query loop gap525ms→12ms; retry cache reused the current successful run while the original creation key retained409 semantics. Final independent full suite153passed. No review findings remain. Increment2 verified; increment3 begins with full catalog, encrypted cloud settings, adapter contracts and reusable browser login/setup.
