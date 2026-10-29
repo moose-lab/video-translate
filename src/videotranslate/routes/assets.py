@@ -130,7 +130,8 @@ async def upload_source(
     identity: Identity = Depends(require_csrf),
     db: Session = Depends(get_db),
 ):
-    project = owned_project(db, identity.workspace.id, project_id)
+    # Await synchronous SQL off the ASGI loop before consuming or spooling the body.
+    project = await run_in_threadpool(owned_project, db, identity.workspace.id, project_id)
     limit = request.app.state.settings.upload_max_bytes
     if request.headers.get("content-type", "").split(";", 1)[0].lower() != "multipart/form-data":
         raise APIError(422, "INVALID_UPLOAD", "Use a multipart upload with one file field")

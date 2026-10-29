@@ -336,3 +336,112 @@ def test_asset_pagination_rejects_invalid_bounds(client_factory, register, query
     client = client_factory()
     project, _ = make_project(client, register)
     assert client.get(f"/api/projects/{project['id']}/assets?{query}").status_code == 422
+
+
+def test_slow_upload_ownership_query_does_not_block_event_loop(
+    client_factory, register, tiny_mp4, monkeypatch
+):
+    import asyncio
+    import threading
+    import time
+    from itertools import pairwise
+
+    import httpx
+
+    from videotranslate.routes import assets
+
+    client = client_factory()
+    project, headers = make_project(client, register)
+    original_lookup = assets.owned_project
+    lookup_threads = []
+
+    def slow_lookup(*args):
+        lookup_threads.append(threading.get_ident())
+        time.sleep(0.35)
+        return original_lookup(*args)
+
+    monkeypatch.setattr(assets, "owned_project", slow_lookup)
+
+    async def exercise():
+        ticks = []
+        finished = asyncio.Event()
+        loop = asyncio.get_running_loop()
+        loop_thread = threading.get_ident()
+
+        async def heartbeat():
+            while not finished.is_set():
+                ticks.append(loop.time())
+                await asyncio.sleep(0.02)
+
+        heartbeat_task = asyncio.create_task(heartbeat())
+        try:
+            await asyncio.sleep(0.03)
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=client.app), base_url="http://testserver"
+            ) as streamed:
+                response = await streamed.post(
+                    f"/api/projects/{project['id']}/source",
+                    files={"file": ("source.mp4", tiny_mp4, "video/mp4")},
+                    headers={
+                        **headers,
+                        "Cookie": f"vt_session={client.cookies.get('vt_session')}; "
+                        f"vt_csrf={client.cookies.get('vt_csrf')}",
+                    },
+                )
+            await asyncio.sleep(0.03)
+        finally:
+            finished.set()
+            await heartbeat_task
+        return response, ticks, loop_thread
+
+    response, ticks, loop_thread = asyncio.run(exercise())
+    assert response.status_code == 201
+    assert max(later - earlier for earlier, later in pairwise(ticks)) < 0.2
+    assert lookup_threads and all(thread != loop_thread for thread in lookup_threads)
+
+
+def test_foreign_upload_is_denied_before_body_or_spool_parsing(
+    client_factory, register, monkeypatch
+):
+    import asyncio
+
+    import httpx
+
+    from videotranslate.routes import assets
+
+    owner = client_factory()
+    project, _ = make_project(owner, register)
+    other = client_factory(database_url=owner.app.state.settings.database_url.get_secret_value())
+    auth = register(other, "other@example.com")
+    consumed, parsers = [], []
+    original_parser = assets.MultiPartParser
+
+    def tracked_parser(*args, **kwargs):
+        parsers.append(True)
+        return original_parser(*args, **kwargs)
+
+    monkeypatch.setattr(assets, "MultiPartParser", tracked_parser)
+
+    async def body():
+        consumed.append(True)
+        yield b"large-body-must-not-be-read"
+
+    async def exercise():
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=other.app), base_url="http://testserver"
+        ) as streamed:
+            return await streamed.post(
+                f"/api/projects/{project['id']}/source",
+                content=body(),
+                headers={
+                    "X-CSRF-Token": auth["csrf_token"],
+                    "Content-Type": "multipart/form-data; boundary=test-boundary",
+                    "Cookie": f"vt_session={other.cookies.get('vt_session')}; "
+                    f"vt_csrf={other.cookies.get('vt_csrf')}",
+                },
+            )
+
+    response = asyncio.run(exercise())
+    assert response.status_code == 404
+    assert not consumed
+    assert not parsers
