@@ -27,7 +27,7 @@ Implementation scope: source extraction, remote two-stem separation, remote time
 
 Commands are run with `PYTHONPATH=src` because this environment's package path requires it. The PostgreSQL test URL points to the isolated opt-in test server; each test creates and drops its own unique database.
 
-- `VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres PYTHONPATH=src uv run --frozen --extra dev pytest -q` — final count recorded below after the final hardening run.
+- `VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres PYTHONPATH=src uv run --frozen --extra dev pytest -q` — **357 passed in 132.04 seconds, with both isolated PostgreSQL tests enabled and no skips**.
 - `uv run --frozen --extra dev ruff check src tests alembic` and `ruff format --check src tests alembic`.
 - `PYTHONPATH=src uv run --frozen --extra dev python -m compileall -q src` and `uv lock --check`.
 - Under bundled Node 24, `pnpm test` — 24 tests passed; `pnpm typecheck` and `pnpm build` passed.
