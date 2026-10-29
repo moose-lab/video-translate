@@ -1,0 +1,23 @@
+{
+  "code_revision": "a8ba48253675f91576dea59b9665325873784240",
+  "kind": "single_line_translation_diagnostic",
+  "source_video_id": "SIZsFGvtClM",
+  "target": "zh",
+  "model": "Qwen/Qwen3-235B-A22B-Instruct-2507:deepinfra",
+  "credential_source": "application_encrypted_vault",
+  "credential_displayed_or_written": false,
+  "new_model_calls": 1,
+  "product_stage": false,
+  "final_dubbing_acceptance": false,
+  "phase": "succeeded",
+  "provider_response_id": "chatcmpl-RGRUiqOyOp5yL2vIpHw54BII",
+  "usage": {
+    "prompt_tokens": 72,
+    "total_tokens": 111,
+    "completion_tokens": 39
+  },
+  "response_received": true,
+  "translated_segments": {
+    "source-probe-1": "想象一下，作为一名软件开发者却不需要编写任何代码。"
+  }
+}
