@@ -55,6 +55,7 @@ Default checkpoints wait after source/cast review and after translation review. 
 
 ```text
 GET  /api/projects/{id}/timeline?target_language=zh&limit=100&offset=0
+POST /api/projects/{id}/segments
 PATCH /api/projects/{id}/segments/{segment_id}
 POST /api/projects/{id}/segments/{segment_id}/split
 POST /api/projects/{id}/segments/merge
@@ -63,6 +64,7 @@ PATCH /api/projects/{id}/speakers/{speaker_id}
 POST /api/projects/{id}/speakers/merge
 POST /api/projects/{id}/references/extract
 POST /api/projects/{id}/references/upload
+POST /api/projects/{id}/references/{reference_id}/versions
 POST /api/projects/{id}/source/import/preview
 POST /api/projects/{id}/source/import/apply
 POST /api/projects/{id}/workflow
@@ -71,6 +73,8 @@ POST /api/projects/{id}/workflow
 Timeline response contains project/source identity and window, bounded source-segment page, the selected target's corresponding translations, cast/reference summaries and language-track summaries. It does not multiply every row by every target. Collection defaults/maxima follow existing100/200 bounds; selectors expose explicit totals/cursors. No paths/storage keys or credentials are returned.
 
 Source PATCH includes expected segment revision and only changed fields. Validate text length and finite ordered times within the window; overlapping different-speaker intervals are valid. Split creates new stable segments with parent lineage and explicit text/time/role distribution; merge accepts explicit current IDs/revisions. Do not divide words or assign a second speaker by guessing. A speaker merge updates affected bindings atomically and retains archived labels/history; a name-only change does not regenerate audio.
+
+Manual segment creation repairs missing recognition lines with explicit source revision, text, time and role. Its provenance is manual, never fabricated ASR. Reference text corrections create a new immutable version for the same owned audio with parent lineage; updating the selected binding invalidates affected voice outputs while preserving previous versions.
 
 Reference extraction accepts owned source spans and exact text. Uploaded audio is private, bounded, decoded and duration-checked by CPU media operations; declared MIME is insufficient. Support manually replacing reference audio/text. Store actual source provenance and single-/mixed-speaker or too-short/noisy review flags only when supported by measured/provider evidence. A reference is never silently trimmed while retaining a now-incorrect reference transcript.
 

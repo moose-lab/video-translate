@@ -21,6 +21,8 @@ ns=32, gs=2.0, dn=true, sp=1.0, du=null, pp=true, po=true
 
 It returns FileData audio plus a status string. The language enum includes the complete catalog. The adapter must check both output audio and status; a completed queue event is insufficient proof of successful synthesis. FileData includes a remote service path which must remain internal. Retrieve output through a validated allowed host and copy into private application storage.
 
+Exact success status was subsequently verified from the pinned [Space app source](https://huggingface.co/spaces/k2-fsa/OmniVoice/blob/64deef91cf1f7bfdfc97ff07502b4cd47a0e361e/app.py): `Done.`. Empty text/reference yields no audio plus an instruction; generation exceptions yield no audio plus an error. The injected generator is forwarded by the official demo wrapper. A schema saying only “string” does not justify assuming `Success`; require the known status and nonempty valid audio output.
+
 Gradio's official HTTP contract returns an `event_id` on POST and delivers terminal results via SSE GET using that ID. This can support the durable worker's saved remote-handle polling. Upload the reference using the documented upload contract, persist the returned generation event ID immediately, and resume polling that ID after observation timeouts. If the POST may have succeeded but no ID was saved, enter uncertain-submission review rather than submit again. Demo job retention and quota are external limitations which must be surfaced.
 
 Sources: [official Space](https://huggingface.co/spaces/k2-fsa/OmniVoice), [live API schema](https://k2-fsa-omnivoice.hf.space/gradio_api/info), [Gradio HTTP guide](https://www.gradio.app/guides/querying-gradio-apps-with-curl).
