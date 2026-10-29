@@ -48,3 +48,32 @@ def test_project_languages_normalize_before_validation(client_factory, register)
             ).status_code
             == 422
         )
+
+
+def test_default_catalog_includes_auto_and_manifest_hash_matches(client_factory):
+    import hashlib
+    import json
+    from pathlib import Path
+
+    from videotranslate.languages.catalog import catalog
+
+    response = client_factory().get("/api/languages", params={"limit": 1000})
+    assert response.json()["total"] == 647
+    assert any(row["is_auto"] for row in response.json()["items"])
+    data = Path(__file__).parents[1] / "src/videotranslate/languages/data"
+    manifest = json.loads((data / "manifest.json").read_text())
+    assert (
+        hashlib.sha256((data / "catalog.json").read_bytes()).hexdigest()
+        == manifest["catalog_sha256"]
+    )
+    source = Path(
+        "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/work/video-translate-research/omnivoice/docs/languages.md"
+    )
+    if source.exists():
+        import re
+
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == manifest["source_sha256"]
+        rows = re.findall(
+            r"^\|\s*\d+\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|", source.read_text(), re.M
+        )
+        assert [(r["name"], r["code"], r["iso639_3"]) for r in catalog()[1:]] == rows

@@ -12,7 +12,7 @@ router = APIRouter(prefix="/languages", tags=["languages"])
 @router.get("")
 def languages(
     q: Annotated[str, Query(max_length=100)] = "",
-    include_auto: bool = False,
+    include_auto: bool = True,
     limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
