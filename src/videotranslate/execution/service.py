@@ -11,7 +11,7 @@ from ..errors import APIError
 from ..models.core import Project, utcnow
 from ..models.execution import RunAttempt, StageRun
 from ..routes.projects import owned_project
-from .contracts import RunCreate, StageResult
+from .contracts import FailureCode, RunCreate, StageFailure, StageResult
 from .events import append_event
 from .inputs import fingerprint, initialize_inputs, is_current, lock_project, set_inputs
 from .registry import STAGES, get_stage
@@ -330,4 +330,130 @@ def finish_run(db: Session, run_id: str, token: str, result: StageResult, *, reg
     _end_attempt(db, run, run.status)
     _clear_lease(run)
     append_event(db, project, f"run.{run.status}", run=run)
+    return True
+
+
+def fail_run(db: Session, run_id: str, token: str, failure: StageFailure) -> bool:
+    project, run = _lock_run_project(db, run_id)
+    if not _valid_lease(run, token, utcnow()):
+        return False
+    if run.remote_state == "submitting" and run.remote_id is None:
+        failure = StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
+    run.safe_error = failure.public()
+    run.auto_failures += 1
+    if failure.review:
+        run.status = "needs_review"
+    elif run.cancel_requested_at and run.remote_id is None:
+        run.status = "cancelled"
+    elif run.is_stale and run.remote_id is None:
+        run.status = "stale"
+    elif failure.retryable and run.auto_failures < 3:
+        run.status = "retry_wait"
+        run.due_at = utcnow() + timedelta(seconds=min(60, 2**run.auto_failures))
+    else:
+        run.status = "failed"
+    if run.status != "retry_wait":
+        run.finished_at = utcnow()
+    _end_attempt(db, run, run.status, run.safe_error)
+    _clear_lease(run)
+    append_event(db, project, f"run.{run.status}", run=run, facts={"code": failure.code.value})
+    return True
+
+
+def retry_run(
+    db: Session,
+    workspace_id: str,
+    run_id: str,
+    *,
+    acknowledge_uncertain_submission=False,
+    registry=None,
+):
+    owned = owned_run(db, workspace_id, run_id)
+    project = lock_project(db, db.get(Project, owned.project_id))
+    db.refresh(owned)
+    if (
+        owned.status not in {"failed", "stale", "needs_review", "cancelled"}
+        or owned.lease_token is not None
+    ):
+        raise APIError(409, "RUN_ACTIVE", "Run cannot be retried while active")
+    uncertain = owned.remote_state == "submitting" and owned.remote_id is None
+    if uncertain and not acknowledge_uncertain_submission:
+        raise APIError(
+            409,
+            "SUBMISSION_UNCERTAIN",
+            "A previous submission may still be running; explicit acknowledgment is required",
+        )
+    definition = get_stage(owned.stage, registry)
+    initialize_inputs(db, project)
+    request = RunCreate(
+        stage=owned.stage,
+        target_language=owned.target_language,
+        segment_id=owned.segment_id,
+        options=owned.options,
+    )
+    snapshot = definition.resolve_inputs(db, project, request)
+    # A saved active remote handle may only resume against its original inputs.
+    # Changed inputs need a new run; discarding the handle could duplicate a paid call.
+    if (
+        owned.remote_id
+        and owned.remote_state != "completed"
+        and snapshot != owned.dependency_snapshot
+    ):
+        raise APIError(
+            409,
+            "REMOTE_INPUT_CHANGED",
+            "Resolve the existing remote job before retrying changed inputs",
+        )
+    if uncertain or owned.remote_state == "completed":
+        owned.remote_state, owned.remote_id, owned.request_key = "not_submitted", None, None
+        owned.provider = owned.model = None
+    owned.dependency_snapshot = snapshot
+    owned.dependency_fingerprint = fingerprint(snapshot)
+    owned.input_project_revision = project.revision
+    owned.status, owned.is_stale, owned.auto_failures = "queued", False, 0
+    owned.safe_error = owned.result = owned.finished_at = owned.cancel_requested_at = None
+    owned.due_at = owned.updated_at = utcnow()
+    append_event(db, project, "run.retried", run=owned, facts={"revision": project.revision})
+    return owned
+
+
+def cancel_run(db: Session, workspace_id: str, run_id: str):
+    owned = owned_run(db, workspace_id, run_id)
+    project = lock_project(db, db.get(Project, owned.project_id))
+    db.refresh(owned)
+    if owned.status in {"succeeded", "failed", "stale", "cancelled", "needs_review"}:
+        return owned
+    owned.cancel_requested_at = utcnow()
+    if (
+        owned.status in {"running", "cancelling"}
+        or owned.remote_id
+        or owned.remote_state == "submitting"
+    ):
+        owned.status = "cancelling"
+        # retry_wait remote polling has no current lease; make it claimable for recovery.
+        if owned.lease_expires_at is None:
+            owned.lease_expires_at = utcnow()
+    else:
+        owned.status, owned.finished_at = "cancelled", utcnow()
+    append_event(
+        db,
+        project,
+        "run.cancel_requested" if owned.status == "cancelling" else "run.cancelled",
+        run=owned,
+    )
+    return owned
+
+
+def confirm_cancel(db: Session, run_id: str, token: str, *, remote_confirmed=False):
+    project, run = _lock_run_project(db, run_id)
+    if not _valid_lease(run, token, utcnow()):
+        return False
+    if (run.remote_id or run.remote_state == "submitting") and not remote_confirmed:
+        return False
+    run.status, run.finished_at, run.result = "cancelled", utcnow(), None
+    if run.remote_id and remote_confirmed:
+        run.remote_state = "completed"
+    _end_attempt(db, run, "cancelled")
+    _clear_lease(run)
+    append_event(db, project, "run.cancelled", run=run)
     return True

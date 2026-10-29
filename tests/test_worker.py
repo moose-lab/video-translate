@@ -100,3 +100,121 @@ def test_expired_local_lease_requeues_with_monotonic_attempt_history(execution_p
     with sf() as db:
         attempts = db.scalars(select(RunAttempt).order_by(RunAttempt.number)).all()
         assert [(a.number, a.outcome) for a in attempts] == [(1, "lease_expired"), (2, "succeeded")]
+
+
+def test_transient_retry_budget_and_manual_retry_keep_attempts(execution_project):
+    from videotranslate.execution.contracts import FailureCode, StageFailure
+    from videotranslate.execution.service import claim_run, fail_run, retry_run
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    for number in range(1, 4):
+        with sf.begin() as db:
+            lease = claim_run(db, "worker")
+            assert lease.attempt_count == number
+            assert fail_run(
+                db, run_id, lease.lease_token, StageFailure(FailureCode.TRANSIENT, retryable=True)
+            )
+        with sf.begin() as db:
+            run = db.get(StageRun, run_id)
+            assert run.status == ("retry_wait" if number < 3 else "failed")
+            run.due_at = utcnow()
+    with sf.begin() as db:
+        run = db.get(StageRun, run_id)
+        retry_run(db, run.workspace_id, run.id)
+    with sf.begin() as db:
+        lease = claim_run(db, "worker")
+        assert lease.attempt_count == 4 and lease.auto_failures == 0
+    with sf() as db:
+        assert len(db.scalars(select(RunAttempt)).all()) == 4
+
+
+def test_remote_submission_checkpoint_survives_restart_and_never_resubmits(execution_project):
+    from videotranslate.execution.context import RunContext
+    from videotranslate.execution.service import claim_run
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    calls = []
+    with sf.begin() as db:
+        lease = claim_run(db, "first")
+    context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, lease.id, lease.lease_token
+    )
+    assert context.remote_checkpoint() is None
+    key = context.begin_submission("test-provider", "test-model")
+    calls.append(key)  # TEST ONLY: recording an external POST would occur here.
+    context.record_submission("test-job-123")
+    with sf.begin() as db:
+        db.get(StageRun, run_id).lease_expires_at = utcnow() - timedelta(seconds=1)
+    with sf.begin() as db:
+        resumed = claim_run(db, "restarted")
+    next_context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, resumed.id, resumed.lease_token
+    )
+    assert next_context.remote_checkpoint() == "test-job-123"
+    import pytest
+
+    with pytest.raises(__import__("videotranslate.execution.contracts", fromlist=["StageFailure"]).StageFailure):
+        next_context.begin_submission("test-provider", "test-model")
+    assert len(calls) == 1
+
+
+def test_uncertain_submission_needs_explicit_acknowledgment(execution_project):
+    import pytest
+
+    from videotranslate.errors import APIError
+    from videotranslate.execution.context import RunContext
+    from videotranslate.execution.service import claim_run, retry_run
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    with sf.begin() as db:
+        lease = claim_run(db, "worker")
+    context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, run_id, lease.lease_token
+    )
+    context.begin_submission("test-provider", "test-model")
+    with sf.begin() as db:
+        db.get(StageRun, run_id).lease_expires_at = utcnow() - timedelta(seconds=1)
+    with sf.begin() as db:
+        assert claim_run(db, "restarted") is None
+    with sf.begin() as db:
+        run = db.get(StageRun, run_id)
+        assert run.status == "needs_review" and run.safe_error["code"] == "SUBMISSION_UNCERTAIN"
+        with pytest.raises(APIError) as error:
+            retry_run(db, run.workspace_id, run.id)
+        assert error.value.code == "SUBMISSION_UNCERTAIN"
+    with sf.begin() as db:
+        run = db.get(StageRun, run_id)
+        retry_run(db, run.workspace_id, run.id, acknowledge_uncertain_submission=True)
+        assert run.remote_state == "not_submitted" and run.request_key is None
+
+
+def test_cancel_running_requires_worker_and_discards_remote_terminal_result(execution_project):
+    from videotranslate.execution.context import RunContext
+    from videotranslate.execution.service import cancel_run, claim_run, finish_run
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    with sf.begin() as db:
+        lease = claim_run(db, "worker")
+    context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, run_id, lease.lease_token
+    )
+    context.begin_submission("test-provider", "test-model")
+    context.record_submission("job-1")
+    with sf.begin() as db:
+        run = db.get(StageRun, run_id)
+        cancel_run(db, run.workspace_id, run_id)
+        assert run.status == "cancelling"
+    assert context.remote_checkpoint() == "job-1"  # Existing work may still be polled.
+    with sf.begin() as db:
+        assert finish_run(db, run_id, lease.lease_token, StageResult({"duration_ms": 1}))
+    with sf() as db:
+        run = db.get(StageRun, run_id)
+        assert run.status == "cancelled" and run.result is None

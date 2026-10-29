@@ -7,8 +7,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..execution.contracts import RunCreate
-from ..execution.service import create_run, owned_run, run_json
+from ..execution.contracts import RunCreate, RunRetry
+from ..execution.service import cancel_run, create_run, owned_run, retry_run, run_json
 from ..models.execution import StageRun
 from ..security import Identity, require_csrf, require_identity
 from .projects import owned_project
@@ -58,3 +58,27 @@ def get_run(
     run_id: str, identity: Identity = Depends(require_identity), db: Session = Depends(get_db)
 ):
     return run_json(db, owned_run(db, identity.workspace.id, run_id), attempts=True)
+
+
+@router.post("/runs/{run_id}/retry")
+def retry(
+    run_id: str,
+    body: RunRetry,
+    identity: Identity = Depends(require_csrf),
+    db: Session = Depends(get_db),
+):
+    run = retry_run(
+        db,
+        identity.workspace.id,
+        run_id,
+        acknowledge_uncertain_submission=body.acknowledge_uncertain_submission,
+    )
+    db.commit()
+    return run_json(db, run, attempts=True)
+
+
+@router.post("/runs/{run_id}/cancel")
+def cancel(run_id: str, identity: Identity = Depends(require_csrf), db: Session = Depends(get_db)):
+    run = cancel_run(db, identity.workspace.id, run_id)
+    db.commit()
+    return run_json(db, run, attempts=True)
