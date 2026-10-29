@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..errors import APIError
+from ..languages.catalog import resolve
 from ..models.core import Project, utcnow
 from ..security import Identity, require_csrf, require_identity
 
@@ -38,6 +39,16 @@ class ProjectCreate(BaseModel):
         if not value.strip():
             raise ValueError("Name required")
         return value.strip()
+
+    @field_validator("source_language", mode="before")
+    @classmethod
+    def normalize_source(cls, value):
+        return resolve(value)["tag"]
+
+    @field_validator("target_languages", mode="before")
+    @classmethod
+    def normalize_targets(cls, values):
+        return [resolve(value)["tag"] for value in values]
 
     @field_validator("target_languages")
     @classmethod

@@ -1,0 +1,1 @@
+"""Offline synthesis language catalog."""

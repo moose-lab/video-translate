@@ -1,0 +1,5848 @@
+[
+  {
+    "code": "auto",
+    "name": "Auto",
+    "iso639_3": null,
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": true
+  },
+  {
+    "code": "kbt",
+    "name": "Abadi",
+    "iso639_3": "kbt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ab",
+    "name": "Abkhazian",
+    "iso639_3": "abk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "abr",
+    "name": "Abron",
+    "iso639_3": "abr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "abn",
+    "name": "Abua",
+    "iso639_3": "abn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fub",
+    "name": "Adamawa Fulfulde",
+    "iso639_3": "fub",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ady",
+    "name": "Adyghe",
+    "iso639_3": "ady",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aal",
+    "name": "Afade",
+    "iso639_3": "aal",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "af",
+    "name": "Afrikaans",
+    "iso639_3": "afr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yay",
+    "name": "Agwagwune",
+    "iso639_3": "yay",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ajg",
+    "name": "Aja (Benin)",
+    "iso639_3": "ajg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "keu",
+    "name": "Akebu",
+    "iso639_3": "keu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ala",
+    "name": "Alago",
+    "iso639_3": "ala",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sq",
+    "name": "Albanian",
+    "iso639_3": "sqi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "arq",
+    "name": "Algerian Arabic",
+    "iso639_3": "arq",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aao",
+    "name": "Algerian Saharan Arabic",
+    "iso639_3": "aao",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qva",
+    "name": "Ambo-Pasco Quechua",
+    "iso639_3": "qva",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "abs",
+    "name": "Ambonese Malay",
+    "iso639_3": "abs",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "adx",
+    "name": "Amdo Tibetan",
+    "iso639_3": "adx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "am",
+    "name": "Amharic",
+    "iso639_3": "amh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "anw",
+    "name": "Anaang",
+    "iso639_3": "anw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "anp",
+    "name": "Angika",
+    "iso639_3": "anp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xmv",
+    "name": "Antankarana Malagasy",
+    "iso639_3": "xmv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "an",
+    "name": "Aragonese",
+    "iso639_3": "arg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aae",
+    "name": "Arbëreshë Albanian",
+    "iso639_3": "aae",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qxu",
+    "name": "Arequipa-La Unión Quechua",
+    "iso639_3": "qxu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hy",
+    "name": "Armenian",
+    "iso639_3": "hye",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ahs",
+    "name": "Ashe",
+    "iso639_3": "ahs",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "prq",
+    "name": "Ashéninka Perené",
+    "iso639_3": "prq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "eiv",
+    "name": "Askopan",
+    "iso639_3": "eiv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "as",
+    "name": "Assamese",
+    "iso639_3": "asm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ast",
+    "name": "Asturian",
+    "iso639_3": "ast",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tay",
+    "name": "Atayal",
+    "iso639_3": "tay",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "awo",
+    "name": "Awak",
+    "iso639_3": "awo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "quy",
+    "name": "Ayacucho Quechua",
+    "iso639_3": "quy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "az",
+    "name": "Azerbaijani",
+    "iso639_3": "aze",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bba",
+    "name": "Baatonum",
+    "iso639_3": "bba",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bcy",
+    "name": "Bacama",
+    "iso639_3": "bcy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bde",
+    "name": "Bade",
+    "iso639_3": "bde",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ksf",
+    "name": "Bafia",
+    "iso639_3": "ksf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bfd",
+    "name": "Bafut",
+    "iso639_3": "bfd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fui",
+    "name": "Bagirmi Fulfulde",
+    "iso639_3": "fui",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bqg",
+    "name": "Bago-Kusuntu",
+    "iso639_3": "bqg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "abv",
+    "name": "Baharna Arabic",
+    "iso639_3": "abv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bkh",
+    "name": "Bakoko",
+    "iso639_3": "bkh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bjt",
+    "name": "Balanta-Ganja",
+    "iso639_3": "bjt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bft",
+    "name": "Balti",
+    "iso639_3": "bft",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bce",
+    "name": "Bamenyam",
+    "iso639_3": "bce",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bax",
+    "name": "Bamun",
+    "iso639_3": "bax",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bsj",
+    "name": "Bangwinji",
+    "iso639_3": "bsj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bjn",
+    "name": "Banjar",
+    "iso639_3": "bjn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "abb",
+    "name": "Bankon",
+    "iso639_3": "abb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bci",
+    "name": "Baoulé",
+    "iso639_3": "bci",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bhr",
+    "name": "Bara Malagasy",
+    "iso639_3": "bhr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bjk",
+    "name": "Barok",
+    "iso639_3": "bjk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bas",
+    "name": "Basa (Cameroon)",
+    "iso639_3": "bas",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bzw",
+    "name": "Basa (Nigeria)",
+    "iso639_3": "bzw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ba",
+    "name": "Bashkir",
+    "iso639_3": "bak",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "eu",
+    "name": "Basque",
+    "iso639_3": "eus",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "btm",
+    "name": "Batak Mandailing",
+    "iso639_3": "btm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bnm",
+    "name": "Batanga",
+    "iso639_3": "bnm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "btv",
+    "name": "Bateri",
+    "iso639_3": "btv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bbl",
+    "name": "Bats",
+    "iso639_3": "bbl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bda",
+    "name": "Bayot",
+    "iso639_3": "bda",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "beb",
+    "name": "Bebele",
+    "iso639_3": "beb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "be",
+    "name": "Belarusian",
+    "iso639_3": "bel",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bn",
+    "name": "Bengali",
+    "iso639_3": "ben",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bew",
+    "name": "Betawi",
+    "iso639_3": "bew",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bhb",
+    "name": "Bhili",
+    "iso639_3": "bhb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bho",
+    "name": "Bhojpuri",
+    "iso639_3": "bho",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bxf",
+    "name": "Bilur",
+    "iso639_3": "bxf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bhp",
+    "name": "Bima",
+    "iso639_3": "bhp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "brx",
+    "name": "Bodo",
+    "iso639_3": "brx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bux",
+    "name": "Boghom",
+    "iso639_3": "bux",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bky",
+    "name": "Bokyi",
+    "iso639_3": "bky",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bmq",
+    "name": "Bomu",
+    "iso639_3": "bmq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bou",
+    "name": "Bondei",
+    "iso639_3": "bou",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fue",
+    "name": "Borgu Fulfulde",
+    "iso639_3": "fue",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bs",
+    "name": "Bosnian",
+    "iso639_3": "bos",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "brh",
+    "name": "Brahui",
+    "iso639_3": "brh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bra",
+    "name": "Braj",
+    "iso639_3": "bra",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "br",
+    "name": "Breton",
+    "iso639_3": "bre",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bdm",
+    "name": "Buduma",
+    "iso639_3": "bdm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bug",
+    "name": "Buginese",
+    "iso639_3": "bug",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bhh",
+    "name": "Bukharic",
+    "iso639_3": "bhh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bg",
+    "name": "Bulgarian",
+    "iso639_3": "bul",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bum",
+    "name": "Bulu (Cameroon)",
+    "iso639_3": "bum",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bns",
+    "name": "Bundeli",
+    "iso639_3": "bns",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bnn",
+    "name": "Bunun",
+    "iso639_3": "bnn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bwr",
+    "name": "Bura-Pabir",
+    "iso639_3": "bwr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bys",
+    "name": "Burak",
+    "iso639_3": "bys",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "my",
+    "name": "Burmese",
+    "iso639_3": "mya",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bsk",
+    "name": "Burushaski",
+    "iso639_3": "bsk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "miu",
+    "name": "Cacaloxtepec Mixtec",
+    "iso639_3": "miu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qvl",
+    "name": "Cajatambo North Lima Quechua",
+    "iso639_3": "qvl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cky",
+    "name": "Cakfem-Mushere",
+    "iso639_3": "cky",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wes",
+    "name": "Cameroon Pidgin",
+    "iso639_3": "wes",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sro",
+    "name": "Campidanese Sardinian",
+    "iso639_3": "sro",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yue",
+    "name": "Cantonese",
+    "iso639_3": "yue",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ca",
+    "name": "Catalan",
+    "iso639_3": "cat",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ceb",
+    "name": "Cebuano",
+    "iso639_3": "ceb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cen",
+    "name": "Cen",
+    "iso639_3": "cen",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ckb",
+    "name": "Central Kurdish",
+    "iso639_3": "ckb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nhn",
+    "name": "Central Nahuatl",
+    "iso639_3": "nhn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pbs",
+    "name": "Central Pame",
+    "iso639_3": "pbs",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pst",
+    "name": "Central Pashto",
+    "iso639_3": "pst",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ncx",
+    "name": "Central Puebla Nahuatl",
+    "iso639_3": "ncx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tar",
+    "name": "Central Tarahumara",
+    "iso639_3": "tar",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "esu",
+    "name": "Central Yupik",
+    "iso639_3": "esu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fuq",
+    "name": "Central-Eastern Niger Fulfulde",
+    "iso639_3": "fuq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "shu",
+    "name": "Chadian Arabic",
+    "iso639_3": "shu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ny",
+    "name": "Chichewa",
+    "iso639_3": "nya",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zpv",
+    "name": "Chichicapan Zapotec",
+    "iso639_3": "zpv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cgg",
+    "name": "Chiga",
+    "iso639_3": "cgg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zoh",
+    "name": "Chimalapa Zoque",
+    "iso639_3": "zoh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qug",
+    "name": "Chimborazo Highland Quichua",
+    "iso639_3": "qug",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zh",
+    "name": "Chinese",
+    "iso639_3": "cmn",
+    "aliases": [
+      "中文",
+      "汉语",
+      "普通话"
+    ],
+    "direction": "auto",
+    "variants": [
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "is_auto": false
+  },
+  {
+    "code": "qxa",
+    "name": "Chiquián Ancash Quechua",
+    "iso639_3": "qxa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "the",
+    "name": "Chitwania Tharu",
+    "iso639_3": "the",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cjk",
+    "name": "Chokwe",
+    "iso639_3": "cjk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cv",
+    "name": "Chuvash",
+    "iso639_3": "chv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ckl",
+    "name": "Cibak",
+    "iso639_3": "ckl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kjc",
+    "name": "Coastal Konjo",
+    "iso639_3": "kjc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zoc",
+    "name": "Copainalá Zoque",
+    "iso639_3": "zoc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kw",
+    "name": "Cornish",
+    "iso639_3": "cor",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qwa",
+    "name": "Corongo Ancash Quechua",
+    "iso639_3": "qwa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hr",
+    "name": "Croatian",
+    "iso639_3": "hrv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mfn",
+    "name": "Cross River Mbembe",
+    "iso639_3": "mfn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xtu",
+    "name": "Cuyamecalco Mixtec",
+    "iso639_3": "xtu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cs",
+    "name": "Czech",
+    "iso639_3": "ces",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dbd",
+    "name": "Dadiya",
+    "iso639_3": "dbd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dag",
+    "name": "Dagbani",
+    "iso639_3": "dag",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dml",
+    "name": "Dameli",
+    "iso639_3": "dml",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "da",
+    "name": "Danish",
+    "iso639_3": "dan",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dar",
+    "name": "Dargwa",
+    "iso639_3": "dar",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dzg",
+    "name": "Dazaga",
+    "iso639_3": "dzg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dcc",
+    "name": "Deccan",
+    "iso639_3": "dcc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "deg",
+    "name": "Degema",
+    "iso639_3": "deg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kna",
+    "name": "Dera (Nigeria)",
+    "iso639_3": "kna",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dgh",
+    "name": "Dghwede",
+    "iso639_3": "dgh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mki",
+    "name": "Dhatki",
+    "iso639_3": "mki",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dv",
+    "name": "Dhivehi",
+    "iso639_3": "div",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "adf",
+    "name": "Dhofari Arabic",
+    "iso639_3": "adf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cfa",
+    "name": "Dijim-Bwilim",
+    "iso639_3": "cfa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dgo",
+    "name": "Dogri",
+    "iso639_3": "dgo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dmk",
+    "name": "Domaaki",
+    "iso639_3": "dmk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dty",
+    "name": "Dotyali",
+    "iso639_3": "dty",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dua",
+    "name": "Duala",
+    "iso639_3": "dua",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nl",
+    "name": "Dutch",
+    "iso639_3": "nld",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ldb",
+    "name": "Dũya",
+    "iso639_3": "ldb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dyu",
+    "name": "Dyula",
+    "iso639_3": "dyu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bgp",
+    "name": "Eastern Balochi",
+    "iso639_3": "bgp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gui",
+    "name": "Eastern Bolivian Guaraní",
+    "iso639_3": "gui",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "avl",
+    "name": "Eastern Egyptian Bedawi Arabic",
+    "iso639_3": "avl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kqo",
+    "name": "Eastern Krahn",
+    "iso639_3": "kqo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mhr",
+    "name": "Eastern Mari",
+    "iso639_3": "mhr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ydd",
+    "name": "Eastern Yiddish",
+    "iso639_3": "ydd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ebr",
+    "name": "Ebrié",
+    "iso639_3": "ebr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ego",
+    "name": "Eggon",
+    "iso639_3": "ego",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "arz",
+    "name": "Egyptian Arabic",
+    "iso639_3": "arz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "etu",
+    "name": "Ejagham",
+    "iso639_3": "etu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "elm",
+    "name": "Eleme",
+    "iso639_3": "elm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "afo",
+    "name": "Eloyi",
+    "iso639_3": "afo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ebu",
+    "name": "Embu",
+    "iso639_3": "ebu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "en",
+    "name": "English",
+    "iso639_3": "eng",
+    "aliases": [
+      "英语",
+      "English language"
+    ],
+    "direction": "auto",
+    "variants": [
+      "en-US",
+      "en-GB"
+    ],
+    "is_auto": false
+  },
+  {
+    "code": "myv",
+    "name": "Erzya",
+    "iso639_3": "myv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ish",
+    "name": "Esan",
+    "iso639_3": "ish",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "eo",
+    "name": "Esperanto",
+    "iso639_3": "epo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "et",
+    "name": "Estonian",
+    "iso639_3": "est",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "eto",
+    "name": "Eton (Cameroon)",
+    "iso639_3": "eto",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ewo",
+    "name": "Ewondo",
+    "iso639_3": "ewo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ext",
+    "name": "Extremaduran",
+    "iso639_3": "ext",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fan",
+    "name": "Fang (Equatorial Guinea)",
+    "iso639_3": "fan",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fat",
+    "name": "Fanti",
+    "iso639_3": "fat",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gur",
+    "name": "Farefare",
+    "iso639_3": "gur",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fmp",
+    "name": "Fe'fe'",
+    "iso639_3": "fmp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fil",
+    "name": "Filipino",
+    "iso639_3": "fil",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tlp",
+    "name": "Filomena Mata-Coahuitlán Totonac",
+    "iso639_3": "tlp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fi",
+    "name": "Finnish",
+    "iso639_3": "fin",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fip",
+    "name": "Fipa",
+    "iso639_3": "fip",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fr",
+    "name": "French",
+    "iso639_3": "fra",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ff",
+    "name": "Fulah",
+    "iso639_3": "ful",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gl",
+    "name": "Galician",
+    "iso639_3": "glg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wof",
+    "name": "Gambian Wolof",
+    "iso639_3": "wof",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lg",
+    "name": "Ganda",
+    "iso639_3": "lug",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gbm",
+    "name": "Garhwali",
+    "iso639_3": "gbm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gwt",
+    "name": "Gawar-Bati",
+    "iso639_3": "gwt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gwc",
+    "name": "Gawri",
+    "iso639_3": "gwc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gbr",
+    "name": "Gbagyi",
+    "iso639_3": "gbr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gby",
+    "name": "Gbari",
+    "iso639_3": "gby",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gyz",
+    "name": "Geji",
+    "iso639_3": "gyz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gej",
+    "name": "Gen",
+    "iso639_3": "gej",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ka",
+    "name": "Georgian",
+    "iso639_3": "kat",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "de",
+    "name": "German",
+    "iso639_3": "deu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ges",
+    "name": "Geser-Gorom",
+    "iso639_3": "ges",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aln",
+    "name": "Gheg Albanian",
+    "iso639_3": "aln",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bbj",
+    "name": "Ghomálá'",
+    "iso639_3": "bbj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gid",
+    "name": "Gidar",
+    "iso639_3": "gid",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "glw",
+    "name": "Glavda",
+    "iso639_3": "glw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gom",
+    "name": "Goan Konkani",
+    "iso639_3": "gom",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gig",
+    "name": "Goaria",
+    "iso639_3": "gig",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ank",
+    "name": "Goemai",
+    "iso639_3": "ank",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gol",
+    "name": "Gola",
+    "iso639_3": "gol",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "el",
+    "name": "Greek",
+    "iso639_3": "ell",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gn",
+    "name": "Guarani",
+    "iso639_3": "grn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gdf",
+    "name": "Guduf-Gava",
+    "iso639_3": "gdf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "amu",
+    "name": "Guerrero Amuzgo",
+    "iso639_3": "amu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gu",
+    "name": "Gujarati",
+    "iso639_3": "guj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gju",
+    "name": "Gujari",
+    "iso639_3": "gju",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "afb",
+    "name": "Gulf Arabic",
+    "iso639_3": "afb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ggg",
+    "name": "Gurgula",
+    "iso639_3": "ggg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "guz",
+    "name": "Gusii",
+    "iso639_3": "guz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gsl",
+    "name": "Gusilay",
+    "iso639_3": "gsl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gwe",
+    "name": "Gweno",
+    "iso639_3": "gwe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ztu",
+    "name": "Güilá Zapotec",
+    "iso639_3": "ztu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hoj",
+    "name": "Hadothi",
+    "iso639_3": "hoj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hah",
+    "name": "Hahon",
+    "iso639_3": "hah",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ht",
+    "name": "Haitian",
+    "iso639_3": "hat",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cnh",
+    "name": "Hakha Chin",
+    "iso639_3": "cnh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hao",
+    "name": "Hakö",
+    "iso639_3": "hao",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hla",
+    "name": "Halia",
+    "iso639_3": "hla",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ha",
+    "name": "Hausa",
+    "iso639_3": "hau",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "haw",
+    "name": "Hawaiian",
+    "iso639_3": "haw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "haz",
+    "name": "Hazaragi",
+    "iso639_3": "haz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "he",
+    "name": "Hebrew",
+    "iso639_3": "heb",
+    "aliases": [
+      "עברית"
+    ],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hem",
+    "name": "Hemba",
+    "iso639_3": "hem",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hz",
+    "name": "Herero",
+    "iso639_3": "her",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kjk",
+    "name": "Highland Konjo",
+    "iso639_3": "kjk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "acw",
+    "name": "Hijazi Arabic",
+    "iso639_3": "acw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hi",
+    "name": "Hindi",
+    "iso639_3": "hin",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "var",
+    "name": "Huarijio",
+    "iso639_3": "var",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mau",
+    "name": "Huautla Mazatec",
+    "iso639_3": "mau",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nhq",
+    "name": "Huaxcaleca Nahuatl",
+    "iso639_3": "nhq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hbb",
+    "name": "Huba",
+    "iso639_3": "hbb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mxs",
+    "name": "Huitepec Mixtec",
+    "iso639_3": "mxs",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hul",
+    "name": "Hula",
+    "iso639_3": "hul",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hu",
+    "name": "Hungarian",
+    "iso639_3": "hun",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hkk",
+    "name": "Hunjara-Kaina Ke",
+    "iso639_3": "hkk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hwo",
+    "name": "Hwana",
+    "iso639_3": "hwo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ibb",
+    "name": "Ibibio",
+    "iso639_3": "ibb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "is",
+    "name": "Icelandic",
+    "iso639_3": "isl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ida",
+    "name": "Idakho-Isukha-Tiriki",
+    "iso639_3": "ida",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "idu",
+    "name": "Idoma",
+    "iso639_3": "idu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ig",
+    "name": "Igbo",
+    "iso639_3": "ibo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ahl",
+    "name": "Igo",
+    "iso639_3": "ahl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kpo",
+    "name": "Ikposo",
+    "iso639_3": "kpo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ikw",
+    "name": "Ikwere",
+    "iso639_3": "ikw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qvi",
+    "name": "Imbabura Highland Quichua",
+    "iso639_3": "qvi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "id",
+    "name": "Indonesian",
+    "iso639_3": "ind",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mvy",
+    "name": "Indus Kohistani",
+    "iso639_3": "mvy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ia",
+    "name": "Interlingua (International Auxiliary Language Association)",
+    "iso639_3": "ina",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ik",
+    "name": "Inupiaq",
+    "iso639_3": "ipk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ga",
+    "name": "Irish",
+    "iso639_3": "gle",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "os",
+    "name": "Iron Ossetic",
+    "iso639_3": "oss",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "its",
+    "name": "Isekiri",
+    "iso639_3": "its",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "iso",
+    "name": "Isoko",
+    "iso639_3": "iso",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "it",
+    "name": "Italian",
+    "iso639_3": "ita",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "itw",
+    "name": "Ito",
+    "iso639_3": "itw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "itz",
+    "name": "Itzá",
+    "iso639_3": "itz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vmj",
+    "name": "Ixtayutla Mixtec",
+    "iso639_3": "vmj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ijc",
+    "name": "Izon",
+    "iso639_3": "ijc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jax",
+    "name": "Jambi Malay",
+    "iso639_3": "jax",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ja",
+    "name": "Japanese",
+    "iso639_3": "jpn",
+    "aliases": [
+      "日本語",
+      "日本"
+    ],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jqr",
+    "name": "Jaqaru",
+    "iso639_3": "jqr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qxw",
+    "name": "Jauja Wanca Quechua",
+    "iso639_3": "qxw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jns",
+    "name": "Jaunsari",
+    "iso639_3": "jns",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jv",
+    "name": "Javanese",
+    "iso639_3": "jav",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "juo",
+    "name": "Jiba",
+    "iso639_3": "juo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kaj",
+    "name": "Jju",
+    "iso639_3": "kaj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aju",
+    "name": "Judeo-Moroccan Arabic",
+    "iso639_3": "aju",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vmc",
+    "name": "Juxtlahuaca Mixtec",
+    "iso639_3": "vmc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kbd",
+    "name": "Kabardian",
+    "iso639_3": "kbd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lkb",
+    "name": "Kabras",
+    "iso639_3": "lkb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kea",
+    "name": "Kabuverdianu",
+    "iso639_3": "kea",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kab",
+    "name": "Kabyle",
+    "iso639_3": "kab",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gjk",
+    "name": "Kachi Koli",
+    "iso639_3": "gjk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ckr",
+    "name": "Kairak",
+    "iso639_3": "ckr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ijn",
+    "name": "Kalabari",
+    "iso639_3": "ijn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kls",
+    "name": "Kalasha",
+    "iso639_3": "kls",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kln",
+    "name": "Kalenjin",
+    "iso639_3": "kln",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xka",
+    "name": "Kalkoti",
+    "iso639_3": "xka",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kam",
+    "name": "Kamba",
+    "iso639_3": "kam",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kcq",
+    "name": "Kamo",
+    "iso639_3": "kcq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bjj",
+    "name": "Kanauji",
+    "iso639_3": "bjj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kbl",
+    "name": "Kanembu",
+    "iso639_3": "kbl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kn",
+    "name": "Kannada",
+    "iso639_3": "kan",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kai",
+    "name": "Karekare",
+    "iso639_3": "kai",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ks",
+    "name": "Kashmiri",
+    "iso639_3": "kas",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tkt",
+    "name": "Kathoriya Tharu",
+    "iso639_3": "tkt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bsh",
+    "name": "Kati",
+    "iso639_3": "bsh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kk",
+    "name": "Kazakh",
+    "iso639_3": "kaz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "eyo",
+    "name": "Keiyo",
+    "iso639_3": "eyo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "khg",
+    "name": "Khams Tibetan",
+    "iso639_3": "khg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ogo",
+    "name": "Khana",
+    "iso639_3": "ogo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xhe",
+    "name": "Khetrani",
+    "iso639_3": "xhe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "km",
+    "name": "Khmer",
+    "iso639_3": "khm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "khw",
+    "name": "Khowar",
+    "iso639_3": "khw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zga",
+    "name": "Kinga",
+    "iso639_3": "zga",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kfk",
+    "name": "Kinnauri",
+    "iso639_3": "kfk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rw",
+    "name": "Kinyarwanda",
+    "iso639_3": "kin",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ky",
+    "name": "Kirghiz",
+    "iso639_3": "kir",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fkk",
+    "name": "Kirya-Konzəl",
+    "iso639_3": "fkk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "thq",
+    "name": "Kochila Tharu",
+    "iso639_3": "thq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "plk",
+    "name": "Kohistani Shina",
+    "iso639_3": "plk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bcs",
+    "name": "Kohumono",
+    "iso639_3": "bcs",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "trp",
+    "name": "Kok Borok",
+    "iso639_3": "trp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kol",
+    "name": "Kol (Papua New Guinea)",
+    "iso639_3": "kol",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bkm",
+    "name": "Kom (Cameroon)",
+    "iso639_3": "bkm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kmy",
+    "name": "Koma",
+    "iso639_3": "kmy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "knn",
+    "name": "Konkani",
+    "iso639_3": "knn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "koo",
+    "name": "Konzo",
+    "iso639_3": "koo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ko",
+    "name": "Korean",
+    "iso639_3": "kor",
+    "aliases": [
+      "한국어",
+      "韩语"
+    ],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kfp",
+    "name": "Korwa",
+    "iso639_3": "kfp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kfe",
+    "name": "Kota (India)",
+    "iso639_3": "kfe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "eko",
+    "name": "Koti",
+    "iso639_3": "eko",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ksd",
+    "name": "Kuanua",
+    "iso639_3": "ksd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kj",
+    "name": "Kuanyama",
+    "iso639_3": "kua",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "uki",
+    "name": "Kui (India)",
+    "iso639_3": "uki",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bbu",
+    "name": "Kulung (Nigeria)",
+    "iso639_3": "bbu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kto",
+    "name": "Kuot",
+    "iso639_3": "kto",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kuh",
+    "name": "Kushi",
+    "iso639_3": "kuh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kwm",
+    "name": "Kwambi",
+    "iso639_3": "kwm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nmg",
+    "name": "Kwasio",
+    "iso639_3": "nmg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lla",
+    "name": "Lala-Roba",
+    "iso639_3": "lla",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hia",
+    "name": "Lamang",
+    "iso639_3": "hia",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lo",
+    "name": "Lao",
+    "iso639_3": "lao",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "alo",
+    "name": "Larike-Wakasihu",
+    "iso639_3": "alo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lss",
+    "name": "Lasi",
+    "iso639_3": "lss",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ltg",
+    "name": "Latgalian",
+    "iso639_3": "ltg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lv",
+    "name": "Latvian",
+    "iso639_3": "lav",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "apc",
+    "name": "Levantine Arabic",
+    "iso639_3": "apc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ste",
+    "name": "Liana-Seti",
+    "iso639_3": "ste",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xpe",
+    "name": "Liberia Kpelle",
+    "iso639_3": "xpe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lir",
+    "name": "Liberian English",
+    "iso639_3": "lir",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ayl",
+    "name": "Libyan Arabic",
+    "iso639_3": "ayl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lij",
+    "name": "Ligurian",
+    "iso639_3": "lij",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mgi",
+    "name": "Lijili",
+    "iso639_3": "mgi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ln",
+    "name": "Lingala",
+    "iso639_3": "lin",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lt",
+    "name": "Lithuanian",
+    "iso639_3": "lit",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lrk",
+    "name": "Loarki",
+    "iso639_3": "lrk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rag",
+    "name": "Logooli",
+    "iso639_3": "rag",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "src",
+    "name": "Logudorese Sardinian",
+    "iso639_3": "src",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qvj",
+    "name": "Loja Highland Quichua",
+    "iso639_3": "qvj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "loa",
+    "name": "Loloda",
+    "iso639_3": "loa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lnu",
+    "name": "Longuda",
+    "iso639_3": "lnu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ztp",
+    "name": "Loxicha Zapotec",
+    "iso639_3": "ztp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lua",
+    "name": "Luba-Lulua",
+    "iso639_3": "lua",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "luo",
+    "name": "Luo",
+    "iso639_3": "luo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lus",
+    "name": "Lushai",
+    "iso639_3": "lus",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lb",
+    "name": "Luxembourgish",
+    "iso639_3": "ltz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ffm",
+    "name": "Maasina Fulfulde",
+    "iso639_3": "ffm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mde",
+    "name": "Maba (Chad)",
+    "iso639_3": "mde",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rup",
+    "name": "Macedo-Romanian",
+    "iso639_3": "rup",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mk",
+    "name": "Macedonian",
+    "iso639_3": "mkd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mxu",
+    "name": "Mada (Cameroon)",
+    "iso639_3": "mxu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "maf",
+    "name": "Mafa",
+    "iso639_3": "maf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mai",
+    "name": "Maithili",
+    "iso639_3": "mai",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ms",
+    "name": "Malay",
+    "iso639_3": "msa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ml",
+    "name": "Malayalam",
+    "iso639_3": "mal",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gcc",
+    "name": "Mali",
+    "iso639_3": "gcc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tcf",
+    "name": "Malinaltepec Me'phaa",
+    "iso639_3": "tcf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mt",
+    "name": "Maltese",
+    "iso639_3": "mlt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tbf",
+    "name": "Mandara",
+    "iso639_3": "tbf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mfv",
+    "name": "Mandjak",
+    "iso639_3": "mfv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mqy",
+    "name": "Manggarai",
+    "iso639_3": "mqy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mni",
+    "name": "Manipuri",
+    "iso639_3": "mni",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "msw",
+    "name": "Mansoanka",
+    "iso639_3": "msw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gv",
+    "name": "Manx",
+    "iso639_3": "glv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mi",
+    "name": "Maori",
+    "iso639_3": "mri",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mr",
+    "name": "Marathi",
+    "iso639_3": "mar",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mrt",
+    "name": "Marghi Central",
+    "iso639_3": "mrt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mfm",
+    "name": "Marghi South",
+    "iso639_3": "mfm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mrr",
+    "name": "Maria (India)",
+    "iso639_3": "mrr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mve",
+    "name": "Marwari (Pakistan)",
+    "iso639_3": "mve",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mcn",
+    "name": "Masana",
+    "iso639_3": "mcn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "msh",
+    "name": "Masikoro Malagasy",
+    "iso639_3": "msh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mcf",
+    "name": "Matsés",
+    "iso639_3": "mcf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zpy",
+    "name": "Mazaltepec Zapotec",
+    "iso639_3": "zpy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vmz",
+    "name": "Mazatlán Mazatec",
+    "iso639_3": "vmz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mzl",
+    "name": "Mazatlán Mixe",
+    "iso639_3": "mzl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mfo",
+    "name": "Mbe",
+    "iso639_3": "mfo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mbo",
+    "name": "Mbo (Cameroon)",
+    "iso639_3": "mbo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mdd",
+    "name": "Mbum",
+    "iso639_3": "mdd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "byv",
+    "name": "Medumba",
+    "iso639_3": "byv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mek",
+    "name": "Mekeo",
+    "iso639_3": "mek",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mer",
+    "name": "Meru",
+    "iso639_3": "mer",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "acm",
+    "name": "Mesopotamian Arabic",
+    "iso639_3": "acm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mtr",
+    "name": "Mewari",
+    "iso639_3": "mtr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nan",
+    "name": "Min Nan Chinese",
+    "iso639_3": "nan",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xmf",
+    "name": "Mingrelian",
+    "iso639_3": "xmf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vmm",
+    "name": "Mitlatongo Mixtec",
+    "iso639_3": "vmm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mkf",
+    "name": "Miya",
+    "iso639_3": "mkf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bri",
+    "name": "Mokpwe",
+    "iso639_3": "bri",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mdf",
+    "name": "Moksha",
+    "iso639_3": "mdf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ver",
+    "name": "Mom Jango",
+    "iso639_3": "ver",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mn",
+    "name": "Mongolian",
+    "iso639_3": "mon",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ary",
+    "name": "Moroccan Arabic",
+    "iso639_3": "ary",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "meu",
+    "name": "Motu",
+    "iso639_3": "meu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mcx",
+    "name": "Mpiemo",
+    "iso639_3": "mcx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mgg",
+    "name": "Mpumpong",
+    "iso639_3": "mgg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mua",
+    "name": "Mundang",
+    "iso639_3": "mua",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mhk",
+    "name": "Mungaka",
+    "iso639_3": "mhk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mse",
+    "name": "Musey",
+    "iso639_3": "mse",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mug",
+    "name": "Musgu",
+    "iso639_3": "mug",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mui",
+    "name": "Musi",
+    "iso639_3": "mui",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mne",
+    "name": "Naba",
+    "iso639_3": "mne",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ars",
+    "name": "Najdi Arabic",
+    "iso639_3": "ars",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nal",
+    "name": "Nalik",
+    "iso639_3": "nal",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nmz",
+    "name": "Nawdm",
+    "iso639_3": "nmz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ng",
+    "name": "Ndonga",
+    "iso639_3": "ndo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nap",
+    "name": "Neapolitan",
+    "iso639_3": "nap",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "npi",
+    "name": "Nepali",
+    "iso639_3": "npi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nbh",
+    "name": "Ngamo",
+    "iso639_3": "nbh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "anc",
+    "name": "Ngas",
+    "iso639_3": "anc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nnh",
+    "name": "Ngiemboon",
+    "iso639_3": "nnh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ngi",
+    "name": "Ngizim",
+    "iso639_3": "ngi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jgo",
+    "name": "Ngomba",
+    "iso639_3": "jgo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nla",
+    "name": "Ngombale",
+    "iso639_3": "nla",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fuv",
+    "name": "Nigerian Fulfulde",
+    "iso639_3": "fuv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pcm",
+    "name": "Nigerian Pidgin",
+    "iso639_3": "pcm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "noe",
+    "name": "Nimadi",
+    "iso639_3": "noe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fia",
+    "name": "Nobiin",
+    "iso639_3": "fia",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ayp",
+    "name": "North Mesopotamian Arabic",
+    "iso639_3": "ayp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "max",
+    "name": "North Moluccan Malay",
+    "iso639_3": "max",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bmm",
+    "name": "Northern Betsimisaraka Malagasy",
+    "iso639_3": "bmm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hno",
+    "name": "Northern Hindko",
+    "iso639_3": "hno",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kmr",
+    "name": "Northern Kurdish",
+    "iso639_3": "kmr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pmq",
+    "name": "Northern Pame",
+    "iso639_3": "pmq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pbu",
+    "name": "Northern Pashto",
+    "iso639_3": "pbu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "uzn",
+    "name": "Northern Uzbek",
+    "iso639_3": "uzn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "gya",
+    "name": "Northwest Gbaya",
+    "iso639_3": "gya",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "no",
+    "name": "Norwegian",
+    "iso639_3": "nor",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nb",
+    "name": "Norwegian Bokmål",
+    "iso639_3": "nob",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nn",
+    "name": "Norwegian Nynorsk",
+    "iso639_3": "nno",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ncf",
+    "name": "Notsi",
+    "iso639_3": "ncf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yes",
+    "name": "Nyankpa",
+    "iso639_3": "yes",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nyu",
+    "name": "Nyungwe",
+    "iso639_3": "nyu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nja",
+    "name": "Nzanyi",
+    "iso639_3": "nja",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hux",
+    "name": "Nüpode Huitoto",
+    "iso639_3": "hux",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "oc",
+    "name": "Occitan",
+    "iso639_3": "oci",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "odk",
+    "name": "Od",
+    "iso639_3": "odk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ory",
+    "name": "Odia",
+    "iso639_3": "ory",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "odu",
+    "name": "Odual",
+    "iso639_3": "odu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "acx",
+    "name": "Omani Arabic",
+    "iso639_3": "acx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nlv",
+    "name": "Orizaba Nahuatl",
+    "iso639_3": "nlv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "orc",
+    "name": "Orma",
+    "iso639_3": "orc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "oru",
+    "name": "Ormuri",
+    "iso639_3": "oru",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "om",
+    "name": "Oromo",
+    "iso639_3": "orm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "phr",
+    "name": "Pahari-Potwari",
+    "iso639_3": "phr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pwn",
+    "name": "Paiwan",
+    "iso639_3": "pwn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pa",
+    "name": "Panjabi",
+    "iso639_3": "pan",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pmy",
+    "name": "Papuan Malay",
+    "iso639_3": "pmy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kvx",
+    "name": "Parkari Koli",
+    "iso639_3": "kvx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nso",
+    "name": "Pedi",
+    "iso639_3": "nso",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pip",
+    "name": "Pero",
+    "iso639_3": "pip",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fa",
+    "name": "Persian",
+    "iso639_3": "fas",
+    "aliases": [
+      "فارسی"
+    ],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pex",
+    "name": "Petats",
+    "iso639_3": "pex",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "phl",
+    "name": "Phalura",
+    "iso639_3": "phl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pms",
+    "name": "Piemontese",
+    "iso639_3": "pms",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "piy",
+    "name": "Piya-Kwonci",
+    "iso639_3": "piy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "plt",
+    "name": "Plateau Malagasy",
+    "iso639_3": "plt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pl",
+    "name": "Polish",
+    "iso639_3": "pol",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "poc",
+    "name": "Poqomam",
+    "iso639_3": "poc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pt",
+    "name": "Portuguese",
+    "iso639_3": "por",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fuc",
+    "name": "Pulaar",
+    "iso639_3": "fuc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fuf",
+    "name": "Pular",
+    "iso639_3": "fuf",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qxp",
+    "name": "Puno Quechua",
+    "iso639_3": "qxp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ps",
+    "name": "Pushto",
+    "iso639_3": "pus",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pko",
+    "name": "Pökoot",
+    "iso639_3": "pko",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "byx",
+    "name": "Qaqet",
+    "iso639_3": "byx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "chq",
+    "name": "Quiotepec Chinantec",
+    "iso639_3": "chq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "thr",
+    "name": "Rana Tharu",
+    "iso639_3": "thr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lag",
+    "name": "Rangi",
+    "iso639_3": "lag",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kyx",
+    "name": "Rapoisi",
+    "iso639_3": "kyx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rth",
+    "name": "Ratahan",
+    "iso639_3": "rth",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zor",
+    "name": "Rayón Zoque",
+    "iso639_3": "zor",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ro",
+    "name": "Romanian",
+    "iso639_3": "ron",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rm",
+    "name": "Romansh",
+    "iso639_3": "roh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rof",
+    "name": "Rombo",
+    "iso639_3": "rof",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "roo",
+    "name": "Rotokas",
+    "iso639_3": "roo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dru",
+    "name": "Rukai",
+    "iso639_3": "dru",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ru",
+    "name": "Russian",
+    "iso639_3": "rus",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "quv",
+    "name": "Sacapulteco",
+    "iso639_3": "quv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aec",
+    "name": "Saidi Arabic",
+    "iso639_3": "aec",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "skg",
+    "name": "Sakalava Malagasy",
+    "iso639_3": "skg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "szy",
+    "name": "Sakizaya",
+    "iso639_3": "szy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sau",
+    "name": "Saleman",
+    "iso639_3": "sau",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ccg",
+    "name": "Samba Daka",
+    "iso639_3": "ccg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ndi",
+    "name": "Samba Leko",
+    "iso639_3": "ndi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pow",
+    "name": "San Felipe Otlaltepec Popoloca",
+    "iso639_3": "pow",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hue",
+    "name": "San Francisco Del Mar Huave",
+    "iso639_3": "hue",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "poe",
+    "name": "San Juan Atzingo Popoloca",
+    "iso639_3": "poe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "trq",
+    "name": "San Martín Itunyoso Triqui",
+    "iso639_3": "trq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mig",
+    "name": "San Miguel El Grande Mixtec",
+    "iso639_3": "mig",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ssi",
+    "name": "Sansi",
+    "iso639_3": "ssi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sa",
+    "name": "Sanskrit",
+    "iso639_3": "san",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qxt",
+    "name": "Santa Ana de Tusi Pasco Quechua",
+    "iso639_3": "qxt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ztn",
+    "name": "Santa Catarina Albarradas Zapotec",
+    "iso639_3": "ztn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sat",
+    "name": "Santali",
+    "iso639_3": "sat",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qus",
+    "name": "Santiago del Estero Quichua",
+    "iso639_3": "qus",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sps",
+    "name": "Saposa",
+    "iso639_3": "sps",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "skr",
+    "name": "Saraiki",
+    "iso639_3": "skr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sc",
+    "name": "Sardinian",
+    "iso639_3": "srd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "say",
+    "name": "Saya",
+    "iso639_3": "say",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "trv",
+    "name": "Sediq",
+    "iso639_3": "trv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sr",
+    "name": "Serbian",
+    "iso639_3": "srp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sei",
+    "name": "Seri",
+    "iso639_3": "sei",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "scl",
+    "name": "Shina",
+    "iso639_3": "scl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sn",
+    "name": "Shona",
+    "iso639_3": "sna",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sjr",
+    "name": "Siar-Lak",
+    "iso639_3": "sjr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nco",
+    "name": "Sibe",
+    "iso639_3": "nco",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "scn",
+    "name": "Sicilian",
+    "iso639_3": "scn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qws",
+    "name": "Sihuas Ancash Quechua",
+    "iso639_3": "qws",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sip",
+    "name": "Sikkimese",
+    "iso639_3": "sip",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "snc",
+    "name": "Sinaugoro",
+    "iso639_3": "snc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sd",
+    "name": "Sindhi",
+    "iso639_3": "snd",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sbn",
+    "name": "Sindhi Bhil",
+    "iso639_3": "sbn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "si",
+    "name": "Sinhala",
+    "iso639_3": "sin",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xti",
+    "name": "Sinicahua Mixtec",
+    "iso639_3": "xti",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qum",
+    "name": "Sipacapense",
+    "iso639_3": "qum",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "siw",
+    "name": "Siwai",
+    "iso639_3": "siw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sk",
+    "name": "Slovak",
+    "iso639_3": "slk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sl",
+    "name": "Slovenian",
+    "iso639_3": "slv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sol",
+    "name": "Solos",
+    "iso639_3": "sol",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "so",
+    "name": "Somali",
+    "iso639_3": "som",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "snk",
+    "name": "Soninke",
+    "iso639_3": "snk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "giz",
+    "name": "South Giziga",
+    "iso639_3": "giz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cpy",
+    "name": "South Ucayali Ashéninka",
+    "iso639_3": "cpy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mxy",
+    "name": "Southeastern Nochixtlán Mixtec",
+    "iso639_3": "mxy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bzc",
+    "name": "Southern Betsimisaraka Malagasy",
+    "iso639_3": "bzc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pbt",
+    "name": "Southern Pashto",
+    "iso639_3": "pbt",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qup",
+    "name": "Southern Pastaza Quechua",
+    "iso639_3": "qup",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vmp",
+    "name": "Soyaltepec Mazatec",
+    "iso639_3": "vmp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "es",
+    "name": "Spanish",
+    "iso639_3": "spa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "arb",
+    "name": "Standard Arabic",
+    "iso639_3": "arb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zgh",
+    "name": "Standard Moroccan Tamazight",
+    "iso639_3": "zgh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "apd",
+    "name": "Sudanese Arabic",
+    "iso639_3": "apd",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sua",
+    "name": "Sulka",
+    "iso639_3": "sua",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sva",
+    "name": "Svan",
+    "iso639_3": "sva",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sw",
+    "name": "Swahili",
+    "iso639_3": "swa",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sv",
+    "name": "Swedish",
+    "iso639_3": "swe",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "rob",
+    "name": "Tae'",
+    "iso639_3": "rob",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "thv",
+    "name": "Tahaggart Tamahaq",
+    "iso639_3": "thv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dav",
+    "name": "Taita",
+    "iso639_3": "dav",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tg",
+    "name": "Tajik",
+    "iso639_3": "tgk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ta",
+    "name": "Tamil",
+    "iso639_3": "tam",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tdx",
+    "name": "Tandroy-Mahafaly Malagasy",
+    "iso639_3": "tdx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tan",
+    "name": "Tangale",
+    "iso639_3": "tan",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "txy",
+    "name": "Tanosy Malagasy",
+    "iso639_3": "txy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yer",
+    "name": "Tarok",
+    "iso639_3": "yer",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tt",
+    "name": "Tatar",
+    "iso639_3": "tat",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tuq",
+    "name": "Tedaga",
+    "iso639_3": "tuq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "te",
+    "name": "Telugu",
+    "iso639_3": "tel",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kdh",
+    "name": "Tem",
+    "iso639_3": "kdh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tio",
+    "name": "Teop",
+    "iso639_3": "tio",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cux",
+    "name": "Tepeuxila Cuicatec",
+    "iso639_3": "cux",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cte",
+    "name": "Tepinapa Chinantec",
+    "iso639_3": "cte",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ttr",
+    "name": "Tera",
+    "iso639_3": "ttr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "buo",
+    "name": "Terei",
+    "iso639_3": "buo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "twu",
+    "name": "Termanu",
+    "iso639_3": "twu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tkg",
+    "name": "Tesaka Malagasy",
+    "iso639_3": "tkg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nhg",
+    "name": "Tetelcingo Nahuatl",
+    "iso639_3": "nhg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cut",
+    "name": "Teutila Cuicatec",
+    "iso639_3": "cut",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "th",
+    "name": "Thai",
+    "iso639_3": "tha",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bo",
+    "name": "Tibetan",
+    "iso639_3": "bod",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mtx",
+    "name": "Tidaá Mixtec",
+    "iso639_3": "mtx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tvo",
+    "name": "Tidore",
+    "iso639_3": "tvo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tgc",
+    "name": "Tigak",
+    "iso639_3": "tgc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tig",
+    "name": "Tigre",
+    "iso639_3": "tig",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ti",
+    "name": "Tigrinya",
+    "iso639_3": "tir",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zts",
+    "name": "Tilquiapan Zapotec",
+    "iso639_3": "zts",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tpz",
+    "name": "Tinputz",
+    "iso639_3": "tpz",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tpl",
+    "name": "Tlacoapa Me'phaa",
+    "iso639_3": "tpl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ctl",
+    "name": "Tlacoatzintepec Chinantec",
+    "iso639_3": "ctl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tli",
+    "name": "Tlingit",
+    "iso639_3": "tli",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tok",
+    "name": "Toki Pona",
+    "iso639_3": "tok",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tqp",
+    "name": "Tomoip",
+    "iso639_3": "tqp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tdn",
+    "name": "Tondano",
+    "iso639_3": "tdn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "txs",
+    "name": "Tonsea",
+    "iso639_3": "txs",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ttj",
+    "name": "Tooro",
+    "iso639_3": "ttj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ttu",
+    "name": "Torau",
+    "iso639_3": "ttu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "trw",
+    "name": "Torwali",
+    "iso639_3": "trw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xmw",
+    "name": "Tsimihety Malagasy",
+    "iso639_3": "xmw",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lto",
+    "name": "Tsotso",
+    "iso639_3": "lto",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tn",
+    "name": "Tswana",
+    "iso639_3": "tsn",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tuy",
+    "name": "Tugen",
+    "iso639_3": "tuy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "bag",
+    "name": "Tuki",
+    "iso639_3": "bag",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tul",
+    "name": "Tula",
+    "iso639_3": "tul",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tcy",
+    "name": "Tulu",
+    "iso639_3": "tcy",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tvu",
+    "name": "Tunen",
+    "iso639_3": "tvu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lcm",
+    "name": "Tungag",
+    "iso639_3": "lcm",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aeb",
+    "name": "Tunisian Arabic",
+    "iso639_3": "aeb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tui",
+    "name": "Tupuri",
+    "iso639_3": "tui",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tuv",
+    "name": "Turkana",
+    "iso639_3": "tuv",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tr",
+    "name": "Turkish",
+    "iso639_3": "tur",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tk",
+    "name": "Turkmen",
+    "iso639_3": "tuk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mtu",
+    "name": "Tututepec Mixtec",
+    "iso639_3": "mtu",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "tw",
+    "name": "Twi",
+    "iso639_3": "twi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "byc",
+    "name": "Ubaghara",
+    "iso639_3": "byc",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ug",
+    "name": "Uighur",
+    "iso639_3": "uig",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "uk",
+    "name": "Ukrainian",
+    "iso639_3": "ukr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "umb",
+    "name": "Umbundu",
+    "iso639_3": "umb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "hsb",
+    "name": "Upper Sorbian",
+    "iso639_3": "hsb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ur",
+    "name": "Urdu",
+    "iso639_3": "urd",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ush",
+    "name": "Ushojo",
+    "iso639_3": "ush",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "uz",
+    "name": "Uzbek",
+    "iso639_3": "uzb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vai",
+    "name": "Vai",
+    "iso639_3": "vai",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vi",
+    "name": "Vietnamese",
+    "iso639_3": "vie",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vot",
+    "name": "Votic",
+    "iso639_3": "vot",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "vro",
+    "name": "Võro",
+    "iso639_3": "vro",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wci",
+    "name": "Waci Gbe",
+    "iso639_3": "wci",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "kxp",
+    "name": "Wadiyara Koli",
+    "iso639_3": "kxp",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wja",
+    "name": "Waja",
+    "iso639_3": "wja",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wbl",
+    "name": "Wakhi",
+    "iso639_3": "wbl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "lwg",
+    "name": "Wanga",
+    "iso639_3": "lwg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "juk",
+    "name": "Wapan",
+    "iso639_3": "juk",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wji",
+    "name": "Warji",
+    "iso639_3": "wji",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "cy",
+    "name": "Welsh",
+    "iso639_3": "cym",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "weo",
+    "name": "Wemale",
+    "iso639_3": "weo",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fy",
+    "name": "Western Frisian",
+    "iso639_3": "fry",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pua",
+    "name": "Western Highland Purepecha",
+    "iso639_3": "pua",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jmx",
+    "name": "Western Juxtlahuaca Mixtec",
+    "iso639_3": "jmx",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mlq",
+    "name": "Western Maninkakan",
+    "iso639_3": "mlq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mrj",
+    "name": "Western Mari",
+    "iso639_3": "mrj",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "fuh",
+    "name": "Western Niger Fulfulde",
+    "iso639_3": "fuh",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "pnb",
+    "name": "Western Panjabi",
+    "iso639_3": "pnb",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "wo",
+    "name": "Wolof",
+    "iso639_3": "wol",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "udl",
+    "name": "Wuzlam",
+    "iso639_3": "udl",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ztg",
+    "name": "Xanaguía Zapotec",
+    "iso639_3": "ztg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "xh",
+    "name": "Xhosa",
+    "iso639_3": "xho",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ekr",
+    "name": "Yace",
+    "iso639_3": "ekr",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "sah",
+    "name": "Yakut",
+    "iso639_3": "sah",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "jal",
+    "name": "Yalahatan",
+    "iso639_3": "jal",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qur",
+    "name": "Yanahuanca Pasco Quechua",
+    "iso639_3": "qur",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yav",
+    "name": "Yangben",
+    "iso639_3": "yav",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yaq",
+    "name": "Yaqui",
+    "iso639_3": "yaq",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "qux",
+    "name": "Yauyos Quechua",
+    "iso639_3": "qux",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ets",
+    "name": "Yekhee",
+    "iso639_3": "ets",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yi",
+    "name": "Yiddish",
+    "iso639_3": "yid",
+    "aliases": [],
+    "direction": "rtl",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "ydg",
+    "name": "Yidgha",
+    "iso639_3": "ydg",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "yo",
+    "name": "Yoruba",
+    "iso639_3": "yor",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "mab",
+    "name": "Yutanduchi Mixtec",
+    "iso639_3": "mab",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "nhi",
+    "name": "Zacatlán-Ahuacatlán-Tepetzintla Nahuatl",
+    "iso639_3": "nhi",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "dje",
+    "name": "Zarma",
+    "iso639_3": "dje",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zza",
+    "name": "Zaza",
+    "iso639_3": "zza",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "zu",
+    "name": "Zulu",
+    "iso639_3": "zul",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  },
+  {
+    "code": "aom",
+    "name": "Ömie",
+    "iso639_3": "aom",
+    "aliases": [],
+    "direction": "auto",
+    "variants": [],
+    "is_auto": false
+  }
+]
