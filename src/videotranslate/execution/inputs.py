@@ -90,7 +90,7 @@ def set_inputs(db: Session, project: Project, values: dict) -> None:
             pending_remote = (
                 run.remote_id is not None
                 and run.remote_state == "submitted"
-                and run.status in {"queued", "retry_wait"}
+                and run.status in {"queued", "retry_wait", "failed", "needs_review", "stale"}
             )
             if run.status not in {"running", "cancelling"} and not pending_remote:
                 run.status = "stale"

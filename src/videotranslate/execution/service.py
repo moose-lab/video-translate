@@ -397,32 +397,27 @@ def retry_run(
         )
     definition = get_stage(owned.stage, registry)
     initialize_inputs(db, project)
-    request = RunCreate(
-        stage=owned.stage,
-        target_language=owned.target_language,
-        segment_id=owned.segment_id,
-        options=owned.options,
-    )
-    snapshot = definition.resolve_inputs(db, project, request)
-    # A saved active remote handle may only resume against its original inputs.
-    # Changed inputs need a new run; discarding the handle could duplicate a paid call.
-    if (
-        owned.remote_id
-        and owned.remote_state != "completed"
-        and snapshot != owned.dependency_snapshot
-    ):
-        raise APIError(
-            409,
-            "REMOTE_INPUT_CHANGED",
-            "Resolve the existing remote job before retrying changed inputs",
+    pending_remote = bool(owned.remote_id and owned.remote_state != "completed")
+    if pending_remote:
+        # A saved handle is bound to the original input snapshot. Resume polling
+        # that job, and retain staleness so its old result cannot be published.
+        stale = owned.is_stale or not is_current(db, project, owned.dependency_snapshot)
+    else:
+        request = RunCreate(
+            stage=owned.stage,
+            target_language=owned.target_language,
+            segment_id=owned.segment_id,
+            options=owned.options,
         )
-    if uncertain or owned.remote_state == "completed":
-        owned.remote_state, owned.remote_id, owned.request_key = "not_submitted", None, None
-        owned.provider = owned.model = None
-    owned.dependency_snapshot = snapshot
-    owned.dependency_fingerprint = fingerprint(snapshot)
-    owned.input_project_revision = project.revision
-    owned.status, owned.is_stale, owned.auto_failures = "queued", False, 0
+        snapshot = definition.resolve_inputs(db, project, request)
+        if uncertain or owned.remote_state == "completed":
+            owned.remote_state, owned.remote_id, owned.request_key = "not_submitted", None, None
+            owned.provider = owned.model = None
+        owned.dependency_snapshot = snapshot
+        owned.dependency_fingerprint = fingerprint(snapshot)
+        owned.input_project_revision = project.revision
+        stale = False
+    owned.status, owned.is_stale, owned.auto_failures = "queued", stale, 0
     owned.safe_error = owned.result = owned.finished_at = owned.cancel_requested_at = None
     owned.due_at = owned.updated_at = utcnow()
     append_event(db, project, "run.retried", run=owned, facts={"revision": project.revision})
@@ -433,7 +428,11 @@ def cancel_run(db: Session, workspace_id: str, run_id: str):
     owned = owned_run(db, workspace_id, run_id)
     project = lock_project(db, db.get(Project, owned.project_id))
     db.refresh(owned)
-    if owned.status in {"succeeded", "failed", "stale", "cancelled", "needs_review"}:
+    pending_remote = bool(owned.remote_id and owned.remote_state != "completed")
+    if (
+        owned.status in {"succeeded", "failed", "stale", "cancelled", "needs_review"}
+        and not pending_remote
+    ):
         return owned
     owned.cancel_requested_at = utcnow()
     if (
@@ -445,6 +444,7 @@ def cancel_run(db: Session, workspace_id: str, run_id: str):
         # retry_wait remote polling has no current lease; make it claimable for recovery.
         if owned.lease_expires_at is None:
             owned.lease_expires_at = utcnow()
+            owned.due_at = utcnow()
     else:
         owned.status, owned.finished_at = "cancelled", utcnow()
     append_event(
