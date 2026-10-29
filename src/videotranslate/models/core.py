@@ -96,6 +96,7 @@ class Project(Base):
     name: Mapped[str] = mapped_column(String(200))
     status: Mapped[str] = mapped_column(String(40), default="draft")
     revision: Mapped[int] = mapped_column(Integer, default=1)
+    event_sequence: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     source_language: Mapped[str] = mapped_column(String(40), default="auto")
     target_languages: Mapped[list[str]] = mapped_column(JSON, default=lambda: ["en"])
     # The asset FK is added with use_alter to handle the project/asset dependency cycle.

@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, pool
 from alembic import context
 from videotranslate.config import Settings
 from videotranslate.db import Base
-from videotranslate.models import core  # noqa: F401
+from videotranslate.models import core, execution  # noqa: F401
 
 config = context.config
 url = config.get_main_option("sqlalchemy.url") or Settings().database_url.get_secret_value()
