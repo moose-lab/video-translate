@@ -1,0 +1,313 @@
+:root {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #182e27;
+  background: #f6f8f5;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  background: #194f3d;
+  color: white;
+  border: 1px solid #194f3d;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #90bca9;
+  outline-offset: 2px;
+}
+input {
+  width: 100%;
+  border: 1px solid #cbd8d0;
+  border-radius: 6px;
+  background: white;
+  padding: 0.7rem;
+  margin-top: 0.5rem;
+}
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+}
+.eyebrow {
+  letter-spacing: 0.15em;
+  color: #66877a;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.muted,
+.service p {
+  color: #66776d;
+  line-height: 1.6;
+}
+.link {
+  background: none;
+  border: 0;
+  color: #285d49;
+  padding: 0.5rem;
+}
+.secondary {
+  background: white;
+  color: #1c503e;
+  border-color: #cbd8d0;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1 {
+  font-size: 2.1rem;
+  letter-spacing: -0.035em;
+}
+h2 {
+  font-size: 1.2rem;
+}
+h3 {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+.error {
+  color: #a02e28;
+}
+.notice {
+  color: #185f43;
+}
+.auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.auth-intro {
+  padding: 4rem;
+  background: #123d30;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-intro h1 {
+  font-size: 3rem;
+  margin: 3rem 0 1rem;
+}
+.auth-intro p {
+  color: #c0d6ca;
+}
+.auth-box {
+  width: min(390px, 85%);
+  margin: auto;
+}
+.auth-box h2 {
+  font-size: 1.8rem;
+  margin: 0.5rem 0;
+}
+.auth-box form button {
+  width: 100%;
+  margin-top: 1rem;
+}
+.auth-box .link {
+  margin-top: 1rem;
+}
+header {
+  height: 72px;
+  background: white;
+  border-bottom: 1px solid #e4ebe5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3rem;
+}
+.workspace {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 72px);
+}
+aside {
+  padding: 2.5rem 1.5rem;
+  border-right: 1px solid #e4ebe5;
+}
+aside strong {
+  display: block;
+  margin: 1rem 0;
+}
+.nav-active {
+  background: #e7f0e9;
+  color: #174d38;
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.content {
+  max-width: 1120px;
+  width: 100%;
+  padding: 3rem;
+  margin: 0 auto;
+}
+.page-head,
+.section-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.page-head h1 {
+  margin: 0.7rem 0;
+}
+.pill,
+.status {
+  background: #e5f0e9;
+  color: #285d49;
+  border-radius: 30px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+}
+.credential {
+  margin: 2rem 0 3rem;
+  background: white;
+  border: 1px solid #dfe9e1;
+  border-radius: 10px;
+  padding: 1.6rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+.credential h2 {
+  margin: 0.7rem 0;
+}
+.credential form label {
+  margin-top: 0;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.section-head p {
+  color: #718378;
+  font-size: 0.8rem;
+}
+.services {
+  background: white;
+  border: 1px solid #dfe9e1;
+  border-radius: 10px;
+}
+.service {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #edf1ed;
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.service:last-child {
+  border-bottom: 0;
+}
+.number {
+  color: #8ca397;
+  font-size: 0.8rem;
+}
+.service p {
+  font-size: 0.85rem;
+  margin: 0 0 0.3rem;
+}
+.service small {
+  color: #718378;
+}
+.service details {
+  grid-column: 2 / 4;
+  color: #5c7065;
+  font-size: 0.85rem;
+}
+.service details p {
+  overflow-wrap: anywhere;
+}
+.footnote {
+  color: #718378;
+  font-size: 0.8rem;
+  margin-top: 1.5rem;
+}
+.loading {
+  padding: 3rem;
+}
+@media (max-width: 700px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+  .auth-intro {
+    padding: 2rem;
+  }
+  .auth-intro h1 {
+    font-size: 2rem;
+    margin: 2rem 0 1rem;
+  }
+  .auth-box {
+    padding: 2rem 0;
+  }
+  header {
+    padding: 0 1rem;
+  }
+  .workspace {
+    display: block;
+  }
+  aside {
+    display: none;
+  }
+  .content {
+    padding: 2rem 1rem;
+  }
+  .credential {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .service {
+    grid-template-columns: 2rem 1fr;
+  }
+  .service > button {
+    grid-column: 2;
+  }
+  .service details {
+    grid-column: 2;
+  }
+  .page-head {
+    display: block;
+  }
+}
+.language-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-height: 18rem;
+  overflow: auto;
+}
+.language-results button {
+  font-weight: 400;
+}
+.language-picker {
+  padding: 1rem;
+  border: 1px solid #dfe9e1;
+  background: white;
+  border-radius: 8px;
+}

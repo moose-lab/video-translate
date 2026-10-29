@@ -144,3 +144,9 @@ needs a provider-supported, ownership-checked orphan reconciliation process.
 Provider credentials are encrypted using a workspace- and purpose-derived Fernet key based on `VT_SERVER_SECRET`; the API returns only whether a credential is configured and its revision. Preserve the server secret securely across restarts. To rotate it, deploy a controlled maintenance operation that reads and decrypts every credential using the old secret, encrypts each with the new secret, verifies the results, and updates them transactionally before switching all application instances. No automatic rotation utility is implemented yet; changing the secret alone makes existing credentials unreadable.
 
 Provider connection settings are revisioned separately from credentials. The language catalogue records synthesis model metadata, not verified end-to-end language support.
+
+### Setup interface
+
+The development interface runs on loopback at `http://127.0.0.1:5173` and proxies `/api` to the local API at `127.0.0.1:8000`. Start the API using the documented environment, then run `pnpm install --frozen-lockfile` and `pnpm dev` in `web/`. Use Node 22, 24 or 26 as specified by `web/package.json`; the bundled Node 24 runtime was used for verification. `pnpm test`, `pnpm typecheck` and `pnpm build` run the frontend checks.
+
+For production, serve `web/dist` behind the same HTTPS origin as the API. Configure the web server to route `/api` directly to the API before applying an SPA fallback, and reject traversal paths. A production web-server configuration is not included in this repository.

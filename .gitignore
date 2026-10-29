@@ -17,3 +17,4 @@ artifacts/
 .DS_Store
 var/
 *.db
+web/*.tsbuildinfo
