@@ -15,3 +15,5 @@ data/
 .worktrees/
 artifacts/
 .DS_Store
+var/
+*.db
