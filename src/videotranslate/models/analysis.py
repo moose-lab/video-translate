@@ -53,6 +53,7 @@ class PreparedObject(Owned, Base):
         owned_fk("operation_id", "private_operations", "fk_prepared_operation"),
         owned_fk("asset_id", "assets", "fk_prepared_asset"),
         UniqueConstraint("storage_key", name="uq_prepared_storage"),
+        Index("ix_prepared_gc", "workspace_id", "state", "created_at"),
         CheckConstraint(
             "state IN ('writing','orphan','published','deleting','deleted')",
             name="ck_prepared_state",
@@ -63,6 +64,10 @@ class PreparedObject(Owned, Base):
     state: Mapped[str] = mapped_column(String(20), default="writing")
     asset_id: Mapped[str | None] = mapped_column(String(36))
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    reservation_token: Mapped[str | None] = mapped_column(String(64))
+    write_settled: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    delete_pending: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    gc_checked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
 
 
 class AnalysisMedia(Owned, Base):

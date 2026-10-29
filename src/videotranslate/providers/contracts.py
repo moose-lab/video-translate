@@ -47,3 +47,10 @@ class ProviderTerminalError(ValueError):
 
     def __init__(self):
         super().__init__("Provider job ended without a valid result")
+
+
+def valid_speaker_id(value):
+    """Official NVIDIA uint32 IDs, plus readable legacy normalized string IDs."""
+    return (type(value) is int and 0 <= value <= 4294967295) or (
+        isinstance(value, str) and 0 < len(value) <= 100
+    )

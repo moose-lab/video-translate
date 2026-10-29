@@ -48,22 +48,40 @@ def connection(db, project, slot):
 
 def queue_child(db, project, intent, stage):
     shared = stage in {"extract", "separate"}
-    run = None
+    run, reuse = None, None
     if stage == "transcribe":
         from ..execution.inputs import is_current
         from ..execution.prepared import has_prepared
         from ..models.execution import StageRun
+        from .analysis import cached_analysis, transcribe_inputs
+
+        snapshot = transcribe_inputs(db, project, RunCreate(stage=stage))
 
         candidates = db.scalars(
             scope(StageRun, project).where(
                 StageRun.stage == stage,
                 StageRun.is_stale.is_(False),
                 StageRun.status.in_(
-                    ["queued", "running", "retry_wait", "failed", "needs_review", "cancelling"]
+                    [
+                        "queued",
+                        "running",
+                        "retry_wait",
+                        "failed",
+                        "needs_review",
+                        "cancelling",
+                        "succeeded",
+                    ]
                 ),
             )
         )
         for candidate in candidates:
+            if candidate.status == "succeeded":
+                try:
+                    cached_analysis(db, project, candidate.id, snapshot)
+                    reuse = candidate.id
+                    break
+                except APIError:
+                    continue
             prior_intents = db.scalars(
                 scope(WorkflowIntent, project)
                 .join(WorkflowChild, WorkflowChild.workflow_id == WorkflowIntent.id)
@@ -87,7 +105,7 @@ def queue_child(db, project, intent, stage):
         db,
         project.workspace_id,
         project.id,
-        RunCreate(stage=stage),
+        RunCreate(stage=stage, options={"reuse_run_id": reuse} if reuse else {}),
         idempotency_key=None if shared else f"workflow:{intent.id}:{stage}",
         reuse_active=shared,
     )

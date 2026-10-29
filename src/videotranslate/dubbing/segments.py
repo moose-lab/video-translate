@@ -87,6 +87,7 @@ def segment_json(db, project, segment, *, window_start=0, position=None):
         "archived": segment.archived,
         "original_text": segment.original_text,
         "original_speaker_label": segment.original_speaker_label,
+        "source_analysis_flags": segment.source_analysis_flags,
         "parent_segment_ids": [row.parent_segment_id for row in parents],
         "absolute_start_ms": window_start + revision.start_ms,
         "absolute_end_ms": window_start + revision.end_ms,
@@ -161,6 +162,7 @@ def insert_segment(
     *,
     input_facets=None,
     original_index=None,
+    analysis_flags=(),
 ):
     if original_index is None:
         last = db.scalar(
@@ -174,6 +176,7 @@ def insert_segment(
         display_index=original_index,
         original_text=values["text"],
         original_speaker_label=label,
+        source_analysis_flags=list(analysis_flags),
         revision=0,
     )
     db.add(segment)

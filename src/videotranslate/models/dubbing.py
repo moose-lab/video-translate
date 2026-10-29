@@ -161,6 +161,7 @@ class Segment(Owned, Base):
     display_index: Mapped[int] = mapped_column(Integer)
     original_text: Mapped[str] = mapped_column(Text)
     original_speaker_label: Mapped[str | None] = mapped_column(String(100))
+    source_analysis_flags: Mapped[list] = mapped_column(JSON, default=list, server_default="[]")
     current_revision_id: Mapped[str | None] = mapped_column(String(36))
     revision: Mapped[int] = mapped_column(Integer, default=0)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)

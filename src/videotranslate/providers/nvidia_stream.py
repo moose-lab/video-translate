@@ -7,7 +7,7 @@ import ssl
 from websockets.sync.client import connect as ws_connect
 
 from ..languages.catalog import resolve
-from .contracts import ProviderError, ProviderTerminalError
+from .contracts import ProviderError, ProviderTerminalError, valid_speaker_id
 from .network import open_proxy_tunnel, resolve_doh, resolve_public, validate_public_addresses
 
 
@@ -41,8 +41,7 @@ def normalize_final(value):
             or start < 0
             or end < start
             or end > received / 1000 + 0.05
-            or not isinstance(speaker, str)
-            or not speaker
+            or not valid_speaker_id(speaker)
             or not isinstance(text, str)
         ):
             raise ValueError("Invalid diarization segment")

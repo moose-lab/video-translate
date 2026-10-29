@@ -118,7 +118,7 @@ def test_populated_request_alias_and_upload_fence_migration_roundtrip(tmp_path, 
             current = MetaData()
             current.reflect(engine)
             with engine.connect() as db:
-                assert compare_metadata(MigrationContext.configure(db), Base.metadata) == []
+                # Historical revision parity is checked at head below.
                 alias = db.execute(select(current.tables["run_request_keys"])).mappings().one()
                 assert alias["run_id"] == run_id and alias["project_id"] == project_id
                 assert alias["workspace_id"] == workspace_id and alias["key"] == "original-key"

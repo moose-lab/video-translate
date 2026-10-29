@@ -165,7 +165,7 @@ def store_audio(context, operation_id, audio, kind):
         operation = current_operation(db, run)
         if not operation or operation.id != operation_id:
             raise ValueError("Operation mismatch")
-        object_id = new_id()
+        object_id, token = new_id(), secrets.token_hex(32)
         key = f"{project.workspace_id}/{project.id}/prepared/{object_id}"
         record = PreparedObject(
             id=object_id,
@@ -174,15 +174,21 @@ def store_audio(context, operation_id, audio, kind):
             operation_id=operation_id,
             storage_key=key,
             metadata_json=audio.metadata() | {"kind": kind},
+            reservation_token=token,
         )
         db.add(record)
     try:
         with audio.path.open("rb") as source:
             context.storage.put(key, source, "audio/wav")
     finally:
+        from .prepared_objects import settle_prepared
+
         with context.session_factory.begin() as db:
-            context._locked(db)
-            db.get(PreparedObject, object_id).state = "orphan"
+            active = settle_prepared(db, context, object_id, token)
+        if not active:
+            from .contracts import LeaseLost
+
+            raise LeaseLost()
     return object_id
 
 
@@ -202,6 +208,8 @@ def publish_objects(db, run, object_ids):
             or record.project_id != run.project_id
             or record.workspace_id != run.workspace_id
             or record.state != "orphan"
+            or not record.write_settled
+            or record.delete_pending
         ):
             raise ValueError("Invalid prepared media lineage")
         data = record.metadata_json
@@ -230,68 +238,15 @@ def cleanup_orphans(session_factory, storage, *, workspace_id, before, limit=100
     assets are protected by both lineage state and the actual storage-key lookup.
     A failed delete remains `deleting` and can be retried safely.
     """
-    from ..models.analysis import PreparedObject
-    from ..models.core import Asset
-    from .service import _lock_run_project
+    from .prepared_objects import cleanup_prepared
+    from .uploads import cleanup_raw_uploads
 
     if not workspace_id or not 1 <= limit <= 1000:
         raise ValueError("Explicit cleanup scope required")
-    with session_factory() as db:
-        candidates = db.scalars(
-            select(PreparedObject.id)
-            .where(
-                PreparedObject.workspace_id == workspace_id,
-                PreparedObject.state.in_(["writing", "orphan", "deleting"]),
-                PreparedObject.created_at < before,
-            )
-            .order_by(PreparedObject.created_at, PreparedObject.id)
-            .limit(limit)
-        ).all()
-    count = 0
-    for object_id in candidates:
-        with session_factory.begin() as db:
-            record = db.get(PreparedObject, object_id)
-            if not record or record.workspace_id != workspace_id:
-                continue
-            operation = db.get(PrivateOperation, record.operation_id)
-            _, run = _lock_run_project(db, operation.run_id)
-            db.refresh(record)
-            from ..models.core import utcnow
-
-            live_lease = bool(
-                run.lease_token and run.lease_expires_at and run.lease_expires_at > utcnow()
-            )
-            abandoned = bool(
-                run.status in {"running", "cancelling"}
-                and run.lease_expires_at
-                and run.lease_expires_at <= utcnow()
-            )
-            if (
-                record.state not in {"writing", "orphan", "deleting"}
-                or record.asset_id
-                or live_lease
-                or (
-                    run.status in {"queued", "running", "retry_wait", "cancelling"}
-                    and not abandoned
-                )
-                or (run.request_key == operation.generation and operation.phase == "prepared")
-                or db.scalar(select(Asset.id).where(Asset.storage_key == record.storage_key))
-            ):
-                continue
-            record.state = "deleting"
-            key = record.storage_key
-        try:
-            storage.delete(key)
-        except Exception:
-            continue
-        with session_factory.begin() as db:
-            record = db.get(PreparedObject, object_id)
-            if record.workspace_id == workspace_id and record.state == "deleting":
-                record.state = "deleted"
-                count += 1
+    count = cleanup_prepared(
+        session_factory, storage, workspace_id=workspace_id, before=before, limit=limit
+    )
     if count < limit:
-        from .uploads import cleanup_raw_uploads
-
         count += cleanup_raw_uploads(
             session_factory, storage, workspace_id=workspace_id, before=before, limit=limit - count
         )

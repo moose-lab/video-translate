@@ -16,6 +16,7 @@ from ..dubbing.analysis import (
     separate_inputs,
     transcribe_handler,
     transcribe_inputs,
+    transcribe_options,
 )
 from ..dubbing.references import publication_current as reference_current
 from ..dubbing.references import (
@@ -86,7 +87,7 @@ STAGES = {
     ),
     "transcribe": StageDefinition(
         "transcribe",
-        no_options,
+        transcribe_options,
         transcribe_inputs,
         transcribe_handler,
         publish_transcript,

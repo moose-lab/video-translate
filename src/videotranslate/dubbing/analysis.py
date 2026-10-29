@@ -20,6 +20,36 @@ def no_options(options):
     return {}
 
 
+def transcribe_options(options):
+    if not options:
+        return {}
+    from .analysis_contracts import AnalysisReuse
+
+    try:
+        return AnalysisReuse.model_validate(options).model_dump()
+    except ValueError:
+        raise APIError(422, "INVALID_OPTIONS", "Invalid analysis cache reference") from None
+
+
+def cached_analysis(db, project, source_run_id, snapshot):
+    from ..execution.inputs import is_current
+    from ..models.execution import StageRun
+
+    source = owned(db, StageRun, project, source_run_id)
+    operation = current_operation(db, source)
+    if (
+        source.stage != "transcribe"
+        or source.status != "succeeded"
+        or source.is_stale
+        or source.dependency_snapshot != snapshot
+        or not is_current(db, project, snapshot)
+        or operation is None
+        or operation.phase != "prepared"
+    ):
+        raise APIError(409, "INPUT_REQUIRED", "Source analysis cache is unavailable")
+    return source, operation
+
+
 def extract_inputs(db, project, request):
     if request.target_language or request.segment_id:
         raise APIError(422, "INVALID_SCOPE", "Analysis operates on the selected source")
@@ -172,11 +202,14 @@ def transcribe_inputs(db, project, request):
     if not config:
         raise APIError(409, "PROVIDER_REQUIRED", "Transcription connection required")
     validate_source_asr(config.settings, project.source_language, current_selection(db, project))
-    return capture_inputs(
+    snapshot = capture_inputs(
         db,
         project,
         ["source.selection", "output.separate", "source.language", "provider.transcription"],
     )
+    if request.options:
+        cached_analysis(db, project, request.options["reuse_run_id"], snapshot)
+    return snapshot
 
 
 def validate_source_asr(config, language, selection):
@@ -338,6 +371,23 @@ def separate_handler(context):
         http.close()
 
 
+def working_timings(rows, duration_ms, provider):
+    """Keep provider originals; bound only NVIDIA's documented 50 ms frame tail."""
+    result = []
+    for row in rows:
+        start, end = round(row["start"] * 1000), round(row["end"] * 1000)
+        flags = []
+        if row["end"] > duration_ms / 1000:
+            if provider != "nvidia_stream" or row["end"] > duration_ms / 1000 + 0.05:
+                raise ValueError("Source timing exceeds selected window")
+            end = duration_ms
+            flags.append("provider_end_clipped")
+        if not 0 <= start < end <= duration_ms:
+            raise ValueError("Invalid working source timing")
+        result.append({"start_ms": start, "end_ms": end, "flags": flags})
+    return result
+
+
 def transcribe_handler(context):
     import wave
 
@@ -351,6 +401,16 @@ def transcribe_handler(context):
     from ..providers.settings import resolve_revision
     from ..providers.vault import decrypt_credential
     from .workflow import connection, publication_current
+
+    with context.session_factory.begin() as db:
+        project, run = context._locked(db)
+        if run.options.get("reuse_run_id"):
+            source, saved = cached_analysis(
+                db, project, run.options["reuse_run_id"], run.dependency_snapshot
+            )
+            from ..execution.contracts import StageResult
+
+            return StageResult(saved.public_facts | {"reused_from_run_id": source.id}, saved.id)
 
     operations = Operations(context)
     if cached := operations.cached():
@@ -464,11 +524,9 @@ def transcribe_handler(context):
                     "detected_language": detected_language,
                 }
             )
-            if any(
-                not 0 <= round(row.start * 1000) < round(row.end * 1000) <= duration
-                for row in payload.segments
-            ):
-                raise ValueError("Source timing exceeds selected window")
+            working_timings(
+                [row.model_dump() for row in payload.segments], duration, operation.provider
+            )
         except ValueError:
             operations.failed()
             raise StageFailure(FailureCode.INVALID_MEDIA) from None
@@ -496,6 +554,24 @@ def publish_transcript(db, run, result):
     from .source import new_transcript, source_state
     from .speakers import record_revision
 
+    if run.options.get("reuse_run_id"):
+        project = db.get(Project, run.project_id)
+        _, saved = cached_analysis(
+            db, project, run.options["reuse_run_id"], run.dependency_snapshot
+        )
+        if result.prepared_id != saved.id:
+            raise ValueError("Invalid source cache reference")
+        from ..execution.events import append_event
+
+        append_event(
+            db,
+            project,
+            "analysis.reused",
+            run=run,
+            facts={"recovery": "reuse_prepared", "provider": saved.provider, "model": saved.model},
+        )
+        return  # Review the current manual/source state; never republish old rows.
+
     operation = current_operation(db, run)
     if not operation or operation.id != result.prepared_id or operation.phase != "prepared":
         raise ValueError("Invalid prepared transcript")
@@ -506,16 +582,18 @@ def publish_transcript(db, run, result):
     rows = payload["segments"]
     if not rows or len(rows) > 1000:
         raise StageFailure(FailureCode.INVALID_MEDIA)
-    # Validate the entire provider batch before changing current domain state.
+    from ..providers.contracts import valid_speaker_id
+
+    try:
+        timings = working_timings(rows, selection.end_ms - selection.start_ms, operation.provider)
+    except ValueError:
+        raise StageFailure(FailureCode.INVALID_MEDIA) from None
     for row in rows:
-        start, end = round(row["start"] * 1000), round(row["end"] * 1000)
         if (
             not row["text"].strip()
             or len(row["text"]) > 10000
-            or not 0 <= start < end <= selection.end_ms - selection.start_ms
+            or (row.get("speaker") is not None and not valid_speaker_id(row["speaker"]))
         ):
-            raise StageFailure(FailureCode.INVALID_MEDIA)
-        if row.get("speaker") is not None and len(row["speaker"]) > 100:
             raise StageFailure(FailureCode.INVALID_MEDIA)
     facets = {}
     transcript = new_transcript(
@@ -524,27 +602,29 @@ def publish_transcript(db, run, result):
     transcript.run_id, transcript.provider = run.id, operation.provider
     transcript.detected_language = payload.get("detected_language")
     labels = {}
-    for row in rows:
-        label = row.get("speaker")
-        if label is not None and label not in labels:
+    for row, timing in zip(rows, timings, strict=True):
+        original_id = row.get("speaker")
+        label = str(original_id) if original_id is not None else None
+        if original_id is not None and original_id not in labels:
             speaker = Speaker(**owner(project), selection_id=selection.id, name=label)
             db.add(speaker)
             db.flush()
             record_revision(db, project, speaker, "worker")
-            labels[label] = speaker.id
+            labels[original_id] = speaker.id
         insert_segment(
             db,
             project,
             transcript,
             {
                 "text": row["text"],
-                "start_ms": round(row["start"] * 1000),
-                "end_ms": round(row["end"] * 1000),
-                "speaker_id": labels.get(label),
+                "start_ms": timing["start_ms"],
+                "end_ms": timing["end_ms"],
+                "speaker_id": labels.get(original_id),
             },
             "worker",
             provenance="provider",
             label=label,
+            analysis_flags=timing["flags"],
             input_facets=facets,
         )
     set_inputs(db, project, facets)
