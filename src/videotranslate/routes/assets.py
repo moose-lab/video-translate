@@ -4,12 +4,13 @@ import hashlib
 import re
 from contextlib import closing
 from pathlib import PurePosixPath
+from typing import Annotated
 from urllib.parse import quote
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
@@ -163,15 +164,28 @@ async def upload_source(
 
 @router.get("/projects/{project_id}/assets")
 def list_assets(
-    project_id: str, identity: Identity = Depends(require_identity), db: Session = Depends(get_db)
+    project_id: str,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
 ):
     owned_project(db, identity.workspace.id, project_id)
-    assets = db.scalars(
+    query = (
         select(Asset)
-        .where(Asset.project_id == project_id, Asset.workspace_id == identity.workspace.id)
-        .order_by(Asset.created_at)
+        .join(Project, Project.id == Asset.project_id)
+        .where(
+            Asset.project_id == project_id,
+            Asset.workspace_id == identity.workspace.id,
+            Project.workspace_id == identity.workspace.id,
+            Project.deleted_at.is_(None),
+        )
+    )
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+    assets = db.scalars(
+        query.order_by(Asset.created_at.desc(), Asset.id.asc()).limit(limit).offset(offset)
     ).all()
-    return {"items": [asset_json(asset) for asset in assets], "total": len(assets)}
+    return {"items": [asset_json(asset) for asset in assets], "total": total}
 
 
 def byte_range(value: str | None, size: int) -> tuple[int, int]:

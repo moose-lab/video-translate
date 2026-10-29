@@ -2,9 +2,9 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from ..db import get_db
@@ -124,11 +124,18 @@ def update_project(
 
 
 @router.get("")
-def list_projects(identity: Identity = Depends(require_identity), db: Session = Depends(get_db)):
+def list_projects(
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
+):
+    query = project_query(identity.workspace.id)
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
     projects = db.scalars(
-        project_query(identity.workspace.id).order_by(Project.created_at.desc())
+        query.order_by(Project.created_at.desc(), Project.id.asc()).limit(limit).offset(offset)
     ).all()
-    return {"items": [project_json(project) for project in projects], "total": len(projects)}
+    return {"items": [project_json(project) for project in projects], "total": total}
 
 
 @router.post("", status_code=201)

@@ -65,6 +65,12 @@ settings accept `auto_advance`; defaults remain `{}`. Unknown settings are rejec
 be smuggled into frontend-visible project JSON. Language identifiers preserve complete codes and
 regional forms; this foundation validates shape without claiming a provider supports that language.
 
+Both collection endpoints, `GET /api/projects` and `GET /api/projects/{id}/assets`, accept
+`limit` (default 50, minimum 1, maximum 200) and `offset` (default 0, minimum 0). Their `{items,total}`
+envelope keeps `total` equal to the entire owned, active filtered collection, independent of the
+requested page. Items use stable `created_at DESC, id ASC` ordering. Invalid bounds return 422;
+foreign or deleted project asset collections remain 404.
+
 Upload one multipart `file` to `POST /api/projects/{id}/source`; the response is `{project, asset}`.
 Allowed extension/MIME pairs are MP4/M4V, MOV, WebM, MKV and AVI. Both declarations are checked;
 media decoding and analysis belong to the next worker increment. Upload sets status `uploaded`,

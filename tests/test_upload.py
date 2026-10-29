@@ -297,3 +297,42 @@ def test_download_stream_failure_does_not_leak_storage_details(
         with pytest.raises(RuntimeError, match="Media stream interrupted") as captured:
             strict.get(f"/api/assets/{asset_id}/content")
     assert "private-storage" not in str(captured.value)
+
+
+def test_asset_collection_has_default_bound_and_unpaged_total(paginated_collections):
+    fixture = paginated_collections
+    response = fixture["owner"].get(f"/api/projects/{fixture['project_id']}/assets")
+    assert response.status_code == 200
+    assert response.json()["total"] == 150
+    assert [item["id"] for item in response.json()["items"]] == fixture["assets"][:50]
+
+
+@pytest.mark.parametrize("limit,offset", [(10, 0), (10, 10), (10, 145), (200, 0), (10, 150)])
+def test_asset_pages_are_stable_and_keep_project_workspace_scope(
+    paginated_collections, limit, offset
+):
+    fixture = paginated_collections
+    path = f"/api/projects/{fixture['project_id']}/assets?limit={limit}&offset={offset}"
+    response = fixture["owner"].get(path)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 150
+    assert [item["id"] for item in body["items"]] == fixture["assets"][offset : offset + limit]
+    assert fixture["owner"].get(path).json() == body
+    assert fixture["other"].get(path).status_code == 404
+    for project_id in (fixture["deleted_project_id"], fixture["foreign_project_id"]):
+        assert (
+            fixture["owner"]
+            .get(f"/api/projects/{project_id}/assets?limit={limit}&offset={offset}")
+            .status_code
+            == 404
+        )
+
+
+@pytest.mark.parametrize(
+    "query", ["limit=0", "limit=-1", "limit=201", "offset=-1", "limit=bad", "offset=1.5"]
+)
+def test_asset_pagination_rejects_invalid_bounds(client_factory, register, query):
+    client = client_factory()
+    project, _ = make_project(client, register)
+    assert client.get(f"/api/projects/{project['id']}/assets?{query}").status_code == 422

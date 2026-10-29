@@ -136,3 +136,37 @@ def test_project_endpoints_require_login(client_factory):
     assert client.get("/api/projects").status_code == 401
     assert client.get("/api/projects/unknown").status_code == 401
     assert client.post("/api/projects", json={"name": "Film"}).status_code == 401
+
+
+def test_project_collection_has_default_bound_and_unpaged_total(paginated_collections):
+    fixture = paginated_collections
+    response = fixture["owner"].get("/api/projects")
+    assert response.status_code == 200
+    assert response.json()["total"] == 150
+    assert [item["id"] for item in response.json()["items"]] == fixture["projects"][:50]
+
+
+@pytest.mark.parametrize("limit,offset", [(10, 0), (10, 10), (10, 145), (200, 0), (10, 150)])
+def test_project_pages_are_stable_and_exclude_foreign_deleted_rows(
+    paginated_collections, limit, offset
+):
+    fixture = paginated_collections
+    path = f"/api/projects?limit={limit}&offset={offset}"
+    response = fixture["owner"].get(path)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 150
+    assert [item["id"] for item in body["items"]] == fixture["projects"][offset : offset + limit]
+    assert fixture["owner"].get(path).json() == body
+    foreign_body = fixture["other"].get(path).json()
+    assert foreign_body["total"] == 80
+    assert not set(item["id"] for item in foreign_body["items"]).intersection(fixture["projects"])
+
+
+@pytest.mark.parametrize(
+    "query", ["limit=0", "limit=-1", "limit=201", "offset=-1", "limit=bad", "offset=1.5"]
+)
+def test_project_pagination_rejects_invalid_bounds(client_factory, register, query):
+    client = client_factory()
+    register(client)
+    assert client.get(f"/api/projects?{query}").status_code == 422
