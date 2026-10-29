@@ -169,3 +169,61 @@ implementer handoff. Frontend files were unchanged in 4A; this API/domain
 increment does not claim browser product acceptance. Full English-to-Chinese/
 Japanese inference and product acceptance remain future work in 4B/4C; this
 domain increment is not the completed SaaS.
+
+## Independent SPEC fixes after 8b623b5
+
+The reviewer reproduced three gaps. Each was first added as a failing regression:
+
+1. A work label from an earlier source window could be bound to a new window.
+   `Speaker.selection_id` is now required and has a composite owned-selection FK
+   in the unreleased 0004 migration. It is immutable through the API. Work labels
+   may be created after a valid source selection and before the first manual
+   transcript. Creation, binding, patching, merging, timeline cast summaries and
+   normal role listing use only the live current source selection. Source asset,
+   audio track or window changes cannot reactivate old cast implicitly. New
+   selections require explicit creation of fresh work labels. Historical IDs and
+   label revision history stay readable; `/speakers?include_historical=true`
+   explicitly lists earlier selections' labels, and `include_archived=true` is a
+   separate choice. Historical role binding and editing return 404. Both manual
+   segment creation and caption import mapping are covered by the same check.
+2. JSON-escaped lone surrogate characters in glossary keys/values could be saved,
+   then break a context-history response. The inherited string validator now
+   validates nested dictionary keys/values and list/tuple members using an
+   iterative stack. It rejects invalid Unicode/control characters with a safe 422,
+   with depth 20, 20,000 visited-node and 2,000-item container bounds. It does not
+   recurse on attacker-supplied nesting. Valid CJK, RTL, combining marks and emoji
+   round-trip unchanged.
+3. A malformed glossary value could place its private dictionary term in Pydantic's
+   error location. A field-level pre-type check now rejects non-text glossary
+   keys/values before dictionary-entry parsing. The public location is the static
+   `body.glossary`; submitted terms never appear in that error response and no
+   context/track history is written.
+
+RED evidence: six initial role/Unicode regression cases failed (old role binding
+and import returned 201; invalid nested strings were accepted). After correction,
+those six passed in 5.00s. The separate private-term error regression then failed
+because `PRIVATE_DIALOGUE_SENTINEL` appeared in the response; after pre-type
+validation, the focused Unicode/privacy/bounds group passed all six in 5.17s.
+
+The PostgreSQL migration/CAS test now also persists both historical and current
+selection-scoped work labels and their revisions, rejects a Speaker referencing a
+selection from another project at the DB layer, then downgrades the populated
+domain, upgrades and compares metadata. The real preview has not been upgraded;
+0004 remains unreleased and was updated in place for this review correction.
+
+Fresh post-review verification on 2026-10-30:
+
+```sh
+VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres PYTHONPATH=src uv run --frozen --extra dev pytest -q
+# 295 passed in 62.56s, including the populated PostgreSQL speaker-selection FK roundtrip.
+PYTHONPATH=src uv run --frozen --extra dev ruff check src tests alembic
+# All checks passed.
+PYTHONPATH=src uv run --frozen --extra dev ruff format --check src tests alembic
+# 75 files already formatted.
+PYTHONPATH=src uv run --frozen --extra dev python -m compileall -q src tests alembic
+# exit 0.
+uv lock --check
+# exit 0.
+git diff --check
+# exit 0.
+```

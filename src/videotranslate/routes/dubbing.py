@@ -404,13 +404,14 @@ def list_speakers(
     limit: Limit = 100,
     offset: Offset = 0,
     include_archived: bool = False,
+    include_historical: bool = False,
     identity: Identity = Depends(require_identity),
     db: Session = Depends(get_db),
 ):
     project = project_for(db, identity, project_id)
-    query = scope(Speaker, project)
-    if not include_archived:
-        query = query.where(Speaker.archived.is_(False))
+    query = speakers.speakers_query(
+        db, project, include_archived=include_archived, include_historical=include_historical
+    )
     rows, total = timeline.paged(db, query, Speaker, limit, offset)
     return {"items": [speakers.speaker_json(row) for row in rows], "total": total}
 

@@ -9,7 +9,6 @@ from ..models.dubbing import (
     Segment,
     SegmentParent,
     SegmentRevision,
-    Speaker,
     TranslationRevision,
     TranslationState,
 )
@@ -31,9 +30,9 @@ def validate_fields(db, project, selection, values):
     ):
         invalid()
     if values["speaker_id"]:
-        speaker = owned(db, Speaker, project, values["speaker_id"])
-        if speaker.archived:
-            not_found()
+        from .speakers import active_speaker
+
+        active_speaker(db, project, values["speaker_id"], selection)
 
 
 def revision_values(revision):

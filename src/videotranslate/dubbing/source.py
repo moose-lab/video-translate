@@ -205,3 +205,13 @@ def invalidate_transcript(db, project, transcript_id):
         )
     ):
         invalidate_segment(db, project, segment)
+
+
+def current_selection(db, project, *, required=True):
+    state = source_state(db, project)
+    selection = owned(db, SourceSelection, project, state.selection_id) if state else None
+    if selection is None or not selection_current(db, project, selection):
+        if required:
+            conflict()
+        return None
+    return selection

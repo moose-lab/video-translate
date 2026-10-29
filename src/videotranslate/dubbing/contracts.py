@@ -18,13 +18,28 @@ class Strict(BaseModel):
     @field_validator("*", mode="before")
     @classmethod
     def valid_strings(cls, value):
-        if isinstance(value, str):
-            try:
-                value.encode("utf-8")
-            except UnicodeError:
-                raise ValueError("Invalid Unicode") from None
-            if any(ord(char) < 32 and char not in "\n\t\r" for char in value):
-                raise ValueError("Invalid control character")
+        pending = [(value, 0)]
+        visited = 0
+        while pending:
+            item, depth = pending.pop()
+            visited += 1
+            if visited > 20000 or depth > 20:
+                raise ValueError("Editing structure limit")
+            if isinstance(item, str):
+                try:
+                    item.encode("utf-8")
+                except UnicodeError:
+                    raise ValueError("Invalid Unicode") from None
+                if any(ord(char) < 32 and char not in "\n\t\r" for char in item):
+                    raise ValueError("Invalid control character")
+            elif isinstance(item, dict):
+                if len(item) > 2000:
+                    raise ValueError("Editing structure limit")
+                pending.extend((child, depth + 1) for pair in item.items() for child in pair)
+            elif isinstance(item, (list, tuple)):
+                if len(item) > 2000:
+                    raise ValueError("Editing structure limit")
+                pending.extend((child, depth + 1) for child in item)
         return value
 
 
@@ -132,6 +147,17 @@ class SpeakerMerge(SourceGuard):
 class ContextFields(Strict):
     summary: Annotated[str, Field(max_length=20000)] = ""
     glossary: Annotated[dict[str, str], Field(max_length=200)] = Field(default_factory=dict)
+
+    @field_validator("glossary", mode="before")
+    @classmethod
+    def glossary_types(cls, value):
+        # Reject entry types at the fixed field location, before Pydantic can put
+        # a private dictionary term in an entry-level validation location.
+        if not isinstance(value, dict) or any(
+            not isinstance(key, str) or not isinstance(term, str) for key, term in value.items()
+        ):
+            raise ValueError("Glossary must contain text entries")
+        return value
 
     @field_validator("glossary")
     @classmethod

@@ -170,6 +170,7 @@ def upgrade():
     op.create_index("ix_source_states_project_id", "source_states", ["project_id"], unique=False)
     op.create_table(
         "speakers",
+        sa.Column("selection_id", sa.String(36), nullable=False),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("description", sa.String(1000), nullable=False),
         sa.Column("revision", sa.Integer(), nullable=False),
@@ -188,6 +189,15 @@ def upgrade():
             ["project_id", "workspace_id"],
             ["projects.id", "projects.workspace_id"],
             name="fk_speaker_project",
+        ),
+        sa.ForeignKeyConstraint(
+            ["selection_id", "project_id", "workspace_id"],
+            [
+                "source_selections.id",
+                "source_selections.project_id",
+                "source_selections.workspace_id",
+            ],
+            name="fk_speaker_selection",
         ),
         sa.UniqueConstraint(*["id", "project_id", "workspace_id"], name="uq_speaker_owner"),
     )

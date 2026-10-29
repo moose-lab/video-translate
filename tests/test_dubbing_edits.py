@@ -364,3 +364,114 @@ def test_archived_target_requires_explicit_restore_for_configuration_edits(dubbi
         ).status_code
         == 200
     )
+
+
+def test_work_labels_belong_to_source_selection_and_historical_roles_cannot_bind(dubbing_project):
+    c, h, p = dubbing_project
+    first_selection = selected(dubbing_project)
+    base = f"/api/projects/{p['id']}"
+    old = c.post(base + "/speakers", headers=h, json={"name": "Old window role"}).json()
+    a = create_line(dubbing_project, first_selection)
+    assert (
+        c.patch(
+            base + f"/segments/{a['segment']['id']}",
+            headers=h,
+            json=guard(first_selection, a["transcript_revision"])
+            | {"revision": 1, "speaker_id": old["id"]},
+        ).status_code
+        == 200
+    )
+    current = c.get(base).json()
+    new_selection = c.put(
+        base + "/source-selection",
+        headers=h,
+        json={
+            "revision": current["revision"],
+            "source_asset_id": p["source_asset_id"],
+            "audio_ordinal": 0,
+            "start_ms": 500,
+            "end_ms": 1500,
+        },
+    ).json()
+    g = guard(new_selection)
+    assert (
+        c.post(
+            base + "/segments",
+            headers=h,
+            json=g | {"text": "New", "start_ms": 0, "end_ms": 500, "speaker_id": old["id"]},
+        ).status_code
+        == 404
+    )
+    assert (
+        c.patch(
+            base + f"/speakers/{old['id']}", headers=h, json={"revision": 1, "name": "Wrong batch"}
+        ).status_code
+        == 404
+    )
+    assert c.get(base + "/timeline").json()["cast_total"] == 0
+    assert c.get(base + "/speakers").json()["total"] == 0
+    assert c.get(base + "/speakers?include_historical=true").json()["items"][0]["id"] == old["id"]
+    fresh = c.post(base + "/speakers", headers=h, json={"name": "New window role"})
+    assert fresh.status_code == 201, fresh.text
+    fresh = fresh.json()
+    assert fresh["selection_id"] == new_selection["id"]
+    b = create_line(dubbing_project, new_selection)
+    assert (
+        c.post(
+            base + "/speakers/merge",
+            headers=h,
+            json=guard(new_selection, b["transcript_revision"])
+            | {
+                "source_id": old["id"],
+                "source_revision": 1,
+                "target_id": fresh["id"],
+                "target_revision": 1,
+            },
+        ).status_code
+        == 404
+    )
+    # History stays readable and its label never moves to another source selection.
+    assert c.get(base + f"/speakers/{old['id']}/revisions").json()["total"] == 1
+    assert c.patch(base, headers=h, json={"source_track_index": 1}).status_code == 200
+    assert c.get(base + "/speakers").json()["total"] == 0
+    assert (
+        c.patch(
+            base + f"/speakers/{fresh['id']}",
+            headers=h,
+            json={"revision": 1, "name": "Stale selection"},
+        ).status_code
+        == 404
+    )
+
+
+def test_historical_role_is_rejected_in_source_import_mapping(dubbing_project):
+    c, h, p = dubbing_project
+    selected(dubbing_project)
+    base = f"/api/projects/{p['id']}"
+    old = c.post(base + "/speakers", headers=h, json={"name": "Old"}).json()
+    current = c.get(base).json()
+    new = c.put(
+        base + "/source-selection",
+        headers=h,
+        json={
+            "revision": current["revision"],
+            "source_asset_id": p["source_asset_id"],
+            "audio_ordinal": 0,
+            "start_ms": 0,
+            "end_ms": 1000,
+        },
+    ).json()
+    body = guard(new) | {"format": "srt", "content": "1\n00:00:00,000 --> 00:00:00,500\nNew"}
+    preview = c.post(base + "/source/import/preview", headers=h, json=body).json()
+    assert (
+        c.post(
+            base + "/source/import/apply",
+            headers=h,
+            json=body
+            | {
+                "digest": preview["digest"],
+                "mapping": [{"cue_id": preview["cues"][0]["id"], "speaker_id": old["id"]}],
+            },
+        ).status_code
+        == 404
+    )

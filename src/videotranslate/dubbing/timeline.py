@@ -16,7 +16,7 @@ from ..models.dubbing import (
 from .ownership import owned, scope
 from .segments import segment_json
 from .source import selection_current, selection_json, source_state
-from .speakers import speaker_json
+from .speakers import speaker_json, speakers_query
 from .translations import canonical_target, track_json, translation_json
 
 
@@ -98,7 +98,7 @@ def timeline(db, project, tag, limit, offset):
         for declared in project.target_languages
         if declared not in actual
     ]
-    speaker_query = scope(Speaker, project).where(Speaker.archived.is_(False))
+    speaker_query = speakers_query(db, project)
     cast_total = db.scalar(select(func.count()).select_from(speaker_query.subquery()))
     cast = db.scalars(speaker_query.order_by(Speaker.created_at, Speaker.id).limit(200)).all()
     return {

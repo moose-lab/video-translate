@@ -1,12 +1,12 @@
 """Deterministic read-only previews and guarded, explicitly mapped caption application."""
 
 from ..execution.inputs import fingerprint
-from ..models.dubbing import Segment, SegmentRevision, Speaker
+from ..models.dubbing import Segment, SegmentRevision
 from .contracts import SpeakerCreate
 from .ownership import changed, conflict, invalid, owned, scope
 from .segments import active_segment, insert_segment, validate_fields
 from .source import active_source, new_transcript
-from .speakers import create_speaker
+from .speakers import active_speaker, create_speaker
 from .subtitles import parse_subtitles
 from .translations import track_for, translation_state, write_translation
 
@@ -156,11 +156,7 @@ def apply_import(db, project, body, actor, tag=None):
         conflict()
     for item in mapping.values():
         if item.speaker_id:
-            speaker = owned(db, Speaker, project, item.speaker_id)
-            if speaker.archived:
-                from .ownership import not_found
-
-                not_found()
+            active_speaker(db, project, item.speaker_id, selection)
     new = new_transcript(db, project, state, selection, actor, "import", list(cues.values()))
     voice_labels = {}
     for cue in preview["cues"]:

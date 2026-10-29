@@ -368,7 +368,7 @@ def test_postgres_dubbing_roundtrip_ownership_and_simultaneous_cas(
     from alembic import command
     from videotranslate.db import Base
     from videotranslate.models.core import Project
-    from videotranslate.models.dubbing import SourceTrack
+    from videotranslate.models.dubbing import SourceTrack, Speaker
 
     admin_url = os.environ.get("VT_TEST_POSTGRES_ADMIN_URL")
     if not admin_url:
@@ -434,6 +434,51 @@ def test_postgres_dubbing_roundtrip_ownership_and_simultaneous_cas(
         assert race([a["segment"]["id"], b["segment"]["id"]]) == [200, 200]
         d = create_line(fixture, s, "Third", a["transcript_revision"], 1000, 1500)
         assert race([d["segment"]["id"], d["segment"]["id"]]) == [200, 409]
+        base = f"/api/projects/{p['id']}"
+        old_role = client.post(base + "/speakers", headers=h, json={"name": "Historical PG role"})
+        assert old_role.status_code == 201, old_role.text
+        with client.app.state.session_factory() as db:
+            project = db.get(Project, p["id"])
+            db.add(
+                Speaker(
+                    project_id=neighbor["id"],
+                    workspace_id=project.workspace_id,
+                    selection_id=s["id"],
+                    name="Wrong selection owner",
+                )
+            )
+            with pytest.raises(IntegrityError):
+                db.commit()
+        current = client.get(base).json()
+        new_selection = client.put(
+            base + "/source-selection",
+            headers=h,
+            json={
+                "revision": current["revision"],
+                "source_asset_id": p["source_asset_id"],
+                "audio_ordinal": 0,
+                "start_ms": 500,
+                "end_ms": 1500,
+            },
+        )
+        assert new_selection.status_code == 200, new_selection.text
+        new_role = client.post(base + "/speakers", headers=h, json={"name": "Current PG role"})
+        assert new_role.status_code == 201, new_role.text
+        assert new_role.json()["selection_id"] == new_selection.json()["id"]
+        assert (
+            client.post(
+                base + "/segments",
+                headers=h,
+                json=guard(new_selection.json())
+                | {
+                    "text": "Current PG line",
+                    "start_ms": 0,
+                    "end_ms": 500,
+                    "speaker_id": new_role.json()["id"],
+                },
+            ).status_code
+            == 201
+        )
         # Exercise downgrade with populated domain history and pointer cycles.
         client.app.state.engine.dispose()
         command.downgrade(config, "0003_cloud_services")
@@ -466,6 +511,7 @@ def test_timeline_caps_cast_and_track_summaries_and_lists_page_them(dubbing_proj
     from videotranslate.models.dubbing import LanguageTrack, Speaker
 
     c, _, p = dubbing_project
+    selection = selected(dubbing_project)
     with c.app.state.session_factory.begin() as db:
         project = db.get(Project, p["id"])
         for index in range(205):
@@ -474,6 +520,7 @@ def test_timeline_caps_cast_and_track_summaries_and_lists_page_them(dubbing_proj
                     project_id=project.id,
                     workspace_id=project.workspace_id,
                     name=f"Work label {index}",
+                    selection_id=selection["id"],
                 )
             )
             db.add(
@@ -492,3 +539,50 @@ def test_timeline_caps_cast_and_track_summaries_and_lists_page_them(dubbing_proj
     assert len(page["items"]) == 5 and page["total"] == 205
     page = c.get(base + "/language-tracks?limit=5&offset=200").json()
     assert len(page["items"]) == 5 and page["total"] == 205
+
+
+@pytest.mark.parametrize(
+    "glossary",
+    [{"word": "\ud800"}, {"\udfff": "word"}, {"word": "bad\x01control"}, {"bad\x02key": "word"}],
+)
+def test_nested_glossary_invalid_unicode_is_safe_422_and_never_persisted(dubbing_project, glossary):
+    import json
+
+    c, h, p = dubbing_project
+    base = f"/api/projects/{p['id']}"
+    body = json.dumps({"tag": "ja", "glossary": glossary}, ensure_ascii=True)
+    response = c.post(
+        base + "/language-tracks", headers=h | {"Content-Type": "application/json"}, content=body
+    )
+    assert response.status_code == 422, response.text
+    assert "word" not in response.text
+    assert c.get(base + "/language-tracks").json()["total"] == 0
+
+
+def test_nested_glossary_unicode_roundtrip_and_structural_bounds(dubbing_project):
+    c, h, p = dubbing_project
+    base = f"/api/projects/{p['id']}"
+    glossary = {"你好": "مرحبا e\u0301 😀"}
+    created = c.post(base + "/language-tracks", headers=h, json={"tag": "ja", "glossary": glossary})
+    assert created.status_code == 201, created.text
+    assert c.get(base + "/language-tracks/ja/contexts").json()["items"][0]["glossary"] == glossary
+    nested = "text"
+    for _ in range(60):
+        nested = [nested]
+    response = c.patch(
+        base + "/language-tracks/ja", headers=h, json={"revision": 1, "glossary": {"word": nested}}
+    )
+    assert response.status_code == 422, response.text
+    assert c.get(base + "/language-tracks/ja/contexts").json()["total"] == 1
+
+
+def test_wrong_glossary_value_never_echoes_private_term_in_validation_location(dubbing_project):
+    c, h, p = dubbing_project
+    base = f"/api/projects/{p['id']}"
+    sentinel = "PRIVATE_DIALOGUE_SENTINEL"
+    body = {"tag": "ja", "glossary": {sentinel: {"invalid": "type"}}}
+    response = c.post(base + "/language-tracks", headers=h, json=body)
+    assert response.status_code == 422, response.text
+    assert sentinel not in response.text
+    assert response.json()["error"]["details"][0]["field"] == "body.glossary"
+    assert c.get(base + "/language-tracks").json()["total"] == 0

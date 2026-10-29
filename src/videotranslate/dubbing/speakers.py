@@ -3,13 +3,21 @@
 from ..models.dubbing import Segment, SegmentRevision, Speaker, SpeakerRevision
 from .ownership import changed, check_revision, invalid, not_found, owned, owner, scope
 from .segments import append_revision, revision_values
-from .source import active_source
+from .source import active_source, current_selection
 
 
 def speaker_json(speaker):
     return {
         key: getattr(speaker, key)
-        for key in ("id", "name", "description", "revision", "archived", "merged_into_id")
+        for key in (
+            "id",
+            "selection_id",
+            "name",
+            "description",
+            "revision",
+            "archived",
+            "merged_into_id",
+        )
     }
 
 
@@ -29,7 +37,8 @@ def record_revision(db, project, speaker, actor):
 
 
 def create_speaker(db, project, body, actor):
-    speaker = Speaker(**owner(project), **body.model_dump())
+    selection = current_selection(db, project)
+    speaker = Speaker(**owner(project), selection_id=selection.id, **body.model_dump())
     db.add(speaker)
     db.flush()
     record_revision(db, project, speaker, actor)
@@ -38,9 +47,7 @@ def create_speaker(db, project, body, actor):
 
 
 def patch_speaker(db, project, speaker_id, body, actor):
-    speaker = owned(db, Speaker, project, speaker_id)
-    if speaker.archived:
-        not_found()
+    speaker = active_speaker(db, project, speaker_id)
     check_revision(speaker, body.revision)
     values = body.model_dump(exclude_unset=True, exclude={"revision"})
     if values.get("archived"):
@@ -79,13 +86,11 @@ def active_source_for_archive(db, project):
 
 
 def merge_speakers(db, project, body, actor):
-    _, _, transcript = active_source(db, project, body, require_transcript=True)
+    _, selection, transcript = active_source(db, project, body, require_transcript=True)
     if body.source_id == body.target_id:
         invalid()
-    source = owned(db, Speaker, project, body.source_id)
-    target = owned(db, Speaker, project, body.target_id)
-    if source.archived or target.archived:
-        not_found()
+    source = active_speaker(db, project, body.source_id, selection)
+    target = active_speaker(db, project, body.target_id, selection)
     check_revision(source, body.source_revision)
     check_revision(target, body.target_revision)
     count = 0
@@ -119,3 +124,21 @@ def merge_speakers(db, project, body, actor):
         merged_into_id=target.id,
     )
     return {"source": speaker_json(source), "target": speaker_json(target), "rebound_count": count}
+
+
+def active_speaker(db, project, speaker_id, selection=None):
+    speaker = owned(db, Speaker, project, speaker_id)
+    selection = selection or current_selection(db, project, required=False)
+    if selection is None or speaker.selection_id != selection.id or speaker.archived:
+        not_found()
+    return speaker
+
+
+def speakers_query(db, project, *, include_archived=False, include_historical=False):
+    query = scope(Speaker, project)
+    if not include_historical:
+        selection = current_selection(db, project, required=False)
+        query = query.where(Speaker.selection_id == (selection.id if selection else ""))
+    if not include_archived:
+        query = query.where(Speaker.archived.is_(False))
+    return query

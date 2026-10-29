@@ -112,7 +112,9 @@ class Speaker(Owned, Base):
     __tablename__ = "speakers"
     __table_args__ = owner_constraints("speaker") + (
         owned_fk("merged_into_id", "speakers", "fk_speaker_merge"),
+        owned_fk("selection_id", "source_selections", "fk_speaker_selection"),
     )
+    selection_id: Mapped[str] = mapped_column(String(36))
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(1000), default="")
     revision: Mapped[int] = mapped_column(Integer, default=1)
