@@ -9,6 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from ..db import get_db
 from ..errors import APIError
@@ -65,13 +66,18 @@ def stream_events(
     db.rollback()
     session_factory = request.app.state.session_factory
 
+    def fetch_page(cursor):
+        # The session and all synchronous database operations stay in this worker
+        # thread; close its transaction before the generator yields or sleeps.
+        with session_factory() as fresh:
+            current = require_identity(request, fresh)
+            return event_page(fresh, current.workspace.id, project_id, cursor, 200)
+
     async def stream():
         cursor = after
         while True:
             try:
-                with session_factory() as fresh:
-                    current = require_identity(request, fresh)
-                    page = event_page(fresh, current.workspace.id, project_id, cursor, 200)
+                page = await run_in_threadpool(fetch_page, cursor)
             except APIError:
                 return
             for event in page["items"]:
