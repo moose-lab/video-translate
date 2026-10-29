@@ -283,10 +283,14 @@ aside strong {
     gap: 1rem;
   }
   .service {
-    grid-template-columns: 2rem 1fr;
+    grid-template-columns: 2rem minmax(0, 1fr);
   }
-  .service > button {
+  .service > .actions {
     grid-column: 2;
+    flex-wrap: wrap;
+  }
+  .service > .actions button {
+    white-space: nowrap;
   }
   .service details {
     grid-column: 2;
