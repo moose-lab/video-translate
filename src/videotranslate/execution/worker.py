@@ -11,9 +11,17 @@ from ..db import make_engine, make_session_factory
 from ..models.core import utcnow
 from ..storage import make_storage
 from .context import RunContext
-from .contracts import CancellationRequested, FailureCode, LeaseLost, StageFailure
+from .contracts import CancellationRequested, FailureCode, LeaseLost, StageFailure, StagePending
 from .registry import STAGES
-from .service import _lock_run_project, _valid_lease, claim_run, fail_run, finish_run, heartbeat
+from .service import (
+    _lock_run_project,
+    _valid_lease,
+    claim_run,
+    defer_run,
+    fail_run,
+    finish_run,
+    heartbeat,
+)
 
 
 class Worker:
@@ -58,7 +66,16 @@ class Worker:
             # Existing remote jobs remain pollable after cancellation or staleness.
             if not run.remote_id:
                 context.check_active()
-            result = self.registry[run.stage].handle(context)
+            definition = self.registry[run.stage]
+            if definition.publication_guard and not run.remote_id:
+                with self.session_factory.begin() as db:
+                    _, active = context._locked(db)
+                    current = definition.publication_guard(db, active)
+                    if not current:
+                        active.is_stale = True
+                if not current:
+                    raise CancellationRequested()
+            result = definition.handle(context)
             with self.session_factory.begin() as db:
                 finish_run(db, run.id, run.lease_token, result, registry=self.registry)
         except CancellationRequested:
@@ -79,6 +96,9 @@ class Worker:
             elif context_action == "stale":
                 with self.session_factory.begin() as db:
                     fail_run(db, run.id, run.lease_token, StageFailure(FailureCode.INTERNAL_ERROR))
+        except StagePending:
+            with self.session_factory.begin() as db:
+                defer_run(db, run.id, run.lease_token)
         except LeaseLost:
             pass
         except StageFailure as failure:

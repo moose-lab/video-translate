@@ -5,7 +5,18 @@ from fastapi import FastAPI
 from .config import Settings
 from .db import Base, make_engine, make_session_factory
 from .errors import install_error_handlers
-from .routes import assets, auth, dubbing, events, languages, projects, providers, runs
+from .routes import (
+    assets,
+    auth,
+    dubbing,
+    events,
+    languages,
+    projects,
+    providers,
+    references,
+    runs,
+    workflow,
+)
 from .storage import make_storage
 
 
@@ -27,4 +38,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(runs.router, prefix="/api")
     app.include_router(events.router, prefix="/api")
     app.include_router(dubbing.router, prefix="/api")
+    app.include_router(workflow.router, prefix="/api")
+    app.include_router(references.router, prefix="/api")
     return app

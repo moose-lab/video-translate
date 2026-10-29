@@ -58,6 +58,7 @@ class CancellationRequested(Exception):
 @dataclass(frozen=True)
 class StageResult:
     facts: dict
+    prepared_id: str | None = None
 
 
 def safe_identifier(value: str, max_length: int = 200) -> str:
@@ -70,3 +71,7 @@ def safe_identifier(value: str, max_length: int = 200) -> str:
     ):
         raise ValueError("Invalid provider identifier")
     return value
+
+
+class StagePending(Exception):
+    """A real accepted job is still pending; this is not an inference failure."""

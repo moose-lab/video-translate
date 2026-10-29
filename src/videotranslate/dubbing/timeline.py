@@ -98,7 +98,11 @@ def timeline(db, project, tag, limit, offset):
     speaker_query = speakers_query(db, project)
     cast_total = db.scalar(select(func.count()).select_from(speaker_query.subquery()))
     cast = db.scalars(speaker_query.order_by(Speaker.created_at, Speaker.id).limit(200)).all()
+    from .editor import editor_fingerprint
+    from .references import list_versions
+
     return {
+        "editor_fingerprint": editor_fingerprint(db, project),
         "project_id": project.id,
         "project_revision": project.revision,
         "source": selection_json(db, project, selection) if selection else None,
@@ -108,6 +112,7 @@ def timeline(db, project, tag, limit, offset):
                 "selection_id": transcript.selection_id,
                 "provenance": transcript.provenance,
                 "parent_revision_id": transcript.parent_revision_id,
+                "detected_language": transcript.detected_language,
                 "stale": stale,
             }
             if transcript
@@ -123,7 +128,7 @@ def timeline(db, project, tag, limit, offset):
         + len([tag for tag in project.target_languages if tag not in actual]),
         "cast": [speaker_json(row) for row in cast],
         "cast_total": cast_total,
-        "references": {"items": [], "total": 0, "available": False},
+        "references": list_versions(db, project, limit=100),
     }
 
 

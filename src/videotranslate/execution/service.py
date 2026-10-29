@@ -25,6 +25,7 @@ def create_run(
     idempotency_key: str | None = None,
     *,
     registry=None,
+    reuse_active=False,
 ):
     project = lock_project(db, owned_project(db, workspace_id, project_id))
     if idempotency_key is not None and (
@@ -67,13 +68,41 @@ def create_run(
                 StageRun.target_language == request.target_language,
                 StageRun.segment_id == request.segment_id,
                 StageRun.dependency_fingerprint == dependency_fingerprint,
-                StageRun.status == "succeeded",
+                StageRun.status.in_(
+                    [
+                        "succeeded",
+                        "queued",
+                        "running",
+                        "retry_wait",
+                        "failed",
+                        "needs_review",
+                        "cancelling",
+                        "cancelled",
+                    ]
+                    if reuse_active or request.stage in {"extract", "separate"}
+                    else ["succeeded"]
+                ),
                 StageRun.is_stale.is_(False),
             )
             .order_by(StageRun.created_at.desc(), StageRun.id)
         )
         options_fingerprint = fingerprint(options)
         for prior in candidates:
+            from .prepared import has_prepared
+
+            recoverable = (
+                bool(prior.remote_id and prior.remote_state != "completed")
+                or prior.remote_state == "submitting"
+            ) or has_prepared(db, prior)
+            if (
+                prior.status != "succeeded"
+                and not recoverable
+                and (
+                    prior.cancel_requested_at
+                    or prior.status not in {"queued", "running", "retry_wait"}
+                )
+            ):
+                continue
             if (
                 prior.dependency_snapshot == snapshot
                 and fingerprint(prior.options) == options_fingerprint
@@ -326,13 +355,15 @@ def finish_run(db: Session, run_id: str, token: str, result: StageResult, *, reg
     # responses must never be passed to this interface.
     if len(json.dumps(result.facts, allow_nan=False)) > 65536:
         raise ValueError("Stage result exceeds limit")
+    definition = get_stage(run.stage, registry)
+    guard_current = definition.publication_guard(db, run) if definition.publication_guard else True
     run.result = result.facts
     if run.remote_id:
         run.remote_state = "completed"
     if run.cancel_requested_at or project.deleted_at is not None:
         run.status = "cancelled"
         run.result = None
-    elif run.is_stale or not is_current(db, project, run.dependency_snapshot):
+    elif run.is_stale or not is_current(db, project, run.dependency_snapshot) or not guard_current:
         run.status, run.is_stale = "stale", True
     else:
         definition = get_stage(run.stage, registry)
@@ -350,6 +381,9 @@ def finish_run(db: Session, run_id: str, token: str, result: StageResult, *, reg
             },
         )
         run.status = "succeeded"
+    from ..dubbing.workflow import advance_for_run
+
+    advance_for_run(db, run)
     run.finished_at = utcnow()
     run.safe_error = None
     _end_attempt(db, run, run.status)
@@ -423,7 +457,11 @@ def retry_run(
             options=owned.options,
         )
         snapshot = definition.resolve_inputs(db, project, request)
-        if uncertain or owned.remote_state == "completed":
+        from .prepared import has_prepared
+
+        reusable = has_prepared(db, owned) and fingerprint(snapshot) == owned.dependency_fingerprint
+        changed_inputs = fingerprint(snapshot) != owned.dependency_fingerprint
+        if not reusable and (uncertain or owned.remote_state == "completed" or changed_inputs):
             owned.remote_state, owned.remote_id, owned.request_key = "not_submitted", None, None
             owned.provider = owned.model = None
         owned.dependency_snapshot = snapshot
@@ -481,4 +519,16 @@ def confirm_cancel(db: Session, run_id: str, token: str, *, remote_confirmed=Fal
     _end_attempt(db, run, "cancelled")
     _clear_lease(run)
     append_event(db, project, "run.cancelled", run=run)
+    return True
+
+
+def defer_run(db, run_id, token):
+    project, run = _lock_run_project(db, run_id)
+    if not _valid_lease(run, token, utcnow()):
+        return False
+    run.status = "retry_wait"
+    run.due_at = utcnow() + timedelta(seconds=5)
+    _end_attempt(db, run, "pending")
+    _clear_lease(run)
+    append_event(db, project, "run.pending", run=run)
     return True

@@ -26,6 +26,7 @@ def validate_controls(adapter, controls):
         "nvidia_stream": {"max_speakers"},
         "demucs": set(),
         "hf_router": set(),
+        "hf_asr": set(),
         "openai_compatible": set(),
     }
     if (
@@ -55,7 +56,7 @@ def validate_controls(adapter, controls):
             raise ValueError("Invalid provider controls")
 
 
-def capability_contract(slot, adapter, schema=None):
+def capability_contract(slot, adapter, schema=None, model=None):
     from dataclasses import asdict
 
     from ..languages.catalog import resolve
@@ -91,7 +92,23 @@ def capability_contract(slot, adapter, schema=None):
         max_duration_seconds=120 if adapter == "nvidia_stream" else None,
         controls=controls,
     )
-    return asdict(capability)
+    result = asdict(capability)
+    if adapter == "hf_asr":
+        from .asr_languages import WHISPER_LANGUAGES, WHISPER_REVISION
+
+        known = model == "openai/whisper-large-v3"
+        result.update(
+            {
+                "supported_languages": list(WHISPER_LANGUAGES) if known else [],
+                "language_support": "unsupported" if known else "unknown",
+                "auto_detection": known,
+                "speaker_labels": False,
+                "detected_language_guaranteed": False,
+                "model_declaration_revision": WHISPER_REVISION if known else None,
+                "task_route": "hf-inference/models/{model}",
+            }
+        )
+    return result
 
 
 def preset_supported(adapter, model, space_id, endpoint):

@@ -74,6 +74,11 @@ class RunContext:
             run.provider, run.model = provider, model
             run.request_key = run.request_key or secrets.token_hex(32)
             run.remote_state = "submitting"
+            from .prepared import current_operation
+
+            operation = current_operation(db, run)
+            if operation:
+                operation.phase = "submitting"
             append_event(
                 db, project, "run.submitting", run=run, facts={"provider": provider, "model": model}
             )
@@ -87,6 +92,11 @@ class RunContext:
                 raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
             # Persist the paid handle even when cancellation arrived during POST.
             run.remote_id, run.remote_state = remote_id, "submitted"
+            from .prepared import current_operation
+
+            operation = current_operation(db, run)
+            if operation:
+                operation.remote_id, operation.phase = remote_id, "accepted"
             append_event(db, project, "run.submitted", run=run, facts={"remote_id": remote_id})
 
     def confirm_cancel(self, *, remote_confirmed=False):

@@ -40,3 +40,10 @@ class ProviderError(ValueError):
             if code == "uncertain"
             else "Remote provider operation failed"
         )
+
+
+class ProviderTerminalError(ValueError):
+    """The named job ended; retry must not keep polling its consumed stream."""
+
+    def __init__(self):
+        super().__init__("Provider job ended without a valid result")

@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
+from ..errors import APIError
 from ..execution.contracts import RunCreate, RunRetry
 from ..execution.service import cancel_run, create_run, owned_run, retry_run, run_json
 from ..models.execution import StageRun
@@ -24,6 +25,9 @@ def enqueue(
     identity: Identity = Depends(require_csrf),
     db: Session = Depends(get_db),
 ):
+    owned_project(db, identity.workspace.id, project_id)
+    if body.stage in {"transcribe", "reference"}:
+        raise APIError(422, "WORKFLOW_REQUIRED", "Use the guarded workflow or reference command")
     run = create_run(db, identity.workspace.id, project_id, body, idempotency_key)
     db.commit()
     return run_json(db, run)

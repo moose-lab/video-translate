@@ -1182,3 +1182,37 @@ def test_asr_verification_rejects_provider_suffix_and_legacy_check_is_configurat
     assert response.status_code == 200
     assert response.json()["state"] == "configuration_required"
     assert response.json()["inference_verified"] is False
+
+
+def test_hf_timestamped_asr_is_selectable_with_honest_pinned_capabilities(client_factory, register):
+    client = client_factory()
+    auth = register(client)
+    headers = {"X-CSRF-Token": auth["csrf_token"]}
+    config = {
+        "revision": 0,
+        "adapter": "hf_asr",
+        "endpoint": "https://router.huggingface.co/v1",
+        "model": "openai/whisper-large-v3",
+        "credential_ref": "huggingface",
+    }
+    response = client.put("/api/providers/transcription", headers=headers, json=config)
+    assert response.status_code == 200, response.text
+    settings = client.get("/api/provider-settings").json()["providers"]["transcription"]
+    caps = settings["capabilities"]
+    assert len(caps["supported_languages"]) == 95
+    assert {"en", "jv", "npi", "ja", "zh"} <= set(caps["supported_languages"])
+    assert caps["auto_detection"] is True and caps["speaker_labels"] is False
+    assert caps["inference_verified"] is False and caps["tested_languages"] == []
+    assert caps["detected_language_guaranteed"] is False
+    assert caps["task_route"] == "hf-inference/models/{model}"
+    config["revision"], config["model"] = 1, "custom/asr"
+    assert (
+        client.put("/api/providers/transcription", headers=headers, json=config).status_code == 200
+    )
+    caps = client.get("/api/provider-settings").json()["providers"]["transcription"]["capabilities"]
+    assert caps["language_support"] == "unknown" and caps["supported_languages"] == []
+    assert caps["auto_detection"] is False
+    config["revision"], config["model"] = 2, "custom/asr:provider"
+    assert (
+        client.put("/api/providers/transcription", headers=headers, json=config).status_code == 422
+    )

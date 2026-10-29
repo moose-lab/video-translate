@@ -45,13 +45,13 @@ def owner(project):
     return {"project_id": project.id, "workspace_id": project.workspace_id}
 
 
-def changed(db, project, kind, **facts):
+def changed(db, project, kind, *, run=None, **facts):
     db.execute(
         update(Project)
         .where(Project.id == project.id)
         .values(revision=Project.revision + 1, updated_at=utcnow())
     )
-    append_event(db, project, kind, facts=facts)
+    append_event(db, project, kind, run=run, facts=facts)
     db.flush()
 
 

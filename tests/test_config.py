@@ -118,6 +118,16 @@ def test_initial_migration_on_clean_database(tmp_path):
             "context_revisions",
             "translation_revisions",
             "translation_states",
+            "private_operations",
+            "prepared_objects",
+            "analysis_media",
+            "workflow_intents",
+            "workflow_children",
+            "reference_requests",
+            "voice_references",
+            "reference_versions",
+            "voice_bindings",
+            "voice_binding_versions",
         }
         with engine.connect() as connection:
             assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []

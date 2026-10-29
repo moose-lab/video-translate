@@ -21,7 +21,7 @@ type Settings = {
       adapter?: string;
       model?: string;
       endpoint?: string;
-      space_id?: string;
+      space_id?: string | null;
       credential_ref?: string | null;
       controls?: Record<string, unknown>;
       check_state?: CheckState;
@@ -172,7 +172,7 @@ export default function ServiceSetup({
       endpoint: string;
       model: string;
       adapter?: string;
-      space_id?: string;
+      space_id?: string | null;
       credential_ref?: string | null;
     },
   ) {
@@ -191,7 +191,7 @@ export default function ServiceSetup({
             adapter: edited?.adapter ?? s.adapter,
             endpoint: edited?.endpoint ?? s.endpoint,
             space_id:
-              edited?.space_id ?? ("space_id" in s ? s.space_id : undefined),
+              edited && "space_id" in edited ? edited.space_id : ("space_id" in s ? s.space_id : undefined),
             model: edited?.model ?? s.model,
             credential_ref:
               edited && "credential_ref" in edited
@@ -200,7 +200,7 @@ export default function ServiceSetup({
                   ? "translation"
                   : s.credential_ref,
             revision: current?.revision ?? 0,
-            controls: edited ? (current?.controls ?? {}) : {},
+            controls: edited?.adapter === "hf_asr" ? {} : edited ? (current?.controls ?? {}) : {},
           }),
         },
         csrf,
@@ -446,7 +446,7 @@ function ServiceCard({
     endpoint: string;
     model: string;
     adapter?: string;
-    space_id?: string;
+    space_id?: string | null;
     credential_ref?: string | null;
   }) => void;
   check: () => void;
@@ -515,6 +515,27 @@ function ServiceCard({
       </div>
       <details>
         <summary>查看连接信息</summary>
+        {service.slot === "transcription" && (
+          <label>
+            源识别服务类型
+            <select value={adapter} onChange={(e) => {
+              const hf = e.target.value === "hf_asr";
+              setAdapter(e.target.value);
+              setEndpoint(hf ? "https://router.huggingface.co/v1" : "https://nvidia-nemotron-diarization.hf.space");
+              setSpaceId(hf ? "" : "nvidia/nemotron-diarization");
+              setModel(hf ? "openai/whisper-large-v3" : "nemotron-diarization");
+              setCredentialRef(hf ? "huggingface" : "");
+            }}>
+              <option value="nvidia_stream">NVIDIA 英语识别与角色（最长 120 秒）</option>
+              <option value="hf_asr">Hugging Face 多语言时间戳识别</option>
+            </select>
+          </label>
+        )}
+        {service.slot === "transcription" && adapter === "hf_asr" && (
+          <p>{model === "openai/whisper-large-v3"
+            ? "Whisper 声明覆盖 95 个目录语言；不提供角色标签，需要人工分配角色。使用固定的 HF Inference 任务路由，自动预测源语言，未返回的语言代码保持未知。实际推理未验证。"
+            : "自定义模型的语言覆盖与自动检测能力未知；使用固定的 HF Inference 任务路由，需要人工分配角色。实际推理未验证。"}</p>
+        )}
         {service.slot === "translation" ? (
           <label>
             翻译服务类型
@@ -538,7 +559,7 @@ function ServiceCard({
         ) : (
           <p>服务：{service.adapter}</p>
         )}
-        {"space_id" in service && (
+        {"space_id" in service && adapter !== "hf_asr" && (
           <p>
             <a
               href={
@@ -569,7 +590,7 @@ function ServiceCard({
             </p>
           </div>
         )}
-        {"space_id" in service && (
+        {"space_id" in service && adapter !== "hf_asr" && (
           <label>
             {service.name} Space ID
             <input
@@ -626,7 +647,7 @@ function ServiceCard({
         <label>
           {service.name}模型
           <input
-            readOnly={["separation", "transcription", "synthesis"].includes(
+            readOnly={adapter !== "hf_asr" && ["separation", "transcription", "synthesis"].includes(
               service.slot,
             )}
             aria-invalid={(fieldError && invalid) || undefined}
@@ -644,8 +665,8 @@ function ServiceCard({
               endpoint,
               model,
               adapter,
-              space_id: "space_id" in service ? spaceId : undefined,
-              ...(service.slot === "synthesis" ||
+              space_id: adapter === "hf_asr" ? null : "space_id" in service ? spaceId : undefined,
+              ...(service.slot === "synthesis" || service.slot === "transcription" ||
               (service.slot === "translation" &&
                 adapter === "openai_compatible")
                 ? { credential_ref: credentialRef || null }

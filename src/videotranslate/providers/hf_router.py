@@ -129,7 +129,7 @@ def translate(
         raise ValueError("Invalid structured translation response") from None
 
 
-def transcribe(http, *, audio, model, token):
+def transcribe(http, *, audio, model, token, include_metadata=False):
     """HF Inference ASR with timestamps. This is a synchronous, non-resumable call."""
     import base64
     import json
@@ -154,6 +154,14 @@ def transcribe(http, *, audio, model, token):
         max_request_bytes=24 * 1024 * 1024,
     )
     try:
-        return normalize_asr(json.loads(raw))
+        value = json.loads(raw)
+        rows = normalize_asr(value)
+        language = value.get("language")
+        if language is not None and (
+            not isinstance(language, str)
+            or not re.fullmatch(r"[A-Za-z][A-Za-z0-9-]{0,39}", language)
+        ):
+            raise ValueError()
+        return {"segments": rows, "detected_language": language} if include_metadata else rows
     except (ValueError, TypeError):
         raise ValueError("Invalid ASR response") from None

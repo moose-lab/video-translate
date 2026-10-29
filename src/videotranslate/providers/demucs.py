@@ -1,5 +1,7 @@
 """Validate real Demucs two-stem outputs; paths stay remote."""
 
+from dataclasses import dataclass
+
 
 def normalize_stems(value):
     if (
@@ -22,12 +24,17 @@ def normalize_stems(value):
     return {"vocals": value[0], "instrumental": value[1]}
 
 
-def submit_separation(
-    http, *, audio, filename, space_id="kajise/Demucs_v4-FT_2s", model="htdemucs_ft"
-):
+@dataclass(frozen=True)
+class PreparedSeparation:
+    host: str
+    prefix: str
+    reference: dict
+
+
+def prepare_separation(http, *, audio, space_id="kajise/Demucs_v4-FT_2s", model="htdemucs_ft"):
+    """Schema and generic-name upload only; there is no named inference call here."""
     import json
 
-    from .contracts import RemoteResult
     from .gradio import GradioClient, discover_prefix, resolve_space, validate_endpoint_schema
 
     if model != "htdemucs_ft":
@@ -36,11 +43,29 @@ def submit_separation(
     prefix = discover_prefix(http, host, "/predict")
     schema = json.loads(http.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024))
     validate_endpoint_schema(schema, "demucs")
-    client = GradioClient(http, host, prefix)
-    reference = client.upload(filename, audio, "audio/wav")
-    event_id = client.submit("predict", [reference])
+    reference = GradioClient(http, host, prefix).upload("audio.wav", audio, "audio/wav")
+    return PreparedSeparation(host, prefix, reference)
+
+
+def submit_prepared(http, prepared):
+    from .gradio import GradioClient
+
+    return GradioClient(http, prepared.host, prepared.prefix).submit(
+        "predict", [prepared.reference]
+    )
+
+
+def submit_separation(
+    http, *, audio, filename, space_id="kajise/Demucs_v4-FT_2s", model="htdemucs_ft"
+):
+    from .contracts import RemoteResult
+
+    prepared = prepare_separation(http, audio=audio, space_id=space_id, model=model)
+    event_id = submit_prepared(http, prepared)
     return RemoteResult(
-        status="pending", remote_id=event_id, payload={"host": host, "prefix": prefix}
+        status="pending",
+        remote_id=event_id,
+        payload={"host": prepared.host, "prefix": prepared.prefix},
     )
 
 

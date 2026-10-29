@@ -34,6 +34,11 @@ _IDS = {
     "target_language",
     "provenance",
     "merged_into_id",
+    "workflow_id",
+    "action",
+    "status",
+    "stage",
+    "reference_id",
 }
 
 
@@ -87,6 +92,10 @@ def append_event(
         attempt=run.attempt_count if run else None,
     )
     db.add(event)
+    if run:
+        from ..dubbing.workflow import sync_run_state
+
+        sync_run_state(db, run)
     return event
 
 

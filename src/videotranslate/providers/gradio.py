@@ -3,7 +3,7 @@
 import json
 import re
 
-from .contracts import ProviderError
+from .contracts import ProviderError, ProviderTerminalError
 
 
 def parse_submission(data: dict) -> str:
@@ -25,12 +25,12 @@ def parse_sse(text: str):
             elif line.startswith("data:"):
                 data.append(line[5:].lstrip())
         if event == "error":
-            raise ValueError("Provider job failed")
+            raise ProviderTerminalError()
         if event == "complete":
             try:
                 return json.loads("\n".join(data))
             except (json.JSONDecodeError, ValueError):
-                raise ValueError("Provider returned malformed result") from None
+                raise ProviderTerminalError() from None
     return None
 
 

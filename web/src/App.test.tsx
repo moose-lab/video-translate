@@ -281,7 +281,7 @@ it("shows actual account and duration facts without claiming inference success",
   await user.click(
     await screen.findByRole("button", { name: "检查识别与角色" }),
   );
-  expect(await screen.findByText(/120 秒/)).toBeTruthy();
+  expect(await screen.findByText(/文件时长上限：120 秒/)).toBeTruthy();
   expect(screen.getAllByText(/实际推理未验证/).length).toBeGreaterThan(0);
 });
 it("discloses OmniVoice pretrained model noncommercial license separately from code", async () => {
@@ -570,4 +570,37 @@ it("associates stale service response without marking valid fields invalid", asy
   expect(model.getAttribute("aria-describedby")).toBe(alert.id);
   expect(model.getAttribute("aria-invalid")).not.toBe("true");
   expect((model as HTMLInputElement).value).toBe("draft/model");
+});
+
+it("selects timestamped HF source ASR without promising role labels or forced language", async () => {
+  const user = userEvent.setup();
+  let saved: Record<string, unknown> | undefined;
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    const path = String(input);
+    if (path.endsWith("/auth/me")) return ok({csrf_token: "csrf", user: {name: "M"}, workspace: {name: "W"}});
+    if (path.endsWith("/provider-settings")) return ok({credentials: {huggingface: {revision: 1, configured: true}, translation: {revision: 0, configured: false}}, providers: {}});
+    if (path.endsWith("/providers/transcription")) { saved = JSON.parse(String(init?.body)); return ok({...saved, revision: 1}); }
+    throw new Error(path);
+  });
+  render(<App />);
+  await user.click((await screen.findAllByText("查看连接信息"))[1]);
+  await user.selectOptions(screen.getByLabelText("源识别服务类型"), "hf_asr");
+  expect(screen.getByText(/不提供角色标签/)).toBeTruthy();
+  await user.click(screen.getByRole("button", {name: "保存识别与角色设置"}));
+  await waitFor(() => expect(saved?.adapter).toBe("hf_asr"));
+  expect(saved?.model).toBe("openai/whisper-large-v3");
+  expect(saved?.space_id).toBeNull();
+  expect(saved?.credential_ref).toBe("huggingface");
+  expect(saved?.controls).toEqual({});
+});
+
+it("keeps custom ASR language and role capabilities unknown", async () => {
+  const user = userEvent.setup();
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    if (String(input).endsWith("/auth/me")) return ok({csrf_token: "csrf", user: {name: "M"}, workspace: {name: "W"}});
+    return ok({credentials: {huggingface: {revision: 1, configured: true}, translation: {revision: 0, configured: false}}, providers: {transcription: {revision: 1, adapter: "hf_asr", model: "custom/asr", endpoint: "https://router.huggingface.co/v1", space_id: null, credential_ref: "huggingface"}}});
+  });
+  render(<App />);
+  await user.click((await screen.findAllByText("查看连接信息"))[1]);
+  expect(screen.getByText(/自定义模型的语言覆盖与自动检测能力未知/)).toBeTruthy();
 });

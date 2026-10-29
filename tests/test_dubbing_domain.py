@@ -308,7 +308,18 @@ def test_verified_unversioned_baseline_upgrade_preserves_fake_credentials(tmp_pa
     }
     baseline = MetaData()
     for table in Base.metadata.tables.values():
-        if table.name not in domain:
+        if table.name not in domain and table.name not in {
+            "private_operations",
+            "prepared_objects",
+            "analysis_media",
+            "workflow_intents",
+            "workflow_children",
+            "reference_requests",
+            "voice_references",
+            "reference_versions",
+            "voice_bindings",
+            "voice_binding_versions",
+        }:
             table.to_metadata(baseline)
     index = next(
         i for i in baseline.tables["assets"].indexes if i.name == "uq_assets_id_project_workspace"

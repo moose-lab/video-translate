@@ -118,6 +118,8 @@ def append_revision(db, project, segment, values, actor, provenance, *, input_fa
     segment.revision += 1
     db.flush()
     facets = {}
+    if previous is None:
+        facets[f"voice.line:{segment.id}"] = None
     if previous is None or previous.text != revision.text:
         facets[f"segment.{segment.id}.text"] = fingerprint(revision.text)
         for state in db.scalars(

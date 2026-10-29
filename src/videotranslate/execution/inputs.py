@@ -108,8 +108,21 @@ def initialize_inputs(db: Session, project: Project) -> None:
         "source.audio_track": project.source_track_index,
         "source.language": project.source_language,
     }
+    from ..models.dubbing import Segment
     from ..models.providers import ProviderConnection
 
+    # Older manual rows predate explicit override discriminators. Initialize only
+    # missing keys, so existing override revisions retain their independent proof.
+    values.update(
+        {
+            "voice.line:" + segment_id: None
+            for segment_id in db.scalars(
+                select(Segment.id).where(
+                    Segment.project_id == project.id, Segment.workspace_id == project.workspace_id
+                )
+            )
+        }
+    )
     connections = db.scalars(
         select(ProviderConnection).where(ProviderConnection.workspace_id == project.workspace_id)
     ).all()

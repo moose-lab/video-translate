@@ -9,11 +9,12 @@ from fractions import Fraction
 from pathlib import Path
 
 from ..execution.contracts import FailureCode, StageFailure
+from .timing import timeline_bounds
 
 
 def normalize_probe(data, *, max_duration, max_pixels):
     try:
-        duration = float(data["format"]["duration"])
+        origin, duration = timeline_bounds(data)
         if not math.isfinite(duration) or duration <= 0:
             raise ValueError()
         if duration > max_duration:
@@ -49,6 +50,7 @@ def normalize_probe(data, *, max_duration, max_pixels):
             )
         return {
             "duration_ms": round(duration * 1000),
+            "timeline_origin_ms": round(origin * 1000),
             "video": {
                 "codec": str(video.get("codec_name", "unknown"))[:80],
                 "width": width,

@@ -1029,3 +1029,75 @@ def test_gradio_submission_without_real_event_id_is_uncertain():
     with pytest.raises(ProviderError) as error:
         GradioClient(Http(), "https://test.hf.space", "").submit("predict", [])
     assert error.value.code == "uncertain"
+
+
+def test_demucs_preparation_does_not_submit_paid_named_call():
+    from videotranslate.providers.demucs import prepare_separation, submit_prepared
+
+    class Recording:
+        allowed_hosts = set()
+
+        def __init__(self):
+            self.calls = []
+
+        def get(self, url, **kw):
+            self.calls.append(("GET", url))
+            if "api/spaces" in url:
+                return b'{"host":"https://demucs-test.hf.space"}'
+            return b'{"named_endpoints":{"/predict":{"parameters":[{"parameter_name":"audio"}],"returns":[{"component":"Audio","label":"Vocals"},{"component":"Audio","label":"Instrumental"}]}}}'
+
+        def upload(self, url, **kw):
+            self.calls.append(("UPLOAD", url))
+            assert kw["filename"] == "audio.wav"
+            return ["/tmp/upload.wav"]
+
+        def post_json(self, url, body, **kw):
+            self.calls.append(("POST", url))
+            return b'{"event_id":"actual-42"}'
+
+    http = Recording()
+    prepared = prepare_separation(http, audio=b"test audio", space_id="test/demucs")
+    assert not any(method == "POST" for method, _ in http.calls)
+    assert prepared.host == "https://demucs-test.hf.space"
+    assert submit_prepared(http, prepared) == "actual-42"
+    assert http.calls[-1] == ("POST", "https://demucs-test.hf.space/gradio_api/call/predict")
+
+
+def test_gradio_terminal_failure_distinct_from_pending_network():
+    from videotranslate.providers.contracts import ProviderTerminalError
+    from videotranslate.providers.gradio import parse_sse
+
+    assert parse_sse("event: generating\ndata: null\n\n") is None
+    with pytest.raises(ProviderTerminalError):
+        parse_sse("event: error\ndata: provider-private-error\n\n")
+    with pytest.raises(ProviderTerminalError):
+        parse_sse("event: complete\ndata: not json\n\n")
+
+
+def test_hf_source_preserves_only_actually_returned_language_metadata():
+    import json
+
+    from videotranslate.providers.hf_router import transcribe
+
+    class HTTP:
+        def __init__(self, language):
+            self.language = language
+
+        def post_json(self, url, body, **kw):
+            value = {"chunks": [{"text": "exact words", "timestamp": [0, 1]}]}
+            if self.language is not None:
+                value["language"] = self.language
+            return json.dumps(value).encode()
+
+    assert (
+        transcribe(
+            HTTP(None), audio=b"audio", model="test/model", token="fake", include_metadata=True
+        )["detected_language"]
+        is None
+    )
+    assert (
+        transcribe(
+            HTTP("ja"), audio=b"audio", model="test/model", token="fake", include_metadata=True
+        )["detected_language"]
+        == "ja"
+    )

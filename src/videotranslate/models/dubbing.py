@@ -94,6 +94,7 @@ class TranscriptRevision(Owned, Base):
     actor_id: Mapped[str] = mapped_column(String(36))
     run_id: Mapped[str | None] = mapped_column(String(36))
     provider: Mapped[str | None] = mapped_column(String(80))
+    detected_language: Mapped[str | None] = mapped_column(String(40))
     original_segments: Mapped[list] = mapped_column(JSON, default=list)
 
 

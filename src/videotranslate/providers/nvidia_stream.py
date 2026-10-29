@@ -7,7 +7,7 @@ import ssl
 from websockets.sync.client import connect as ws_connect
 
 from ..languages.catalog import resolve
-from .contracts import ProviderError
+from .contracts import ProviderError, ProviderTerminalError
 from .network import open_proxy_tunnel, resolve_doh, resolve_public, validate_public_addresses
 
 
@@ -50,7 +50,7 @@ def normalize_final(value):
     return result
 
 
-def stream_file(ws, pcm, *, source_language, max_speakers=8, timeout_seconds=180):
+def stream_file(ws, pcm, *, source_language, max_speakers=8, timeout_seconds=180, before_send=None):
     """Use an established WebSocket for a bounded, non-resumable English file stream."""
     import json
     import time
@@ -82,6 +82,8 @@ def stream_file(ws, pcm, *, source_language, max_speakers=8, timeout_seconds=180
         except Exception:
             raise ValueError("Streaming response unavailable or invalid") from None
 
+    if before_send:
+        before_send()
     try:
         ws.send(json.dumps({"type": "start", "sampleRateHz": 16000, "maxSpeakers": max_speakers}))
         if receive().get("type") != "ready":
@@ -92,9 +94,14 @@ def stream_file(ws, pcm, *, source_language, max_speakers=8, timeout_seconds=180
         while True:
             message = receive()
             if message.get("type") == "error":
-                raise ValueError("Provider stream failed")
+                raise ProviderTerminalError()
             if message.get("type") == "result" and message.get("isFinal") is True:
-                return normalize_final(message)
+                try:
+                    return normalize_final(message)
+                except ValueError:
+                    raise ProviderTerminalError() from None
+    except ProviderTerminalError:
+        raise
     except Exception:
         raise ProviderError("uncertain") from None
 
@@ -108,6 +115,7 @@ def stream_remote(
     source_language,
     endpoint="https://nvidia-nemotron-diarization.hf.space",
     model="nemotron-diarization",
+    before_send=None,
 ):
     """Connect directly to a pinned public IP with hostname-validated TLS."""
     host = "nvidia-nemotron-diarization.hf.space"
@@ -148,9 +156,11 @@ def stream_remote(
             open_timeout=10,
             max_size=1024 * 1024,
         ) as ws:
+            if before_send:
+                before_send()
             submitted = True
             return stream_file(ws, pcm, max_speakers=max_speakers, source_language=source_language)
-    except ProviderError:
+    except (ProviderError, ProviderTerminalError):
         raise
     except Exception:
         raise ProviderError("uncertain" if submitted else "network") from None

@@ -39,7 +39,9 @@ class CredentialBody(BaseModel):
 class ProviderBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(ge=0)
-    adapter: Literal["hf_router", "openai_compatible", "omnivoice", "demucs", "nvidia_stream"]
+    adapter: Literal[
+        "hf_router", "openai_compatible", "omnivoice", "demucs", "nvidia_stream", "hf_asr"
+    ]
     endpoint: str | None = Field(default=None, max_length=300)
     space_id: str | None = Field(default=None, max_length=150)
     model: str | None = Field(default=None, max_length=200)
@@ -84,7 +86,9 @@ def get_settings(identity: Identity = Depends(require_identity), db: Session = D
             current = next((c.revision for c in creds if c.kind == credential_kind), 0)
             if check.get("credential_revision") != current:
                 check["credentials_valid"] = None
-        capabilities = capability_contract(connection.slot, connection.settings["adapter"])
+        capabilities = capability_contract(
+            connection.slot, connection.settings["adapter"], model=connection.settings.get("model")
+        )
         if check and isinstance(check.get("capabilities"), dict):
             capabilities.update(check["capabilities"])
         return {
@@ -185,13 +189,14 @@ def put_provider(
         raise APIError(404, "NOT_FOUND", "Resource not found")
     allowed_adapters = {
         "separation": {"demucs"},
-        "transcription": {"nvidia_stream"},
+        "transcription": {"nvidia_stream", "hf_asr"},
         "translation": {"hf_router", "openai_compatible"},
         "synthesis": {"omnivoice"},
         "verification": {"hf_router"},
     }
     valid_refs = {
         "hf_router": {"huggingface"},
+        "hf_asr": {"huggingface"},
         "openai_compatible": {"translation", None},
         "omnivoice": {"huggingface", None},
         "demucs": {None},
@@ -202,8 +207,18 @@ def put_provider(
         or body.credential_ref not in valid_refs[body.adapter]
     ):
         raise APIError(422, "VALIDATION_ERROR", "Invalid provider configuration")
-    if slot == "verification" and body.adapter == "hf_router" and body.model and ":" in body.model:
+    if (
+        (slot == "verification" and body.adapter == "hf_router" or body.adapter == "hf_asr")
+        and body.model
+        and ":" in body.model
+    ):
         raise APIError(422, "VALIDATION_ERROR", "Provider suffix is unsupported for verification")
+    if body.adapter == "hf_asr" and (
+        body.space_id is not None
+        or not body.model
+        or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*", body.model)
+    ):
+        raise APIError(422, "VALIDATION_ERROR", "Invalid ASR model")
     if not preset_supported(body.adapter, body.model, body.space_id, body.endpoint):
         raise APIError(422, "VALIDATION_ERROR", "Unsupported provider configuration")
     try:
@@ -224,7 +239,7 @@ def put_provider(
             validate_url(body.endpoint, allowed_hosts=hosts)
             parsed = urlsplit(body.endpoint)
             if (
-                body.adapter == "hf_router"
+                body.adapter in {"hf_router", "hf_asr"}
                 and body.endpoint.rstrip("/") != "https://router.huggingface.co/v1"
             ):
                 raise ValueError()
@@ -325,7 +340,7 @@ def check_provider(
         else None
     )
     credential_revision = credential.revision if credential else 0
-    required = values["adapter"] == "hf_router" or (
+    required = values["adapter"] in {"hf_router", "hf_asr"} or (
         values["adapter"] == "openai_compatible" and values.get("credential_ref") == "translation"
     )
     result = {
@@ -335,7 +350,7 @@ def check_provider(
         "credential_revision": credential_revision,
         "inference_verified": False,
         "checked_at": utcnow().isoformat(),
-        "capabilities": capability_contract(slot, values["adapter"]),
+        "capabilities": capability_contract(slot, values["adapter"], model=values.get("model")),
         "limits": {},
     }
     if values["adapter"] == "omnivoice":
@@ -354,7 +369,7 @@ def check_provider(
         result["state"] = "configuration_required"
     elif required and not (credential and credential.ciphertext):
         result["state"] = "credential_required"
-    elif values["adapter"] in {"hf_router", "openai_compatible"} and (
+    elif values["adapter"] in {"hf_router", "hf_asr", "openai_compatible"} and (
         not values.get("endpoint") or not values.get("model")
     ):
         result["state"] = "configuration_required"
@@ -412,7 +427,7 @@ def check_provider(
                     result["limits"] = {"max_duration_seconds": 120, "max_speakers": 8}
                 else:
                     raise ValueError("Unsupported Space adapter")
-            elif values["adapter"] == "hf_router":
+            elif values["adapter"] in {"hf_router", "hf_asr"}:
                 model = values.get("model") or ""
                 match = re.fullmatch(
                     r"([A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*)(?::[A-Za-z0-9][A-Za-z0-9_.-]*)?",
