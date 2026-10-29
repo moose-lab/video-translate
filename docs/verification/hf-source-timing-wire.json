@@ -23,5 +23,7 @@
     335,
     398,
     403
-  ]
+  ],
+  "official_source_commit": "9167f73f230d46ebc91d6da426c7cf80e60aa782",
+  "official_source_url": "https://github.com/huggingface/transformers/blob/9167f73f230d46ebc91d6da426c7cf80e60aa782/src/transformers/models/whisper/tokenization_whisper.py#L328"
 }
