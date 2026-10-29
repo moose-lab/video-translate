@@ -43,3 +43,13 @@ Agent Reach/Exa discovery found public diarization and separation demos. A direc
 - [akhaliq/demucs](https://huggingface.co/spaces/akhaliq/demucs), commit `aa628f7485f7ae8dce915c2828b8c3070d3fe498`.
 
 Availability is time-sensitive. Recheck before use. Support a configured HF-hosted endpoint/Space and truthful connection tests; remote deployment templates may install their model dependencies in the cloud, while the SaaS development app and CPU media worker remain free of local inference packages and weights. Do not allocate paid hardware or accept model access terms on the user's behalf as a consequence of discovery.
+
+## Additional live service contracts
+
+Subsequent metadata discovery found these reachable alternatives; inference is still untested:
+
+- NVIDIA's [Nemotron Diarization Space](https://huggingface.co/spaces/nvidia/nemotron-diarization), commit `7e62c797615676c5785b4508ef6d1d976c53a464`, reports RUNNING. Its `/health` returns `ok:true`; `/api/config` reports English and multilingual services ready. The documented English file WebSocket `/api/diarization/file/stream` accepts up to120 seconds of16kHz mono PCM16 and returns speaker-attributed segment timestamps. Start with JSON `type=start,sampleRateHz=16000,maxSpeakers=1..8`, wait for ready, send binary frames≤64KiB, then `type=end`; require terminal `isFinal`. The selected60-second English fixture fits this limit. This streaming service does not expose durable job polling; connection loss cannot be presented as resumable. Multilingual live input has a separate30-second limit, so it must not silently replace the English file route or become an unlimited QC default.
+- [kajise/Demucs_v4-FT_2s](https://huggingface.co/spaces/kajise/Demucs_v4-FT_2s), commit `b24f0dc29c2a01917aff0e204d209af5b7dcf8b3`, reports RUNNING with Gradio4.44.1. `/info` exposes `/predict(audio)` returning Vocals and Instrumental FileData. OpenAPI confirms `/upload`, `/call/{api_name}` and `/call/{api_name}/{event_id}`; its API prefix is empty, whereas the current OmniVoice Space uses `/gradio_api`. Inspect schema rather than applying one prefix to every Gradio version.
+- [nakas/demucs_playground](https://huggingface.co/spaces/nakas/demucs_playground), commit `d924a6d388a60dc69d42d061ebbda7a27fab6347`, also reports RUNNING, but uses older Gradio3.35.2 and four output stems. Its queue/serialization contract differs; it is a fallback candidate, not the initial adapter default.
+
+No audio was submitted during these checks. Reachability, public API documentation and actual model/output acceptance remain distinct evidence.
