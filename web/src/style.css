@@ -311,3 +311,41 @@ aside strong {
   background: white;
   border-radius: 8px;
 }
+.custom-credential {
+  margin: -1.5rem 0 3rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border: 1px solid #dfe9e1;
+  border-radius: 8px;
+}
+.custom-credential p {
+  color: #66776d;
+  font-size: 0.85rem;
+}
+select {
+  display: block;
+  width: 100%;
+  border: 1px solid #cbd8d0;
+  background: white;
+  border-radius: 6px;
+  padding: 0.7rem;
+  margin-top: 0.5rem;
+  font: inherit;
+}
+.catalog {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  border: 1px solid #dfe9e1;
+  border-radius: 8px;
+  background: white;
+}
+.catalog h3 {
+  margin-top: 1rem;
+}
+.catalog p {
+  color: #66776d;
+  font-size: 0.85rem;
+}
+a {
+  color: #285d49;
+}

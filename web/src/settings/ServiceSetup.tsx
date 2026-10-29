@@ -1,6 +1,16 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../api/client";
+import LanguagePicker from "./LanguagePicker";
 type Credential = { configured: boolean; revision: number };
+type CheckState = {
+  state: string;
+  inference_verified: boolean;
+  reachable?: boolean | null;
+  credentials_valid?: boolean | null;
+  limits?: { max_duration_seconds?: number };
+  capabilities?: { coverage?: string };
+  checked_at?: string;
+};
 type Settings = {
   credentials: Record<string, Credential>;
   providers: Record<
@@ -13,7 +23,7 @@ type Settings = {
       space_id?: string;
       credential_ref?: string | null;
       controls?: Record<string, unknown>;
-      check_state?: { state: string; inference_verified: boolean };
+      check_state?: CheckState;
     }
   >;
 };
@@ -62,8 +72,8 @@ const services = [
     name: "配音复核",
     desc: "检查配音与文本",
     adapter: "hf_router",
-    endpoint: "https://api-inference.huggingface.co",
-    model: "",
+    endpoint: "https://router.huggingface.co/v1",
+    model: "openai/whisper-large-v3",
     credential_ref: "huggingface",
   },
 ] as const;
@@ -78,7 +88,10 @@ export default function ServiceSetup({
     [token, setToken] = useState(""),
     [pending, setPending] = useState(false),
     [error, setError] = useState(""),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [showLanguages, setShowLanguages] = useState(false),
+    [sourceLanguage, setSourceLanguage] = useState("auto"),
+    [targetLanguage, setTargetLanguage] = useState("");
   async function load() {
     try {
       setSettings(await api<Settings>("/provider-settings", {}, csrf));
@@ -120,7 +133,13 @@ export default function ServiceSetup({
   }
   async function saveService(
     s: (typeof services)[number],
-    edited?: { endpoint: string; model: string },
+    edited?: {
+      endpoint: string;
+      model: string;
+      adapter?: string;
+      space_id?: string;
+      credential_ref?: string | null;
+    },
   ) {
     if (!settings) return;
     setPending(true);
@@ -132,13 +151,19 @@ export default function ServiceSetup({
         {
           method: "PUT",
           body: JSON.stringify({
-            adapter: s.adapter,
+            adapter: edited?.adapter ?? s.adapter,
             endpoint: edited?.endpoint ?? s.endpoint,
-            space_id: "space_id" in s ? s.space_id : undefined,
+            space_id:
+              edited?.space_id ?? ("space_id" in s ? s.space_id : undefined),
             model: edited?.model ?? s.model,
-            credential_ref: s.credential_ref,
+            credential_ref:
+              edited && "credential_ref" in edited
+                ? edited.credential_ref
+                : edited?.adapter === "openai_compatible"
+                  ? "translation"
+                  : s.credential_ref,
             revision: current?.revision ?? 0,
-            controls: {},
+            controls: edited ? (current?.controls ?? {}) : {},
           }),
         },
         csrf,
@@ -161,7 +186,7 @@ export default function ServiceSetup({
     setPending(true);
     setError("");
     try {
-      const check = await api<{ state: string; inference_verified: boolean }>(
+      const check = await api<CheckState>(
         "/providers/" + slot + "/check",
         {
           method: "POST",
@@ -224,7 +249,14 @@ export default function ServiceSetup({
                   <span className="eyebrow">SHARED CREDENTIAL</span>
                   <h2>Hugging Face 令牌</h2>
                   <p className="muted">
-                    用于需要认证的服务。令牌会加密保存，保存后不会再次显示。
+                    用于需要认证的服务。令牌会加密保存，保存后不会再次显示。{" "}
+                    <a
+                      href="https://huggingface.co/settings/tokens"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      管理 Hugging Face 令牌
+                    </a>
                   </p>
                   <span className="status">
                     {settings.credentials.huggingface.configured
@@ -259,6 +291,23 @@ export default function ServiceSetup({
                   </div>
                 </form>
               </section>
+              <CustomCredential
+                csrf={csrf}
+                current={settings.credentials.translation}
+                onSaved={(credential) =>
+                  setSettings((previous) =>
+                    previous
+                      ? {
+                          ...previous,
+                          credentials: {
+                            ...previous.credentials,
+                            translation: credential,
+                          },
+                        }
+                      : previous,
+                  )
+                }
+              />
               <div className="section-head">
                 <div>
                   <span className="eyebrow">SERVICE CONNECTIONS</span>
@@ -279,6 +328,29 @@ export default function ServiceSetup({
                   />
                 ))}
               </div>
+              <details
+                className="catalog"
+                onToggle={(event) => setShowLanguages(event.currentTarget.open)}
+              >
+                <summary>浏览语言目录</summary>
+                <p>合成语言目录与各服务覆盖范围分别计算，真实流程尚未验证。</p>
+                {showLanguages && (
+                  <>
+                    <h3>源语言</h3>
+                    <LanguagePicker
+                      target={false}
+                      value={sourceLanguage}
+                      onChange={setSourceLanguage}
+                    />
+                    <h3>目标语言</h3>
+                    <LanguagePicker
+                      target
+                      value={targetLanguage}
+                      onChange={setTargetLanguage}
+                    />
+                  </>
+                )}
+              </details>
               <p className="footnote">
                 语言目录表示合成模型的声明范围，并不代表所有语言均已通过完整流程验证。
               </p>
@@ -302,13 +374,28 @@ function ServiceCard({
   index: number;
   current: Settings["providers"][string] | undefined;
   pending: boolean;
-  save: (edited?: { endpoint: string; model: string }) => void;
+  save: (edited?: {
+    endpoint: string;
+    model: string;
+    adapter?: string;
+    space_id?: string;
+    credential_ref?: string | null;
+  }) => void;
   check: () => void;
 }) {
   const [endpoint, setEndpoint] = useState(
       current?.endpoint ?? service.endpoint,
     ),
-    [model, setModel] = useState(current?.model ?? service.model);
+    [model, setModel] = useState(current?.model ?? service.model),
+    [adapter, setAdapter] = useState(current?.adapter ?? service.adapter),
+    [spaceId, setSpaceId] = useState(
+      current?.space_id ?? ("space_id" in service ? service.space_id : ""),
+    ),
+    [credentialRef, setCredentialRef] = useState(
+      current?.credential_ref === null
+        ? ""
+        : (current?.credential_ref ?? service.credential_ref ?? ""),
+    );
   return (
     <section className="service">
       <span className="number">0{index + 1}</span>
@@ -320,11 +407,29 @@ function ServiceCard({
         </small>
         {current?.check_state && (
           <p role="status">
-            {current.check_state.state === "credential_required"
-              ? "需要配置令牌"
-              : current.check_state.state === "reachable"
-                ? "服务可连接"
-                : "检查未完成"}
+            {(
+              {
+                credential_required: "需要配置令牌",
+                configuration_required: "需要配置端点或模型",
+                reachable: "服务可连接",
+                auth: "账号验证失败",
+                quota: "服务额度不足或受限",
+                network: "网络检查失败",
+                configuration: "服务配置无效",
+                check_failed: "服务检查未完成",
+              } as Record<string, string>
+            )[current.check_state.state] ?? "检查未完成"}
+          </p>
+        )}
+        {current?.check_state?.credentials_valid === true && (
+          <p>账号验证通过；实际推理权限未验证。</p>
+        )}
+        {current?.check_state?.credentials_valid === false && (
+          <p>账号验证失败，请检查令牌。</p>
+        )}
+        {current?.check_state?.limits?.max_duration_seconds && (
+          <p>
+            文件时长上限：{current.check_state.limits.max_duration_seconds} 秒
           </p>
         )}
       </div>
@@ -342,7 +447,95 @@ function ServiceCard({
       </div>
       <details>
         <summary>查看连接信息</summary>
-        <p>服务：{service.adapter}</p>
+        {service.slot === "translation" ? (
+          <label>
+            翻译服务类型
+            <select
+              value={adapter}
+              onChange={(e) => {
+                setAdapter(e.target.value);
+                setCredentialRef(
+                  e.target.value === "openai_compatible"
+                    ? "translation"
+                    : "huggingface",
+                );
+              }}
+            >
+              <option value="hf_router">Hugging Face Router</option>
+              <option value="openai_compatible">自定义 OpenAI 兼容服务</option>
+            </select>
+          </label>
+        ) : (
+          <p>服务：{service.adapter}</p>
+        )}
+        {"space_id" in service && (
+          <p>
+            <a
+              href={
+                "https://huggingface.co/spaces/" +
+                encodeURIComponent(service.space_id.split("/")[0]) +
+                "/" +
+                encodeURIComponent(service.space_id.split("/")[1])
+              }
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              查看服务来源
+            </a>
+          </p>
+        )}
+        {service.slot === "synthesis" && spaceId === "k2-fsa/OmniVoice" && (
+          <div>
+            <p>预训练模型许可：CC-BY-NC（非商业用途）。</p>
+            <p>上游代码许可：Apache-2.0。</p>
+            <p>
+              <a
+                href="https://huggingface.co/k2-fsa/OmniVoice#license"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                查看模型许可
+              </a>
+            </p>
+          </div>
+        )}
+        {"space_id" in service && (
+          <label>
+            {service.name} Space ID
+            <input
+              value={spaceId}
+              onChange={(e) => setSpaceId(e.target.value)}
+            />
+          </label>
+        )}
+        {service.slot === "translation" && adapter === "openai_compatible" && (
+          <label>
+            翻译服务凭据
+            <select
+              value={credentialRef || "none"}
+              onChange={(e) =>
+                setCredentialRef(
+                  e.target.value === "none" ? "" : e.target.value,
+                )
+              }
+            >
+              <option value="translation">自定义翻译令牌</option>
+              <option value="none">无需令牌</option>
+            </select>
+          </label>
+        )}
+        {service.slot === "synthesis" && (
+          <label>
+            声音克隆凭据
+            <select
+              value={credentialRef}
+              onChange={(e) => setCredentialRef(e.target.value)}
+            >
+              <option value="huggingface">Hugging Face 令牌</option>
+              <option value="">公开演示，无令牌</option>
+            </select>
+          </label>
+        )}
         <label>
           {service.name}端点
           <input
@@ -358,11 +551,97 @@ function ServiceCard({
           type="button"
           className="secondary"
           disabled={pending}
-          onClick={() => save({ endpoint, model })}
+          onClick={() =>
+            save({
+              endpoint,
+              model,
+              adapter,
+              space_id: "space_id" in service ? spaceId : undefined,
+              ...(service.slot === "synthesis" ||
+              (service.slot === "translation" &&
+                adapter === "openai_compatible")
+                ? { credential_ref: credentialRef || null }
+                : {}),
+            })
+          }
         >
           保存{service.name}设置
         </button>
       </details>
     </section>
+  );
+}
+
+function CustomCredential({
+  csrf,
+  current,
+  onSaved,
+}: {
+  csrf: string;
+  current: Credential;
+  onSaved: (value: Credential) => void;
+}) {
+  const [token, setToken] = useState(""),
+    [pending, setPending] = useState(false),
+    [error, setError] = useState("");
+  async function save(e: FormEvent, clear = false) {
+    e.preventDefault();
+    setPending(true);
+    setError("");
+    try {
+      const result = await api<Credential>(
+        "/credentials/translation",
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            revision: current.revision,
+            ...(clear ? { clear: true } : { token }),
+          }),
+        },
+        csrf,
+      );
+      setToken("");
+      onSaved(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存失败");
+    } finally {
+      setPending(false);
+    }
+  }
+  return (
+    <details className="custom-credential">
+      <summary>自定义翻译服务凭据</summary>
+      <p>仅用于管理员允许的自定义 OpenAI 兼容服务。</p>
+      <p>{current.configured ? "已配置" : "尚未配置"}</p>
+      <form onSubmit={(e) => void save(e)}>
+        <label>
+          自定义翻译访问令牌
+          <input
+            type="password"
+            autoComplete="off"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+          />
+        </label>
+        <div className="actions">
+          <button disabled={pending || !token.trim()}>保存自定义令牌</button>
+          {current.configured && (
+            <button
+              type="button"
+              className="secondary"
+              disabled={pending}
+              onClick={(e) => void save(e, true)}
+            >
+              清除自定义令牌
+            </button>
+          )}
+        </div>
+      </form>
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+    </details>
   );
 }
