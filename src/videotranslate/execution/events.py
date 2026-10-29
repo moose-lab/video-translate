@@ -31,8 +31,9 @@ def safe_facts(facts: dict) -> dict:
         elif (
             key in _IDS
             and isinstance(value, str)
-            and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.@/-]{0,199}", value)
+            and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,199}", value)
             and ".." not in value
+            and "://" not in value
         ):
             result[key] = value
         else:

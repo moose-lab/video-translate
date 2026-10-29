@@ -157,7 +157,9 @@ def test_remote_submission_checkpoint_survives_restart_and_never_resubmits(execu
     assert next_context.remote_checkpoint() == "test-job-123"
     import pytest
 
-    with pytest.raises(__import__("videotranslate.execution.contracts", fromlist=["StageFailure"]).StageFailure):
+    with pytest.raises(
+        __import__("videotranslate.execution.contracts", fromlist=["StageFailure"]).StageFailure
+    ):
         next_context.begin_submission("test-provider", "test-model")
     assert len(calls) == 1
 
@@ -218,3 +220,130 @@ def test_cancel_running_requires_worker_and_discards_remote_terminal_result(exec
     with sf() as db:
         run = db.get(StageRun, run_id)
         assert run.status == "cancelled" and run.result is None
+
+
+def test_api_to_independent_worker_process_and_empty_queue(execution_project):
+    import json
+    import os
+    import subprocess
+    import sys
+
+    client, headers, project = execution_project
+    run = client.post(
+        f"/api/projects/{project['id']}/runs", json={"stage": "probe"}, headers=headers
+    ).json()
+    settings = client.app.state.settings
+    env = os.environ | {
+        "VT_ENVIRONMENT": "test",
+        "VT_DATABASE_URL": settings.database_url.get_secret_value(),
+        "VT_STORAGE_BACKEND": "local",
+        "VT_LOCAL_STORAGE_ROOT": str(settings.local_storage_root),
+    }
+    command = [sys.executable, "-m", "videotranslate.execution.worker", "--once"]
+    first = subprocess.run(command, env=env, capture_output=True, text=True, timeout=30)
+    assert first.returncode == 0, first.stderr
+    assert json.loads(first.stdout)["claimed"] is True
+    assert client.get(f"/api/runs/{run['id']}").json()["status"] == "succeeded"
+    second = subprocess.run(command, env=env, capture_output=True, text=True, timeout=30)
+    assert json.loads(second.stdout) == {"claimed": False}
+
+
+def test_hugging_face_provider_model_identifier_is_safe_in_event(execution_project):
+    from videotranslate.execution.context import RunContext
+    from videotranslate.execution.service import claim_run
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    with sf.begin() as db:
+        lease = claim_run(db, "worker")
+    context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, run_id, lease.lease_token
+    )
+    context.begin_submission("huggingface", "Qwen/Qwen3-8B:nscale")
+
+
+def test_worker_shutdown_does_not_turn_local_run_into_cancellation(execution_project):
+    from videotranslate.execution.registry import STAGES, StageDefinition
+    from videotranslate.execution.worker import Worker
+
+    client, _, project = execution_project
+    run_id = enqueue(client, project)
+    worker = Worker(client.app.state.settings)
+    stage = STAGES["probe"]
+
+    def stop_during_work(context):
+        worker.stop.set()
+        context.check_active()
+
+    worker.registry = {
+        "probe": StageDefinition(
+            "probe", stage.validate_options, stage.resolve_inputs, stop_during_work
+        )
+    }
+    assert worker.run_once()
+    with client.app.state.session_factory() as db:
+        run = db.get(StageRun, run_id)
+        assert run.status == "running" and run.lease_expires_at <= utcnow()
+    worker.stop.clear()
+    worker.registry = STAGES
+    assert worker.run_once()
+    with client.app.state.session_factory() as db:
+        assert db.get(StageRun, run_id).status == "succeeded"
+
+
+def test_recovered_cancelled_remote_job_is_polled_without_resubmission(execution_project):
+    from videotranslate.execution.context import RunContext
+    from videotranslate.execution.registry import STAGES, StageDefinition
+    from videotranslate.execution.service import cancel_run, claim_run
+    from videotranslate.execution.worker import Worker
+
+    client, _, project = execution_project
+    sf = client.app.state.session_factory
+    run_id = enqueue(client, project)
+    with sf.begin() as db:
+        lease = claim_run(db, "first")
+    context = RunContext(
+        sf, client.app.state.storage, client.app.state.settings, run_id, lease.lease_token
+    )
+    context.begin_submission("test-provider", "test-model")
+    context.record_submission("job-1")
+    with sf.begin() as db:
+        run = db.get(StageRun, run_id)
+        cancel_run(db, run.workspace_id, run_id)
+        run.lease_expires_at = utcnow() - timedelta(seconds=1)
+    calls = []
+
+    def poll(ctx):
+        calls.append(ctx.remote_checkpoint())
+        return StageResult({"duration_ms": 1})
+
+    stage = STAGES["probe"]
+    registry = {
+        "probe": StageDefinition("probe", stage.validate_options, stage.resolve_inputs, poll)
+    }
+    assert Worker(client.app.state.settings, registry=registry).run_once()
+    assert calls == ["job-1"]
+    with sf() as db:
+        run = db.get(StageRun, run_id)
+        assert run.status == "cancelled" and run.remote_state == "completed"
+
+
+def test_deleted_project_expired_local_lease_is_retired(execution_project):
+    from videotranslate.execution.service import claim_run
+
+    client, headers, project = execution_project
+    run_id = enqueue(client, project)
+    sf = client.app.state.session_factory
+    with sf.begin() as db:
+        claim_run(db, "first")
+        db.get(StageRun, run_id).lease_expires_at = utcnow() - timedelta(seconds=1)
+    assert client.delete(f"/api/projects/{project['id']}", headers=headers).status_code in (
+        200,
+        204,
+    )
+    with sf.begin() as db:
+        claim_run(db, "restarted")
+    with sf() as db:
+        run = db.get(StageRun, run_id)
+        assert run.lease_token is None and run.status == "cancelled"

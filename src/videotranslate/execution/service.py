@@ -200,7 +200,7 @@ def claim_run(db: Session, owner: str, *, lease_seconds: int = 60, registry=None
     candidates = db.scalars(
         select(StageRun.id)
         .join(Project, Project.id == StageRun.project_id)
-        .where(ready, Project.deleted_at.is_(None))
+        .where(ready)
         .order_by(StageRun.due_at, StageRun.created_at, StageRun.id)
         .limit(100)
     ).all()
@@ -214,9 +214,21 @@ def claim_run(db: Session, owner: str, *, lease_seconds: int = 60, registry=None
             if project is None:
                 continue
         project, run = _lock_run_project(db, run_id)
-        if project.deleted_at is not None or run.stage not in (
-            STAGES if registry is None else registry
-        ):
+        if project.deleted_at is not None:
+            if run.lease_token:
+                _end_attempt(
+                    db, run, "lease_expired", {"code": "LEASE_EXPIRED", "retryable": False}
+                )
+            if run.remote_id or run.remote_state == "submitting":
+                run.status = "needs_review"
+                run.safe_error = {"code": "SUBMISSION_UNCERTAIN", "retryable": False}
+            else:
+                run.status = "cancelled"
+            run.finished_at = now
+            _clear_lease(run)
+            append_event(db, project, f"run.{run.status}", run=run)
+            continue
+        if run.stage not in (STAGES if registry is None else registry):
             continue
         if (
             run.status in {"running", "cancelling"}

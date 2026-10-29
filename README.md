@@ -108,3 +108,33 @@ The production cookie/factory unit test injects SQLite/local storage only to ins
 behavior; it is not a live PostgreSQL or S3 test. Cloud deployment and real inference remain separate
 acceptance stages. See [engineering sources](docs/engineering/sources.md) and
 [verification evidence](docs/engineering/foundation-verification.md).
+
+## Durable probe worker
+
+Run the API and worker as separate processes against the same database and private storage. Apply
+Alembic migrations before starting production processes. The PostgreSQL database is the production
+queue; SQLite and local storage are for development and tests. Install FFmpeg/FFprobe on the worker.
+
+```sh
+uv run python -m videotranslate.execution.worker
+uv run python -m videotranslate.execution.worker --once
+```
+
+The one-shot command prints `{"claimed": true}` or `{"claimed": false}`. Configure
+`VT_WORKER_LEASE_SECONDS`, `VT_WORKER_HEARTBEAT_SECONDS` and `VT_WORKER_POLL_SECONDS`; heartbeat
+must be shorter than the lease. Probe limits are set with `VT_PROBE_MAX_BYTES`,
+`VT_PROBE_MAX_DURATION_SECONDS`, `VT_PROBE_MAX_PIXELS` and `VT_PROBE_TIMEOUT_SECONDS`.
+
+Create a probe with `POST /api/projects/{id}/runs` and `{"stage":"probe"}`; mutations need CSRF.
+Run lists, individual run/attempt details, retries, cancellation and project events are private to
+the workspace. `GET /api/projects/{id}/events/stream` supports `after`, `Last-Event-ID`, and
+`follow=false`. Only probe is implemented; future AI stages return `STAGE_UNAVAILABLE`. Probe reports
+zero-based audio ordinals separately from FFmpeg stream indices; a video without audio can be probed,
+but no transcription stage is currently available.
+
+Handlers implement `StageDefinition` with option validation, exact input resolution, and `handle`;
+an optional short database-only `publish` callback runs after lease and freshness verification.
+Remote adapters must use `RunContext` submission checkpoints and resume a saved remote ID. An
+uncertain submission requires explicit acknowledgment before retry. No inference provider is
+implemented by the probe worker. Object storage and database commits are not atomic; deployment
+needs a provider-supported, ownership-checked orphan reconciliation process.
