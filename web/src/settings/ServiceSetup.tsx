@@ -20,7 +20,7 @@ type Settings = {
       revision: number;
       adapter?: string;
       model?: string;
-      endpoint?: string;
+      endpoint?: string | null;
       space_id?: string | null;
       credential_ref?: string | null;
       controls?: Record<string, unknown>;
@@ -169,7 +169,7 @@ export default function ServiceSetup({
   async function saveService(
     s: (typeof services)[number],
     edited?: {
-      endpoint: string;
+      endpoint?: string | null;
       model: string;
       adapter?: string;
       space_id?: string | null;
@@ -187,7 +187,7 @@ export default function ServiceSetup({
       if (!edited && s.slot === "separation" && current?.revision) {
         edited = {
           adapter: current.adapter,
-          endpoint: current.endpoint ?? "",
+          endpoint: current.endpoint,
           model: current.model ?? "",
           space_id: current.space_id,
           credential_ref: current.credential_ref,
@@ -199,7 +199,7 @@ export default function ServiceSetup({
           method: "PUT",
           body: JSON.stringify({
             adapter: edited?.adapter ?? s.adapter,
-            endpoint: edited?.endpoint ?? s.endpoint,
+            endpoint: edited ? edited.endpoint : s.endpoint,
             space_id:
               edited && "space_id" in edited ? edited.space_id : ("space_id" in s ? s.space_id : undefined),
             model: edited?.model ?? s.model,
@@ -453,7 +453,7 @@ function ServiceCard({
   fieldError: boolean;
   invalid: boolean;
   save: (edited?: {
-    endpoint: string;
+    endpoint?: string | null;
     model: string;
     adapter?: string;
     space_id?: string | null;
@@ -461,8 +461,10 @@ function ServiceCard({
   }) => void;
   check: () => void;
 }) {
-  const [endpoint, setEndpoint] = useState(
-      current?.endpoint ?? service.endpoint,
+  const [endpoint, setEndpoint] = useState<string | null | undefined>(
+      service.slot === "separation" && current?.revision
+        ? current.endpoint
+        : current?.endpoint ?? service.endpoint,
     ),
     [model, setModel] = useState(current?.model ?? service.model),
     [adapter, setAdapter] = useState(current?.adapter ?? service.adapter),
@@ -674,7 +676,7 @@ function ServiceCard({
             aria-invalid={(fieldError && invalid) || undefined}
             aria-describedby={fieldError ? "setup-error" : undefined}
             readOnly={service.slot === "transcription" || adapter === "demucs_multistem"}
-            value={endpoint}
+            value={endpoint ?? ""}
             onChange={(e) => setEndpoint(e.target.value)}
           />
         </label>

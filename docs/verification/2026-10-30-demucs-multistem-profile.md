@@ -56,3 +56,18 @@ The full backend command uses `PYTHONPATH=src`, `VT_TEST_POSTGRES_ADMIN_URL=post
 Reviewed correctness (schema/order, sum gain, frame length, retry/cancel), readability (focused provider/media helpers), architecture (existing Operations/checkpoint and publisher pattern), security (no token to third-party Space, private provenance, allowed hosts) and performance (bounded bytes/process/threads, no CPU/storage work in publisher SQL). Existing ASR/reference consumption continues through the same downstream asset kinds.
 
 No live inference, protected-preview changes, credential access, local AI package/runtime/weight installation, push or deployment was performed for this implementation. Controller-owned independent SPEC/QUALITY gates and the retained 60-second registered-stage integration remain separate follow-up checks. Tasks 4C/5/6/7 are not implemented here.
+
+## QUALITY follow-up — nullable endpoint round trip
+
+The independent QUALITY review found that the setup UI converted a saved null/omitted endpoint into an empty string through the default-save button, and injected the new recommended host into the expanded form even for a loaded legacy profile. The backend accepts null/omitted endpoints for Space resolution, so valid saved configurations must retain those values.
+
+Reproduced against the actual component with **8 failing tests**: both `demucs` and `demucs_multistem`, explicit null and omitted endpoint, and both save buttons. The captured requests demonstrated the empty-string substitution and unintended teamup host. The repair keeps null/undefined in loaded separation state and serialization; an empty input is only the display for an unresolved explicit endpoint. New-configuration and explicitly selected profile defaults still work. The regression also checks legacy model/Space display and that an explicit switch saves the newly selected host.
+
+Fresh verification after the UI-only repair:
+
+- Focused `ServiceSetup.test.tsx`: **14 passed** (including all eight RED → GREEN matrix cases).
+- Full frontend: **34 passed**; bundled Node 24 `pnpm --dir web typecheck` and `pnpm --dir web build` passed.
+- Ruff check, Ruff format check, compileall, `uv lock --check` and `git diff --check` passed.
+- Self-review confirmed null remains explicit null, omitted remains omitted in JSON, saved profiles do not inherit recommendation endpoints, and default selection still applies on new configuration or an explicit profile change.
+
+Only the setup component, its tests and this verification note changed. No backend/provider/media/recovery/schema implementation changed, so the previous **430-pass backend/PostgreSQL evidence** remains the relevant backend run; it was not repeated solely for this UI repair. Independent targeted SPEC/QUALITY rechecks and controller-owned live integration remain separate. No live inference, protected-preview changes, credentials, push or deployment were involved.

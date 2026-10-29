@@ -214,4 +214,59 @@ it("keeps saved two-stem settings until the owner explicitly selects four stems"
   expect((screen.getByLabelText("背景分离模型") as HTMLInputElement).value).toBe("htdemucs");
   expect((screen.getByLabelText("背景分离 Space ID") as HTMLInputElement).value).toBe("teamup-tech/Demucs");
   expect(screen.getAllByRole("link", { name: "查看服务来源", hidden: true })[0].getAttribute("href")).toContain("teamup-tech/Demucs");
+  await user.click(screen.getByRole("button", { name: "保存背景分离设置" }));
+  await waitFor(() => expect(bodies).toHaveLength(2));
+  expect(bodies[1]).toMatchObject({
+    revision: 8, adapter: "demucs_multistem", model: "htdemucs",
+    space_id: "teamup-tech/Demucs", endpoint: "https://teamup-tech-demucs.hf.space",
+  });
 });
+
+for (const adapter of ["demucs", "demucs_multistem"] as const) {
+  for (const endpointState of ["null", "omitted"] as const) {
+    for (const button of ["default", "expanded"] as const) {
+      it(`round-trips ${adapter} ${endpointState} endpoint with ${button} save`, async () => {
+        const user = userEvent.setup();
+        const loaded = {
+          revision: 7,
+          adapter,
+          model: adapter === "demucs" ? "htdemucs_ft" : "htdemucs",
+          space_id: adapter === "demucs" ? "kajise/Demucs_v4-FT_2s" : "teamup-tech/Demucs",
+          credential_ref: null,
+          ...(endpointState === "null" ? { endpoint: null } : {}),
+        };
+        const bodies: Record<string, unknown>[] = [];
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+          if (String(input).endsWith("/provider-settings")) return ok({
+            credentials: {
+              huggingface: { revision: 0, configured: false },
+              translation: { revision: 0, configured: false },
+            },
+            providers: { separation: loaded },
+          });
+          const body = JSON.parse(String(init?.body));
+          bodies.push(body);
+          return ok({ ...body, revision: 8 });
+        });
+        render(<ServiceSetup csrf="fake" logout={() => {}} />);
+        await screen.findByLabelText("Hugging Face 访问令牌");
+        await user.click(screen.getAllByText("查看连接信息")[0]);
+        expect((screen.getByLabelText("背景分离模型") as HTMLInputElement).value).toBe(loaded.model);
+        expect((screen.getByLabelText("背景分离 Space ID") as HTMLInputElement).value).toBe(loaded.space_id);
+        await user.click(button === "default"
+          ? screen.getAllByRole("button", { name: "保存默认设置" })[0]
+          : screen.getByRole("button", { name: "保存背景分离设置" }));
+        await waitFor(() => expect(bodies).toHaveLength(1));
+        expect(bodies[0]).toMatchObject(loaded);
+        if (endpointState === "null") {
+          expect(bodies[0]).toHaveProperty("endpoint", null);
+        } else {
+          expect(bodies[0]).not.toHaveProperty("endpoint");
+        }
+        expect(bodies[0].endpoint).not.toBe("");
+        // A saved Space-resolved endpoint is blank, never the other profile's host.
+        expect((screen.getByLabelText("背景分离端点") as HTMLInputElement).value).toBe("");
+      });
+    }
+  }
+}
