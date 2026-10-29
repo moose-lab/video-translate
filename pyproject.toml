@@ -8,10 +8,19 @@ version = "0.1.0"
 description = "Private workspace API for the Video Translate SaaS"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "fastapi>=0.115,<1", "pydantic>=2.10,<3", "pydantic-settings>=2.7,<3",
-  "sqlalchemy>=2.0,<3", "alembic>=1.14,<2", "psycopg[binary]>=3.2,<4",
-  "argon2-cffi>=23.1", "cryptography>=44", "boto3>=1.36,<2",
-  "python-multipart>=0.0.20", "httpx>=0.28,<1", "uvicorn>=0.34,<1",
+  "fastapi>=0.115,<1",
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "sqlalchemy>=2.0,<3",
+  "alembic>=1.14,<2",
+  "psycopg[binary]>=3.2,<4",
+  "argon2-cffi>=23.1",
+  "cryptography>=44",
+  "boto3>=1.36,<2",
+  "python-multipart>=0.0.20",
+  "httpx>=0.28,<1",
+  "uvicorn>=0.34,<1",
+  "websockets>=15,<17",
 ]
 
 [project.optional-dependencies]
@@ -33,3 +42,9 @@ select = ["E4", "E7", "E9", "F", "I", "B"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/videotranslate/languages/data" = "videotranslate/languages/data"
+
+[tool.hatch.build.targets.sdist.force-include]
+"src/videotranslate/languages/data" = "src/videotranslate/languages/data"

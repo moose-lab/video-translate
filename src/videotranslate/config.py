@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     public_origin: str = "http://localhost:8000"
     debug: bool = False
     provider_allowed_hosts: str = ""
+    provider_proxy_url: SecretStr = SecretStr("")
+    provider_dns_over_https: bool = False
     s3_endpoint_url: str = ""
     s3_bucket: str = ""
     s3_region: str = ""
@@ -86,6 +88,28 @@ class Settings(BaseSettings):
                 raise ValueError("Production debug must be disabled")
             if self.storage_backend != "s3":
                 raise ValueError("Production requires private S3 storage")
+        proxy_value = self.provider_proxy_url.get_secret_value()
+        if self.provider_dns_over_https and not proxy_value:
+            raise ValueError("Provider DNS over HTTPS requires an administrator proxy")
+        if proxy_value:
+            try:
+                proxy = urlsplit(proxy_value)
+                if (
+                    proxy.scheme not in {"http", "https"}
+                    or not proxy.hostname
+                    or proxy.path not in {"", "/"}
+                    or proxy.query
+                    or proxy.fragment
+                    or any(ord(char) < 32 for char in proxy_value)
+                    or not 1 <= (proxy.port or (443 if proxy.scheme == "https" else 80)) <= 65535
+                    or (
+                        proxy.scheme == "http"
+                        and proxy.hostname not in {"localhost", "127.0.0.1", "::1"}
+                    )
+                ):
+                    raise ValueError()
+            except ValueError:
+                raise ValueError("Invalid provider proxy configuration") from None
         if self.worker_heartbeat_seconds >= self.worker_lease_seconds:
             raise ValueError("Worker heartbeat must be shorter than lease")
         if self.storage_backend == "s3":

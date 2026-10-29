@@ -177,3 +177,24 @@ def test_postgresql_migration_compiles_with_deferred_source_asset_foreign_key():
     assert ddl.index("CREATE TABLE assets") < ddl.index(
         "ALTER TABLE projects ADD CONSTRAINT fk_projects_source_asset"
     )
+
+
+def test_provider_proxy_is_secret_and_doh_requires_explicit_proxy(tmp_path):
+    import pytest
+    from pydantic import ValidationError
+
+    from videotranslate.config import Settings
+
+    values = {
+        "environment": "test",
+        "database_url": f"sqlite:///{tmp_path}/a.db",
+        "storage_backend": "local",
+    }
+    with pytest.raises(ValidationError):
+        Settings(**values, provider_dns_over_https=True)
+    settings = Settings(
+        **values,
+        provider_proxy_url="http://user:fake-password@127.0.0.1:7897",
+        provider_dns_over_https=True,
+    )
+    assert "fake-password" not in repr(settings)
