@@ -16,7 +16,7 @@ from ..execution.inputs import set_inputs
 from ..models.core import Project, Workspace, utcnow
 from ..models.providers import ProviderConnection, ProviderConnectionRevision, WorkspaceCredential
 from ..providers.network import validate_url
-from ..providers.settings import SLOTS, validate_controls
+from ..providers.settings import SLOTS, capability_contract, preset_supported, validate_controls
 from ..providers.vault import encrypt_credential
 from ..security import Identity, require_csrf, require_identity
 
@@ -84,7 +84,15 @@ def get_settings(identity: Identity = Depends(require_identity), db: Session = D
             current = next((c.revision for c in creds if c.kind == credential_kind), 0)
             if check.get("credential_revision") != current:
                 check["credentials_valid"] = None
-        return {"revision": connection.revision, **connection.settings, "check_state": check}
+        capabilities = capability_contract(connection.slot, connection.settings["adapter"])
+        if check and isinstance(check.get("capabilities"), dict):
+            capabilities.update(check["capabilities"])
+        return {
+            "revision": connection.revision,
+            **connection.settings,
+            "check_state": check,
+            "capabilities": capabilities,
+        }
 
     return {
         "credentials": {
@@ -94,7 +102,19 @@ def get_settings(identity: Identity = Depends(require_identity), db: Session = D
         "providers": {
             slot: next(
                 (safe_connection(c) for c in connections if c.slot == slot),
-                {"revision": 0},
+                {
+                    "revision": 0,
+                    "capabilities": capability_contract(
+                        slot,
+                        {
+                            "separation": "demucs",
+                            "transcription": "nvidia_stream",
+                            "translation": "hf_router",
+                            "synthesis": "omnivoice",
+                            "verification": "hf_router",
+                        }[slot],
+                    ),
+                },
             )
             for slot in SLOTS
         },
@@ -182,6 +202,8 @@ def put_provider(
         or body.credential_ref not in valid_refs[body.adapter]
     ):
         raise APIError(422, "VALIDATION_ERROR", "Invalid provider configuration")
+    if not preset_supported(body.adapter, body.model, body.space_id, body.endpoint):
+        raise APIError(422, "VALIDATION_ERROR", "Unsupported provider configuration")
     try:
         validate_controls(body.adapter, body.controls)
     except ValueError:
@@ -311,14 +333,18 @@ def check_provider(
         "credential_revision": credential_revision,
         "inference_verified": False,
         "checked_at": utcnow().isoformat(),
-        "capabilities": {"coverage": "unknown"},
+        "capabilities": capability_contract(slot, values["adapter"]),
         "limits": {},
     }
     if values["adapter"] == "omnivoice":
         result["credential_mode"] = (
             "authenticated" if credential and credential.ciphertext else "public_demo"
         )
-    if required and not (credential and credential.ciphertext):
+    if not preset_supported(
+        values["adapter"], values.get("model"), values.get("space_id"), values.get("endpoint")
+    ):
+        result["state"] = "configuration_required"
+    elif required and not (credential and credential.ciphertext):
         result["state"] = "credential_required"
     elif values["adapter"] in {"hf_router", "openai_compatible"} and (
         not values.get("endpoint") or not values.get("model")
@@ -351,11 +377,8 @@ def check_provider(
                         client.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024)
                     )
                     validate_endpoint_schema(schema, values["adapter"])
-                    result["capabilities"] = {
-                        "coverage": "unknown",
-                        "api_prefix": prefix,
-                        "resumable": True,
-                    }
+                    result["capabilities"] = capability_contract(slot, values["adapter"], schema)
+                    result["capabilities"]["api_prefix"] = prefix
                     if (
                         values["adapter"] == "omnivoice"
                         and values["space_id"] == "k2-fsa/OmniVoice"
@@ -377,19 +400,19 @@ def check_provider(
                     config = json.loads(client.get(host + "/api/config", max_bytes=65536))
                     if health.get("ok") is not True or config.get("ready") is not True:
                         raise ValueError("Space health unavailable")
-                    result["capabilities"] = {
-                        "coverage": "English file streaming",
-                        "resumable": False,
-                    }
+                    result["capabilities"] = capability_contract(slot, values["adapter"])
                     result["limits"] = {"max_duration_seconds": 120, "max_speakers": 8}
                 else:
                     raise ValueError("Unsupported Space adapter")
             elif values["adapter"] == "hf_router":
                 model = values.get("model") or ""
-                if not re.fullmatch(
-                    r"[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*", model
-                ):
+                match = re.fullmatch(
+                    r"([A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*)(?::[A-Za-z0-9][A-Za-z0-9_.-]*)?",
+                    model,
+                )
+                if not match:
                     raise ValueError("Model configuration required")
+                model = match.group(1)
                 import json
 
                 metadata = json.loads(

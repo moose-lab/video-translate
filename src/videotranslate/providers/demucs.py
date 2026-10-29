@@ -22,12 +22,16 @@ def normalize_stems(value):
     return {"vocals": value[0], "instrumental": value[1]}
 
 
-def submit_separation(http, *, audio, filename, space_id="kajise/Demucs_v4-FT_2s"):
+def submit_separation(
+    http, *, audio, filename, space_id="kajise/Demucs_v4-FT_2s", model="htdemucs_ft"
+):
     import json
 
     from .contracts import RemoteResult
     from .gradio import GradioClient, discover_prefix, resolve_space, validate_endpoint_schema
 
+    if model != "htdemucs_ft":
+        raise ValueError("Unsupported Demucs model")
     host = resolve_space(http, space_id)
     prefix = discover_prefix(http, host, "/predict")
     schema = json.loads(http.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024))

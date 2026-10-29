@@ -75,6 +75,7 @@ def submit_clone(
     filename,
     reference_text,
     space_id="k2-fsa/OmniVoice",
+    model="OmniVoice",
     controls=None,
     hf_token=None,
 ):
@@ -83,6 +84,8 @@ def submit_clone(
     from .contracts import RemoteResult
     from .gradio import GradioClient, discover_prefix, resolve_space, validate_endpoint_schema
 
+    if model != "OmniVoice":
+        raise ValueError("Unsupported OmniVoice model")
     host = resolve_space(http, space_id)
     prefix = discover_prefix(http, host, "/_clone_fn")
     schema = json.loads(http.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024))

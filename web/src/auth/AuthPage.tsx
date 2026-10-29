@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { api } from "../api/client";
+import { api, ApiError } from "../api/client";
 export type Identity = {
   csrf_token: string;
   user: { name: string };
@@ -15,11 +15,13 @@ export default function AuthPage({
     [password, setPassword] = useState(""),
     [name, setName] = useState(""),
     [error, setError] = useState(""),
+    [invalid, setInvalid] = useState(false),
     [pending, setPending] = useState(false);
   async function submit(e: FormEvent) {
     e.preventDefault();
     setPending(true);
     setError("");
+    setInvalid(false);
     try {
       const result = await api<Identity>(
         `/auth/${register ? "register" : "login"}`,
@@ -34,6 +36,7 @@ export default function AuthPage({
       onAuth(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "操作未完成");
+      setInvalid(e instanceof ApiError && [400, 401, 422].includes(e.status));
     } finally {
       setPending(false);
     }
@@ -63,6 +66,8 @@ export default function AuthPage({
               名称
               <input
                 required
+                aria-invalid={invalid || undefined}
+                aria-describedby={error ? "auth-error" : undefined}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="name"
@@ -72,6 +77,8 @@ export default function AuthPage({
           <label>
             邮箱
             <input
+              aria-invalid={invalid || undefined}
+              aria-describedby={error ? "auth-error" : undefined}
               type="email"
               required
               value={email}
@@ -82,6 +89,8 @@ export default function AuthPage({
           <label>
             密码
             <input
+              aria-invalid={invalid || undefined}
+              aria-describedby={error ? "auth-error" : undefined}
               type="password"
               required
               minLength={10}
@@ -91,7 +100,7 @@ export default function AuthPage({
             />
           </label>
           {error && (
-            <p role="alert" className="error">
+            <p id="auth-error" role="alert" className="error">
               {error}
             </p>
           )}

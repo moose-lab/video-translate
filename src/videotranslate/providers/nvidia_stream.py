@@ -6,6 +6,8 @@ import ssl
 
 from websockets.sync.client import connect as ws_connect
 
+from ..languages.catalog import resolve
+from .contracts import ProviderError
 from .network import open_proxy_tunnel, resolve_doh, resolve_public, validate_public_addresses
 
 
@@ -48,11 +50,13 @@ def normalize_final(value):
     return result
 
 
-def stream_file(ws, pcm, *, max_speakers=8, timeout_seconds=180):
+def stream_file(ws, pcm, *, source_language, max_speakers=8, timeout_seconds=180):
     """Use an established WebSocket for a bounded, non-resumable English file stream."""
     import json
     import time
 
+    if resolve(source_language)["code"] != "en":
+        raise ValueError("NVIDIA file diarization supports English only")
     if not isinstance(pcm, bytes) or not pcm or len(pcm) % 2 or len(pcm) > 120 * 16000 * 2:
         raise ValueError("Audio must be 16 kHz mono PCM16, at most 120 seconds")
     if (
@@ -78,34 +82,62 @@ def stream_file(ws, pcm, *, max_speakers=8, timeout_seconds=180):
         except Exception:
             raise ValueError("Streaming response unavailable or invalid") from None
 
-    ws.send(json.dumps({"type": "start", "sampleRateHz": 16000, "maxSpeakers": max_speakers}))
-    if receive().get("type") != "ready":
-        raise ValueError("Provider did not become ready")
-    for offset in range(0, len(pcm), 65536):
-        ws.send(pcm[offset : offset + 65536])
-    ws.send(json.dumps({"type": "end"}))
-    while True:
-        message = receive()
-        if message.get("type") == "error":
-            raise ValueError("Provider stream failed")
-        if message.get("type") == "result" and message.get("isFinal") is True:
-            return normalize_final(message)
+    try:
+        ws.send(json.dumps({"type": "start", "sampleRateHz": 16000, "maxSpeakers": max_speakers}))
+        if receive().get("type") != "ready":
+            raise ValueError("Provider did not become ready")
+        for offset in range(0, len(pcm), 65536):
+            ws.send(pcm[offset : offset + 65536])
+        ws.send(json.dumps({"type": "end"}))
+        while True:
+            message = receive()
+            if message.get("type") == "error":
+                raise ValueError("Provider stream failed")
+            if message.get("type") == "result" and message.get("isFinal") is True:
+                return normalize_final(message)
+    except Exception:
+        raise ProviderError("uncertain") from None
 
 
-def stream_remote(pcm, *, max_speakers=8, proxy_url=None, use_doh=False):
+def stream_remote(
+    pcm,
+    *,
+    max_speakers=8,
+    proxy_url=None,
+    use_doh=False,
+    source_language,
+    endpoint="https://nvidia-nemotron-diarization.hf.space",
+    model="nemotron-diarization",
+):
     """Connect directly to a pinned public IP with hostname-validated TLS."""
     host = "nvidia-nemotron-diarization.hf.space"
+    if (
+        resolve(source_language)["code"] != "en"
+        or endpoint.rstrip("/") != "https://" + host
+        or model != "nemotron-diarization"
+    ):
+        raise ValueError("Unsupported diarization language or endpoint")
+    if (
+        not isinstance(max_speakers, int)
+        or isinstance(max_speakers, bool)
+        or not 1 <= max_speakers <= 8
+    ):
+        raise ValueError("Invalid maximum speaker count")
     if not isinstance(pcm, bytes) or not pcm or len(pcm) % 2 or len(pcm) > 120 * 16000 * 2:
         raise ValueError("Audio must be 16 kHz mono PCM16, at most 120 seconds")
     if use_doh and not proxy_url:
         raise ValueError("Trusted DNS requires an administrator proxy")
-    addresses = resolve_doh(host, proxy_url) if use_doh else resolve_public(host)
-    validate_public_addresses(addresses)
-    sock = (
-        open_proxy_tunnel(proxy_url, addresses[0], 443, 5)
-        if proxy_url
-        else socket.create_connection((addresses[0], 443), timeout=5)
-    )
+    try:
+        addresses = resolve_doh(host, proxy_url) if use_doh else resolve_public(host)
+        validate_public_addresses(addresses)
+        sock = (
+            open_proxy_tunnel(proxy_url, addresses[0], 443, 5)
+            if proxy_url
+            else socket.create_connection((addresses[0], 443), timeout=5)
+        )
+    except Exception:
+        raise ProviderError("network") from None
+    submitted = False
     try:
         with ws_connect(
             f"wss://{host}/api/diarization/file/stream",
@@ -116,6 +148,11 @@ def stream_remote(pcm, *, max_speakers=8, proxy_url=None, use_doh=False):
             open_timeout=10,
             max_size=1024 * 1024,
         ) as ws:
-            return stream_file(ws, pcm, max_speakers=max_speakers)
+            submitted = True
+            return stream_file(ws, pcm, max_speakers=max_speakers, source_language=source_language)
+    except ProviderError:
+        raise
+    except Exception:
+        raise ProviderError("uncertain" if submitted else "network") from None
     finally:
         sock.close()

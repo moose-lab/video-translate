@@ -53,3 +53,58 @@ def validate_controls(adapter, controls):
                 valid = low <= value <= high
         if not valid:
             raise ValueError("Invalid provider controls")
+
+
+def capability_contract(slot, adapter, schema=None):
+    from dataclasses import asdict
+
+    from ..languages.catalog import resolve
+    from .contracts import ProviderCapabilities
+
+    supported = []
+    if adapter == "nvidia_stream":
+        supported = ["en", "en-US", "en-GB"]
+    elif adapter == "omnivoice" and schema is not None:
+        try:
+            enum = schema["named_endpoints"]["/_clone_fn"]["parameters"][1]["type"]["enum"]
+            if not isinstance(enum, list):
+                raise ValueError()
+            for name in enum:
+                try:
+                    item = resolve(name)
+                    if not item["is_auto"] and item["code"] not in supported:
+                        supported.append(item["code"])
+                except (ValueError, TypeError):
+                    continue
+        except (KeyError, TypeError, ValueError):
+            raise ValueError("Provider language enum unavailable") from None
+    controls = {
+        "omnivoice": ("ns", "gs", "dn", "sp", "du", "pp", "po"),
+        "nvidia_stream": ("max_speakers",),
+    }.get(adapter, ())
+    capability = ProviderCapabilities(
+        stage=slot,
+        language_support="unsupported" if adapter == "nvidia_stream" else "unknown",
+        supported_languages=tuple(supported),
+        resumable=adapter in {"omnivoice", "demucs"},
+        cancel_supported=False,
+        max_duration_seconds=120 if adapter == "nvidia_stream" else None,
+        controls=controls,
+    )
+    return asdict(capability)
+
+
+def preset_supported(adapter, model, space_id, endpoint):
+    models = {
+        "nvidia_stream": "nemotron-diarization",
+        "omnivoice": "OmniVoice",
+        "demucs": "htdemucs_ft",
+    }
+    if adapter in models and model != models[adapter]:
+        return False
+    if adapter == "nvidia_stream":
+        return (
+            space_id == "nvidia/nemotron-diarization"
+            and (endpoint or "").rstrip("/") == "https://nvidia-nemotron-diarization.hf.space"
+        )
+    return True

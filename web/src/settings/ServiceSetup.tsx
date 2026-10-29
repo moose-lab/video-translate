@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { api } from "../api/client";
+import { api, ApiError } from "../api/client";
 import LanguagePicker from "./LanguagePicker";
 type Credential = { configured: boolean; revision: number };
 type CheckState = {
@@ -88,6 +88,8 @@ export default function ServiceSetup({
     [token, setToken] = useState(""),
     [pending, setPending] = useState(false),
     [error, setError] = useState(""),
+    [errorTarget, setErrorTarget] = useState(""),
+    [invalid, setInvalid] = useState(false),
     [notice, setNotice] = useState(""),
     [showLanguages, setShowLanguages] = useState(false),
     [sourceLanguage, setSourceLanguage] = useState("auto"),
@@ -107,6 +109,8 @@ export default function ServiceSetup({
     if (!settings) return;
     setPending(true);
     setError("");
+    setErrorTarget("");
+    setInvalid(false);
     try {
       const credential = await api<Credential>(
         "/credentials/huggingface",
@@ -127,6 +131,8 @@ export default function ServiceSetup({
       setNotice(clear ? "令牌已清除。" : "令牌已安全保存。");
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败");
+      setErrorTarget("credential");
+      setInvalid(e instanceof ApiError && [400, 422].includes(e.status));
     } finally {
       setPending(false);
     }
@@ -144,6 +150,8 @@ export default function ServiceSetup({
     if (!settings) return;
     setPending(true);
     setError("");
+    setErrorTarget("");
+    setInvalid(false);
     try {
       const current = settings.providers[s.slot];
       const saved = await api<Settings["providers"][string]>(
@@ -175,6 +183,8 @@ export default function ServiceSetup({
       setNotice(s.name + "设置已保存。");
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败");
+      setErrorTarget(s.slot);
+      setInvalid(e instanceof ApiError && [400, 422].includes(e.status));
     } finally {
       setPending(false);
     }
@@ -185,6 +195,8 @@ export default function ServiceSetup({
     if (!current?.revision) return;
     setPending(true);
     setError("");
+    setErrorTarget("");
+    setInvalid(false);
     try {
       const check = await api<CheckState>(
         "/providers/" + slot + "/check",
@@ -203,6 +215,7 @@ export default function ServiceSetup({
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "检查失败");
+      setErrorTarget(slot);
     } finally {
       setPending(false);
     }
@@ -231,7 +244,7 @@ export default function ServiceSetup({
             <span className="pill">配置阶段</span>
           </div>
           {error && (
-            <p role="alert" className="error">
+            <p id="setup-error" role="alert" className="error">
               {error}
             </p>
           )}
@@ -268,6 +281,12 @@ export default function ServiceSetup({
                   <label>
                     Hugging Face 访问令牌
                     <input
+                      aria-invalid={
+                        (errorTarget === "credential" && invalid) || undefined
+                      }
+                      aria-describedby={
+                        errorTarget === "credential" ? "setup-error" : undefined
+                      }
                       type="password"
                       autoComplete="off"
                       value={token}
@@ -323,6 +342,8 @@ export default function ServiceSetup({
                     index={i}
                     current={settings.providers[s.slot]}
                     pending={pending}
+                    fieldError={errorTarget === s.slot}
+                    invalid={invalid}
                     save={(edited) => void saveService(s, edited)}
                     check={() => void checkService(s.slot)}
                   />
@@ -367,6 +388,8 @@ function ServiceCard({
   index,
   current,
   pending,
+  fieldError,
+  invalid,
   save,
   check,
 }: {
@@ -374,6 +397,8 @@ function ServiceCard({
   index: number;
   current: Settings["providers"][string] | undefined;
   pending: boolean;
+  fieldError: boolean;
+  invalid: boolean;
   save: (edited?: {
     endpoint: string;
     model: string;
@@ -451,6 +476,8 @@ function ServiceCard({
           <label>
             翻译服务类型
             <select
+              aria-invalid={(fieldError && invalid) || undefined}
+              aria-describedby={fieldError ? "setup-error" : undefined}
               value={adapter}
               onChange={(e) => {
                 setAdapter(e.target.value);
@@ -503,6 +530,9 @@ function ServiceCard({
           <label>
             {service.name} Space ID
             <input
+              aria-invalid={(fieldError && invalid) || undefined}
+              aria-describedby={fieldError ? "setup-error" : undefined}
+              readOnly={service.slot === "transcription"}
               value={spaceId}
               onChange={(e) => setSpaceId(e.target.value)}
             />
@@ -512,6 +542,8 @@ function ServiceCard({
           <label>
             翻译服务凭据
             <select
+              aria-invalid={(fieldError && invalid) || undefined}
+              aria-describedby={fieldError ? "setup-error" : undefined}
               value={credentialRef || "none"}
               onChange={(e) =>
                 setCredentialRef(
@@ -528,6 +560,8 @@ function ServiceCard({
           <label>
             声音克隆凭据
             <select
+              aria-invalid={(fieldError && invalid) || undefined}
+              aria-describedby={fieldError ? "setup-error" : undefined}
               value={credentialRef}
               onChange={(e) => setCredentialRef(e.target.value)}
             >
@@ -539,13 +573,24 @@ function ServiceCard({
         <label>
           {service.name}端点
           <input
+            aria-invalid={(fieldError && invalid) || undefined}
+            aria-describedby={fieldError ? "setup-error" : undefined}
+            readOnly={service.slot === "transcription"}
             value={endpoint}
             onChange={(e) => setEndpoint(e.target.value)}
           />
         </label>
         <label>
           {service.name}模型
-          <input value={model} onChange={(e) => setModel(e.target.value)} />
+          <input
+            readOnly={["separation", "transcription", "synthesis"].includes(
+              service.slot,
+            )}
+            aria-invalid={(fieldError && invalid) || undefined}
+            aria-describedby={fieldError ? "setup-error" : undefined}
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+          />
         </label>
         <button
           type="button"
@@ -583,11 +628,13 @@ function CustomCredential({
 }) {
   const [token, setToken] = useState(""),
     [pending, setPending] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [invalid, setInvalid] = useState(false);
   async function save(e: FormEvent, clear = false) {
     e.preventDefault();
     setPending(true);
     setError("");
+    setInvalid(false);
     try {
       const result = await api<Credential>(
         "/credentials/translation",
@@ -604,6 +651,7 @@ function CustomCredential({
       onSaved(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败");
+      setInvalid(e instanceof ApiError && [400, 422].includes(e.status));
     } finally {
       setPending(false);
     }
@@ -617,6 +665,10 @@ function CustomCredential({
         <label>
           自定义翻译访问令牌
           <input
+            aria-invalid={invalid || undefined}
+            aria-describedby={
+              error ? "translation-credential-error" : undefined
+            }
             type="password"
             autoComplete="off"
             value={token}
@@ -638,7 +690,7 @@ function CustomCredential({
         </div>
       </form>
       {error && (
-        <p role="alert" className="error">
+        <p id="translation-credential-error" role="alert" className="error">
           {error}
         </p>
       )}

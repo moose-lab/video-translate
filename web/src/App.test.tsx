@@ -467,3 +467,107 @@ it("allows a custom translation service with no credential when appropriate", as
   await user.click(screen.getByRole("button", { name: "保存翻译设置" }));
   await waitFor(() => expect(saved?.credential_ref).toBe(null));
 });
+it("associates login errors with credential fields", async () => {
+  const user = userEvent.setup();
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) =>
+    String(input).endsWith("/auth/me") ? ok({}, 401) : ok({}, 401),
+  );
+  render(<App />);
+  const email = await screen.findByLabelText("邮箱");
+  await user.type(email, "a@example.com");
+  await user.type(screen.getByLabelText("密码"), "password123");
+  await user.click(screen.getByRole("button", { name: "登录" }));
+  const alert = await screen.findByRole("alert");
+  expect(email.getAttribute("aria-invalid")).toBe("true");
+  expect(email.getAttribute("aria-describedby")).toBe(alert.id);
+  expect(screen.getByLabelText("密码").getAttribute("aria-describedby")).toBe(
+    alert.id,
+  );
+});
+it("associates credential validation errors with the token input", async () => {
+  const user = userEvent.setup();
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const path = String(input);
+    if (path.endsWith("/auth/me"))
+      return ok({
+        csrf_token: "csrf",
+        user: { name: "M" },
+        workspace: { name: "W" },
+      });
+    if (path.endsWith("/provider-settings"))
+      return ok({
+        credentials: {
+          huggingface: { revision: 0, configured: false },
+          translation: { revision: 0, configured: false },
+        },
+        providers: {},
+      });
+    return ok({}, 422);
+  });
+  render(<App />);
+  const token = await screen.findByLabelText("Hugging Face 访问令牌");
+  await user.type(token, "fake");
+  await user.click(screen.getByRole("button", { name: "保存令牌" }));
+  const alert = await screen.findByRole("alert");
+  expect(token.getAttribute("aria-invalid")).toBe("true");
+  expect(token.getAttribute("aria-describedby")).toBe(alert.id);
+});
+it("marks fixed provider model and NVIDIA endpoint as read only", async () => {
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const path = String(input);
+    if (path.endsWith("/auth/me"))
+      return ok({
+        csrf_token: "csrf",
+        user: { name: "M" },
+        workspace: { name: "W" },
+      });
+    if (path.endsWith("/provider-settings"))
+      return ok({
+        credentials: {
+          huggingface: { revision: 0, configured: false },
+          translation: { revision: 0, configured: false },
+        },
+        providers: {},
+      });
+    throw new Error(path);
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click((await screen.findAllByText("查看连接信息"))[1]);
+  expect(
+    (screen.getByLabelText("识别与角色端点") as HTMLInputElement).readOnly,
+  ).toBe(true);
+  expect(
+    (screen.getByLabelText("识别与角色模型") as HTMLInputElement).readOnly,
+  ).toBe(true);
+});
+it("associates stale service response without marking valid fields invalid", async () => {
+  const user = userEvent.setup();
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const path = String(input);
+    if (path.endsWith("/auth/me"))
+      return ok({
+        csrf_token: "csrf",
+        user: { name: "M" },
+        workspace: { name: "W" },
+      });
+    if (path.endsWith("/provider-settings"))
+      return ok({
+        credentials: {
+          huggingface: { revision: 0, configured: false },
+          translation: { revision: 0, configured: false },
+        },
+        providers: {},
+      });
+    return ok({}, 409);
+  });
+  render(<App />);
+  await user.click((await screen.findAllByText("查看连接信息"))[2]);
+  const model = screen.getByLabelText("翻译模型");
+  await user.type(model, "draft/model");
+  await user.click(screen.getByRole("button", { name: "保存翻译设置" }));
+  const alert = await screen.findByRole("alert");
+  expect(model.getAttribute("aria-describedby")).toBe(alert.id);
+  expect(model.getAttribute("aria-invalid")).not.toBe("true");
+  expect((model as HTMLInputElement).value).toBe("draft/model");
+});

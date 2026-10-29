@@ -210,14 +210,14 @@ def test_nvidia_stream_protocol_sends_only_real_audio_and_requires_final():
 
     ws = WS()
     pcm = b"\x01\x02" * 50000
-    result = stream_file(ws, pcm, max_speakers=2)
+    result = stream_file(ws, pcm, source_language="en", max_speakers=2)
     assert json.loads(ws.sent[0]) == {"type": "start", "sampleRateHz": 16000, "maxSpeakers": 2}
     assert b"".join(item for item in ws.sent if isinstance(item, bytes)) == pcm
     assert all(len(item) <= 65536 for item in ws.sent if isinstance(item, bytes))
     assert json.loads(ws.sent[-1]) == {"type": "end"}
     assert result[0]["speaker"] == "one"
     with pytest.raises(ValueError):
-        stream_file(WS(), b"\x00" * 3840002, max_speakers=2)
+        stream_file(WS(), b"\x00" * 3840002, source_language="en", max_speakers=2)
 
 
 def test_nvidia_connection_pins_public_address_and_does_not_send_origin(monkeypatch):
@@ -258,7 +258,7 @@ def test_nvidia_connection_pins_public_address_and_does_not_send_origin(monkeypa
     monkeypatch.setattr(nvidia_stream, "resolve_public", lambda host: ["1.1.1.1"])
     monkeypatch.setattr(nvidia_stream.socket, "create_connection", lambda address, timeout: Sock())
     monkeypatch.setattr(nvidia_stream, "ws_connect", connect)
-    assert nvidia_stream.stream_remote(b"\x00\x00", max_speakers=1) == []
+    assert nvidia_stream.stream_remote(b"\x00\x00", source_language="en", max_speakers=1) == []
     assert (
         connected[0][0] == "wss://nvidia-nemotron-diarization.hf.space/api/diarization/file/stream"
     )
@@ -814,7 +814,11 @@ def test_nvidia_can_use_admin_proxy_and_doh_without_changing_sni(monkeypatch):
     monkeypatch.setattr(nvidia_stream, "ws_connect", lambda uri, **kwargs: WS())
     assert (
         nvidia_stream.stream_remote(
-            b"\x00\x00", max_speakers=1, proxy_url="http://127.0.0.1:7897", use_doh=True
+            b"\x00\x00",
+            source_language="en",
+            max_speakers=1,
+            proxy_url="http://127.0.0.1:7897",
+            use_doh=True,
         )
         == []
     )
@@ -880,3 +884,135 @@ def test_remote_output_paths_cannot_be_urls_or_file_uris():
             normalize_result([{"path": path}, "Done."])
         with pytest.raises(ValueError):
             normalize_stems([{"path": path}, {"path": "/tmp/other.wav"}])
+
+
+def test_nvidia_rejects_unsupported_source_before_network(monkeypatch):
+    from videotranslate.providers import nvidia_stream
+
+    monkeypatch.setattr(
+        nvidia_stream,
+        "resolve_public",
+        lambda host: (_ for _ in ()).throw(AssertionError("must not connect")),
+    )
+    with pytest.raises(ValueError):
+        nvidia_stream.stream_remote(b"\0\0", source_language="ja")
+
+
+def test_nvidia_distinguishes_unsent_from_uncertain_stream_failure():
+    from videotranslate.providers.contracts import ProviderError
+    from videotranslate.providers.nvidia_stream import stream_file
+
+    class WS:
+        def send(self, value):
+            raise OSError("raw provider error")
+
+        def recv(self, timeout=None):
+            raise AssertionError()
+
+    with pytest.raises(ProviderError) as error:
+        stream_file(WS(), b"\0\0", source_language="en")
+    assert error.value.code == "uncertain"
+    assert "raw provider error" not in str(error.value)
+    with pytest.raises(ValueError) as invalid:
+        stream_file(WS(), b"", source_language="en")
+    assert not isinstance(invalid.value, ProviderError) or invalid.value.code != "uncertain"
+
+
+def test_unsupported_preset_model_is_rejected_before_any_remote_requests():
+    from videotranslate.providers.demucs import submit_separation
+    from videotranslate.providers.omnivoice import submit_clone
+
+    class Http:
+        def get(self, *args, **kwargs):
+            raise AssertionError("must not contact service")
+
+    with pytest.raises(ValueError):
+        submit_clone(
+            Http(),
+            text="x",
+            language="en",
+            reference_audio=b"fake",
+            filename="x.wav",
+            reference_text="x",
+            model="different",
+        )
+    with pytest.raises(ValueError):
+        submit_separation(Http(), audio=b"fake", filename="x.wav", model="different")
+
+
+def test_nvidia_unsent_connection_failure_has_network_code(monkeypatch):
+    from videotranslate.providers import nvidia_stream
+    from videotranslate.providers.contracts import ProviderError
+
+    monkeypatch.setattr(nvidia_stream, "resolve_public", lambda host: ["1.1.1.1"])
+    monkeypatch.setattr(
+        nvidia_stream.socket,
+        "create_connection",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OSError("sensitive error")),
+    )
+    with pytest.raises(ProviderError) as error:
+        nvidia_stream.stream_remote(b"\0\0", source_language="en")
+    assert error.value.code == "network" and "sensitive error" not in str(error.value)
+
+
+def test_nvidia_rejects_unimplemented_model_before_network(monkeypatch):
+    from videotranslate.providers import nvidia_stream
+
+    monkeypatch.setattr(
+        nvidia_stream,
+        "resolve_public",
+        lambda host: (_ for _ in ()).throw(AssertionError("must not connect")),
+    )
+    with pytest.raises(ValueError):
+        nvidia_stream.stream_remote(b"\0\0", source_language="en", model="wrong")
+
+
+def test_nvidia_requires_explicit_source_language_before_connect(monkeypatch):
+    from videotranslate.providers import nvidia_stream
+
+    monkeypatch.setattr(
+        nvidia_stream,
+        "resolve_public",
+        lambda host: (_ for _ in ()).throw(AssertionError("must not connect")),
+    )
+    with pytest.raises(TypeError):
+        nvidia_stream.stream_remote(b"\0\0")
+
+
+def test_nvidia_failure_closing_a_submitted_stream_is_uncertain(monkeypatch):
+    import json
+
+    from videotranslate.providers import nvidia_stream
+    from videotranslate.providers.contracts import ProviderError
+
+    sent = []
+
+    class Socket:
+        def close(self):
+            pass
+
+    class WS:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            raise OSError("disconnect details")
+
+        def send(self, value):
+            sent.append(value)
+
+        def recv(self, timeout=None):
+            return (
+                json.dumps({"type": "ready"})
+                if len(sent) == 1
+                else json.dumps(
+                    {"type": "result", "isFinal": True, "receivedAudioMs": 1, "segments": []}
+                )
+            )
+
+    monkeypatch.setattr(nvidia_stream, "resolve_public", lambda host: ["1.1.1.1"])
+    monkeypatch.setattr(nvidia_stream.socket, "create_connection", lambda *args, **kwargs: Socket())
+    monkeypatch.setattr(nvidia_stream, "ws_connect", lambda *args, **kwargs: WS())
+    with pytest.raises(ProviderError) as error:
+        nvidia_stream.stream_remote(b"\0\0", source_language="en")
+    assert error.value.code == "uncertain"

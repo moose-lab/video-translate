@@ -304,7 +304,13 @@ def test_space_check_resolves_official_host_and_never_sends_hf_key_to_space(
                 {
                     "named_endpoints": {
                         "/_clone_fn": {
-                            "parameters": [{"parameter_name": n} for n in names],
+                            "parameters": [
+                                {
+                                    "parameter_name": n,
+                                    **({"type": {"enum": ["Japanese"]}} if n == "lang" else {}),
+                                }
+                                for n in names
+                            ],
                             "returns": [{"component": "Audio"}, {"component": "Textbox"}],
                         }
                     }
@@ -642,7 +648,13 @@ def test_omnivoice_without_key_is_explicit_public_demo(client_factory, register,
             {
                 "named_endpoints": {
                     "/_clone_fn": {
-                        "parameters": [{"parameter_name": n} for n in names],
+                        "parameters": [
+                            {
+                                "parameter_name": n,
+                                **({"type": {"enum": ["Japanese"]}} if n == "lang" else {}),
+                            }
+                            for n in names
+                        ],
                         "returns": [{"component": "Audio"}, {"component": "Textbox"}],
                     }
                 }
@@ -699,7 +711,13 @@ def test_omnivoice_metadata_distinguishes_code_and_model_license(
             {
                 "named_endpoints": {
                     "/_clone_fn": {
-                        "parameters": [{"parameter_name": n} for n in names],
+                        "parameters": [
+                            {
+                                "parameter_name": n,
+                                **({"type": {"enum": ["Japanese"]}} if n == "lang" else {}),
+                            }
+                            for n in names
+                        ],
                         "returns": [{"component": "Audio"}, {"component": "Textbox"}],
                     }
                 }
@@ -729,7 +747,7 @@ def test_check_uses_admin_proxy_settings_without_exposing_them(
         "adapter": "nvidia_stream",
         "endpoint": "https://nvidia-nemotron-diarization.hf.space",
         "space_id": "nvidia/nemotron-diarization",
-        "model": "m",
+        "model": "nemotron-diarization",
         "credential_ref": None,
         "controls": {},
     }
@@ -873,7 +891,7 @@ def test_old_connection_check_cannot_overwrite_new_revision(client_factory, regi
         "adapter": "nvidia_stream",
         "endpoint": "https://nvidia-nemotron-diarization.hf.space",
         "space_id": "nvidia/nemotron-diarization",
-        "model": "old",
+        "model": "nemotron-diarization",
         "credential_ref": None,
         "controls": {},
     }
@@ -888,7 +906,7 @@ def test_old_connection_check_cannot_overwrite_new_revision(client_factory, regi
                 client.put(
                     "/api/providers/transcription",
                     headers=headers,
-                    json={**body, "revision": 1, "model": "new"},
+                    json={**body, "revision": 1, "controls": {"max_speakers": 4}},
                 ).status_code
                 == 200
             )
@@ -905,4 +923,215 @@ def test_old_connection_check_cannot_overwrite_new_revision(client_factory, regi
     assert (
         client.get("/api/provider-settings").json()["providers"]["transcription"]["check_state"]
         is None
+    )
+
+
+def test_hf_provider_suffix_uses_repository_for_metadata(client_factory, register, monkeypatch):
+    from videotranslate.providers.network import SafeHTTP
+
+    client = client_factory()
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    client.put(
+        "/api/credentials/huggingface", headers=headers, json={"revision": 0, "token": "hf_fake"}
+    )
+    body = {
+        "revision": 0,
+        "adapter": "hf_router",
+        "endpoint": "https://router.huggingface.co/v1",
+        "model": "openai/whisper-large-v3:fastest",
+        "credential_ref": "huggingface",
+        "controls": {},
+    }
+    client.put("/api/providers/verification", headers=headers, json=body)
+    seen = []
+
+    def get(self, url, **kwargs):
+        seen.append(url)
+        return b'{"id":"openai/whisper-large-v3"}' if "/api/models/" in url else b"{}"
+
+    monkeypatch.setattr(SafeHTTP, "get", get)
+    assert (
+        client.post(
+            "/api/providers/verification/check", headers=headers, json={"revision": 1}
+        ).json()["reachable"]
+        is True
+    )
+    assert seen[0] == "https://huggingface.co/api/models/openai/whisper-large-v3"
+    assert (
+        client.get("/api/provider-settings").json()["providers"]["verification"]["model"]
+        == body["model"]
+    )
+
+
+def test_unimplemented_preset_models_and_nvidia_hosts_are_rejected(client_factory, register):
+    client = client_factory()
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    cases = [
+        (
+            "transcription",
+            {
+                "adapter": "nvidia_stream",
+                "endpoint": "https://other.hf.space",
+                "space_id": "other/nvidia",
+                "model": "wrong",
+                "credential_ref": None,
+            },
+        ),
+        (
+            "synthesis",
+            {
+                "adapter": "omnivoice",
+                "endpoint": "https://k2-fsa-omnivoice.hf.space",
+                "space_id": "k2-fsa/OmniVoice",
+                "model": "other",
+                "credential_ref": None,
+            },
+        ),
+        (
+            "separation",
+            {
+                "adapter": "demucs",
+                "endpoint": "https://kajise-demucs-v4-ft-2s.hf.space",
+                "space_id": "kajise/Demucs_v4-FT_2s",
+                "model": "other",
+                "credential_ref": None,
+            },
+        ),
+    ]
+    for slot, body in cases:
+        assert (
+            client.put(
+                "/api/providers/" + slot,
+                headers=headers,
+                json={"revision": 0, "controls": {}, **body},
+            ).status_code
+            == 422
+        )
+
+
+def test_capability_check_has_structured_declared_and_tested_coverage(
+    client_factory, register, monkeypatch
+):
+    import json
+
+    from videotranslate.providers.network import SafeHTTP
+
+    client = client_factory()
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    body = {
+        "revision": 0,
+        "adapter": "omnivoice",
+        "endpoint": "https://k2-fsa-omnivoice.hf.space",
+        "space_id": "k2-fsa/OmniVoice",
+        "model": "OmniVoice",
+        "credential_ref": None,
+        "controls": {},
+    }
+    assert client.put("/api/providers/synthesis", headers=headers, json=body).status_code == 200
+
+    def get(self, url, **kwargs):
+        if "/api/spaces/" in url:
+            return b'{"host":"https://k2-fsa-omnivoice.hf.space"}'
+        names = [
+            "text",
+            "lang",
+            "ref_aud",
+            "ref_text",
+            "instruct",
+            "ns",
+            "gs",
+            "dn",
+            "sp",
+            "du",
+            "pp",
+            "po",
+        ]
+        params = [{"parameter_name": n} for n in names]
+        params[1]["type"] = {"enum": ["Japanese", "Chinese"]}
+        return json.dumps(
+            {
+                "named_endpoints": {
+                    "/_clone_fn": {
+                        "parameters": params,
+                        "returns": [{"component": "Audio"}, {"component": "Textbox"}],
+                    }
+                }
+            }
+        ).encode()
+
+    monkeypatch.setattr(SafeHTTP, "get", get)
+    data = client.post(
+        "/api/providers/synthesis/check", headers=headers, json={"revision": 1}
+    ).json()["capabilities"]
+    assert data["stage"] == "synthesis" and data["language_support"] == "unknown"
+    assert set(data["supported_languages"]) == {"ja", "zh"}
+    assert data["tested_languages"] == [] and data["tested_coverage"] == "unknown"
+    assert data["resumable"] is True and data["cancel_supported"] is False
+
+
+def test_settings_exposes_machine_readable_unknown_capabilities_before_checks(
+    client_factory, register
+):
+    client = client_factory()
+    register(client)
+    result = client.get("/api/provider-settings").json()["providers"]
+    assert set(result) == {
+        "separation",
+        "transcription",
+        "translation",
+        "synthesis",
+        "verification",
+    }
+    assert all(result[slot]["capabilities"]["stage"] == slot for slot in result)
+    assert all(result[slot]["capabilities"]["tested_coverage"] == "unknown" for slot in result)
+
+
+def test_legacy_unsupported_preset_reports_configuration_without_network(
+    client_factory, register, monkeypatch
+):
+    from sqlalchemy import select
+
+    from videotranslate.models.providers import ProviderConnection
+    from videotranslate.providers.network import SafeHTTP
+
+    client = client_factory()
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    body = {
+        "revision": 0,
+        "adapter": "nvidia_stream",
+        "endpoint": "https://nvidia-nemotron-diarization.hf.space",
+        "space_id": "nvidia/nemotron-diarization",
+        "model": "nemotron-diarization",
+        "credential_ref": None,
+        "controls": {},
+    }
+    client.put("/api/providers/transcription", headers=headers, json=body)
+    with client.app.state.session_factory.begin() as db:
+        row = db.scalar(select(ProviderConnection))
+        row.settings = {**row.settings, "model": "unsupported"}
+    monkeypatch.setattr(
+        SafeHTTP, "get", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("no network"))
+    )
+    result = client.post(
+        "/api/providers/transcription/check", headers=headers, json={"revision": 1}
+    ).json()
+    assert result["state"] == "configuration_required"
+
+
+def test_nvidia_capability_declares_english_only_and_no_resumption():
+    from videotranslate.providers.settings import capability_contract
+
+    data = capability_contract("transcription", "nvidia_stream")
+    assert data["stage"] == "transcription"
+    assert data["language_support"] == "unsupported"
+    assert set(data["supported_languages"]) == {"en", "en-US", "en-GB"}
+    assert data["tested_coverage"] == "unknown" and data["tested_languages"] == ()
+    assert (
+        data["max_duration_seconds"] == 120
+        and not data["resumable"]
+        and not data["cancel_supported"]
     )
