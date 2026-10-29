@@ -1,0 +1,54 @@
+{
+  "code_revision": "1c1dae88d8d357d13b5d108fe1908c5416df8cbe",
+  "source_video_id": "SIZsFGvtClM",
+  "selection_ms": [
+    0,
+    60000
+  ],
+  "credential_used": false,
+  "protected_preview_used": false,
+  "separation_remote_id": "50417daa827a4d97892c276f2da0365b",
+  "artifacts": [
+    {
+      "kind": "vocals",
+      "asset_id": "4110a492-fdd5-40bb-9eca-229e029cd768",
+      "path": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-real-source-analysis/vocals.wav",
+      "sha256": "810356553715589dac8cb3ed1b6c94b99e05ec15e2c885d0c5d4dc6be90dbd7b",
+      "byte_size": 23040092,
+      "duration_ms": 60000,
+      "codec": "pcm_f32le",
+      "sample_rate": 48000,
+      "channels": 2,
+      "full_decode": true
+    },
+    {
+      "kind": "instrumental",
+      "asset_id": "41be948d-765a-4170-8c4c-57dad6593b23",
+      "path": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-real-source-analysis/instrumental.wav",
+      "sha256": "a4ce314ad2c3b89723cb0e7b36946d00911b6d64ddbcb884977ea71435c0f959",
+      "byte_size": 23040092,
+      "duration_ms": 60000,
+      "codec": "pcm_f32le",
+      "sample_rate": 48000,
+      "channels": 2,
+      "full_decode": true
+    }
+  ],
+  "source_sha256": "18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f",
+  "registered_separation": "succeeded",
+  "registered_source_transcription": "failed",
+  "asr_attempts": 2,
+  "first_failure_wire_details": "not captured",
+  "explicit_retry_error_frames": [
+    {
+      "type": "error",
+      "code": "upstream_internal",
+      "message": "The diarization stream failed",
+      "retryable": false
+    }
+  ],
+  "explicit_retry_returned_transcript": false,
+  "original_failed_separation_id": "54fd0fce5e714e13bfb4582b3a0fff07",
+  "execution": "isolated API client and durable worker; not deployed SaaS",
+  "final_dubbing_acceptance": false
+}

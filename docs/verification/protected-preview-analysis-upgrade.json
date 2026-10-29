@@ -1,0 +1,13 @@
+{
+  "code_revision": "1c1dae88d8d357d13b5d108fe1908c5416df8cbe",
+  "baseline_schema_verified": true,
+  "from_revision": "0003_cloud_services",
+  "to_revision": "0007_prepared_object_lifecycle",
+  "restricted_backup_created": true,
+  "metadata_parity": true,
+  "original_14_table_row_counts_unchanged": true,
+  "credentials_ciphertext_unchanged": true,
+  "all_provider_connections_and_checks_unchanged": true,
+  "server_secret_unchanged": true,
+  "actual_model_calls": 0
+}
