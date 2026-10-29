@@ -13,6 +13,7 @@
 - SaaS, not a local browser-only application.
 - First exercise real remote APIs; no local model downloads.
 - Hugging Face is the primary model ecosystem.
+- User-selected integration source: `https://www.youtube.com/watch?v=SIZsFGvtClM`; test English → Mandarin Chinese and English → Japanese through the built product. This replaces the earlier sample-video choice for final integration.
 - Complete scope persists across increments; partial green tests do not complete the goal.
 
 ## Subprojects and dependency order
@@ -60,3 +61,5 @@ These are implementation increments inside one approved product, not scope reduc
 ## Execution journal
 
 2026-10-29: User approved scheme A. Independent repository created; design committed as `4052288`. Working on feature/cloud-dubbing. Existing media samples remain separate acceptance inputs and will not be passed off as new processing runs.
+
+2026-10-29: Foundation implementation committed as `634d14c`; controller reran the complete suite and observed 87 passing tests. Independent specification and quality reviews are required before marking increment 1 verified. User's new source was resolved through Agent Reach's YouTube/yt-dlp path: IBM Technology, “Agentic Engineering: 5 Terms Every AI Developer Should Know”, 700 seconds, English source track and publisher English subtitles. Source evidence and paired-language acceptance criteria live in `docs/engineering/integration-fixture.md`.
