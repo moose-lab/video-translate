@@ -7,6 +7,7 @@ type CheckState = {
   inference_verified: boolean;
   reachable?: boolean | null;
   credentials_valid?: boolean | null;
+  credential_revision?: number;
   limits?: { max_duration_seconds?: number };
   capabilities?: { coverage?: string };
   checked_at?: string;
@@ -27,6 +28,32 @@ type Settings = {
     }
   >;
 };
+function withCredential(
+  previous: Settings,
+  kind: string,
+  credential: Credential,
+): Settings {
+  if ((previous.credentials[kind]?.revision ?? 0) > credential.revision)
+    return previous;
+  const providers = Object.fromEntries(
+    Object.entries(previous.providers).map(([slot, provider]) => {
+      const check = provider.check_state;
+      return [
+        slot,
+        provider.credential_ref === kind &&
+        check &&
+        check.credential_revision !== credential.revision
+          ? { ...provider, check_state: { ...check, credentials_valid: null } }
+          : provider,
+      ];
+    }),
+  );
+  return {
+    ...previous,
+    credentials: { ...previous.credentials, [kind]: credential },
+    providers,
+  };
+}
 const services = [
   {
     slot: "separation",
@@ -96,7 +123,8 @@ export default function ServiceSetup({
     [targetLanguage, setTargetLanguage] = useState("");
   async function load() {
     try {
-      setSettings(await api<Settings>("/provider-settings", {}, csrf));
+      const loaded = await api<Settings>("/provider-settings", {}, csrf);
+      setSettings((previous) => previous ?? loaded);
     } catch (e) {
       setError(e instanceof Error ? e.message : "加载失败");
     }
@@ -124,10 +152,11 @@ export default function ServiceSetup({
         csrf,
       );
       setToken("");
-      setSettings({
-        ...settings,
-        credentials: { ...settings.credentials, huggingface: credential },
-      });
+      setSettings((previous) =>
+        previous
+          ? withCredential(previous, "huggingface", credential)
+          : previous,
+      );
       setNotice(clear ? "令牌已清除。" : "令牌已安全保存。");
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败");
@@ -176,9 +205,16 @@ export default function ServiceSetup({
         },
         csrf,
       );
-      setSettings({
-        ...settings,
-        providers: { ...settings.providers, [s.slot]: saved },
+      setSettings((previous) => {
+        if (
+          !previous ||
+          (previous.providers[s.slot]?.revision ?? 0) > saved.revision
+        )
+          return previous;
+        return {
+          ...previous,
+          providers: { ...previous.providers, [s.slot]: saved },
+        };
       });
       setNotice(s.name + "设置已保存。");
     } catch (e) {
@@ -206,12 +242,24 @@ export default function ServiceSetup({
         },
         csrf,
       );
-      setSettings({
-        ...settings,
-        providers: {
-          ...settings.providers,
-          [slot]: { ...current, check_state: check },
-        },
+      setSettings((previous) => {
+        const latest = previous?.providers[slot];
+        if (!previous || !latest || latest.revision !== current.revision)
+          return previous;
+        const credential = latest.credential_ref
+          ? previous.credentials[latest.credential_ref]
+          : undefined;
+        const safeCheck =
+          credential && check.credential_revision !== credential.revision
+            ? { ...check, credentials_valid: null }
+            : check;
+        return {
+          ...previous,
+          providers: {
+            ...previous.providers,
+            [slot]: { ...latest, check_state: safeCheck },
+          },
+        };
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "检查失败");
@@ -288,6 +336,7 @@ export default function ServiceSetup({
                         errorTarget === "credential" ? "setup-error" : undefined
                       }
                       type="password"
+                      disabled={pending}
                       autoComplete="off"
                       value={token}
                       onChange={(e) => setToken(e.target.value)}
@@ -316,13 +365,7 @@ export default function ServiceSetup({
                 onSaved={(credential) =>
                   setSettings((previous) =>
                     previous
-                      ? {
-                          ...previous,
-                          credentials: {
-                            ...previous.credentials,
-                            translation: credential,
-                          },
-                        }
+                      ? withCredential(previous, "translation", credential)
                       : previous,
                   )
                 }
@@ -670,6 +713,7 @@ function CustomCredential({
               error ? "translation-credential-error" : undefined
             }
             type="password"
+            disabled={pending}
             autoComplete="off"
             value={token}
             onChange={(e) => setToken(e.target.value)}
