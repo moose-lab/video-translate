@@ -43,7 +43,7 @@ or modified.
   fingerprint; timing-only edits and speaker renames preserve translated meaning.
   Context/mode changes invalidate suggestion inputs without replacing committed
   approved wording. Archived target configuration requires explicit restoration.
-- Timeline GET defaults to 100 source rows, maximum 200, stable display order,
+- Timeline GET defaults to 100 source rows, maximum 200, chronological current-start order with stable creation-order ties,
   explicit total/offset and only the selected target's corresponding translations.
   Cast and track summaries are capped at 200 with totals; paged GET `/speakers`
   and `/language-tracks` allow the remaining stored summaries to be inspected.
@@ -216,6 +216,96 @@ Fresh post-review verification on 2026-10-30:
 ```sh
 VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres PYTHONPATH=src uv run --frozen --extra dev pytest -q
 # 295 passed in 62.56s, including the populated PostgreSQL speaker-selection FK roundtrip.
+PYTHONPATH=src uv run --frozen --extra dev ruff check src tests alembic
+# All checks passed.
+PYTHONPATH=src uv run --frozen --extra dev ruff format --check src tests alembic
+# 75 files already formatted.
+PYTHONPATH=src uv run --frozen --extra dev python -m compileall -q src tests alembic
+# exit 0.
+uv lock --check
+# exit 0.
+git diff --check
+# exit 0.
+```
+
+## Independent QUALITY fixes after 4a55941
+
+### Semantic review proof and target CAS
+
+Every source segment DTO now exposes its actual current `source_text_fingerprint`.
+Manual translation PATCH requires `expected_source_text_fingerprint` in addition to
+selection/batch guards and the target cell `revision` (0 for first creation). Each
+row in `/language-tracks/{tag}/approve` likewise requires its own
+`expected_source_text_fingerprint` alongside `id` and target `revision`.
+
+The client must read the current timeline, review that source wording, and submit
+both that segment's fingerprint and the current translation-state revision. A
+missing proof is 422; a proof that differs from the actual source at the locked
+write is 409. On conflict, reload and review the changed source before approving;
+do not silently replace the proof with a newly fetched fingerprint. Shared
+`write_translation` requires the proof explicitly and never defaults it from
+current source data for manual routes. Caption imports may supply it internally
+only after the client-supplied preview digest has been recomputed and verified
+while holding the project lock.
+
+Source text edits now advance the corresponding translation-state CAS revision on
+every change, including further edits while it is already stale. Immutable target
+wording/history stays unchanged until an explicit edit or approval. Therefore an
+old target revision cannot approve old wording against unseen new source; even a
+fresh target row revision paired with an old source proof is rejected. Timing,
+role assignment and work-label renames preserve the text fingerprint and do not
+advance this semantic target-state CAS. A multirow approval with any invalid proof
+rolls back all revisions, pointers, events and facets from that request.
+
+### Canonical active ordering and printed numbers
+
+Stored segment creation indices remain unique and immutable, including archived
+rows. They are returned as `original_index`. The current `display_index` is a
+derived zero-based position among active rows, ordered by current start time and
+then immutable creation index/ID for stable ties. Archived rows have no active
+position. POST/PATCH responses use the same ordering as paginated timeline GETs;
+split, merge, manual insertion and timing edits no longer append early dialogue
+after later lines or overwrite historical slots.
+
+Numbered target-import suggestions use the actual printed one-based `number`
+against that canonical active order. Thus `2. ...` proposes the second visible
+source row even when it is the only imported line. Duplicate printed numbers are
+rejected as ambiguous. Preview proposals include `source_number` and current
+source-text fingerprint; explicit stable-ID mapping is still required for apply.
+
+### Batched facet invalidation
+
+Source and target imports accumulate named facet values while appending their
+owned rows, then apply existing recursive invalidation once per batch. This also
+batches invalidation of replaced transcript rows. Per-row CAS, immutable history,
+actual edit/import events and transaction rollback remain intact. Limits remain
+1,000 cues and the previously documented caption/text bounds.
+
+RED evidence: four initial regression tests failed in 19.28s. Missing semantic
+proof was accepted, repeated meaning edits left target CAS at 1, splitting the
+first line placed later dialogue first, and a full 1,000-cue source batch called
+`set_inputs` 1,001 times. A separate duplicate-number parser regression also
+failed before its correction. The updated positive editing fixtures now supply
+actual source fingerprints; negative tests intentionally submit old proofs.
+
+Measured on the isolated real-probe CPU fixture with the same full batch sizes:
+
+```sh
+PYTHONPATH=src uv run --frozen --extra dev pytest -q -s tests/test_dubbing_imports.py::test_full_caption_batch_applies_input_invalidation_once tests/test_dubbing_edits.py::test_approval_source_proof_failure_rolls_back_entire_multirow_review
+# 1000-cue source apply: 0.859s; facet applications: 1
+# 1000-cue target apply: 2.837s; facet applications: 1
+# 2 passed in 8.11s
+```
+
+These are observed local test timings, not a service latency guarantee. The test
+imports all 1,000 cues, checks count/total and the last paginated target cell; no
+import limit or assertion was lowered to obtain the result.
+
+Fresh post-QUALITY verification on 2026-10-30:
+
+```sh
+VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres PYTHONPATH=src uv run --frozen --extra dev pytest -q
+# 303 passed in 70.23s, including populated PostgreSQL migration/ownership/CAS checks.
 PYTHONPATH=src uv run --frozen --extra dev ruff check src tests alembic
 # All checks passed.
 PYTHONPATH=src uv run --frozen --extra dev ruff format --check src tests alembic

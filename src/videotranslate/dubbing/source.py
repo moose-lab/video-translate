@@ -174,8 +174,11 @@ def active_source(db, project, guard, *, require_transcript=False):
     return state, selection, transcript
 
 
-def new_transcript(db, project, state, selection, actor, provenance, originals=None):
-    invalidate_transcript(db, project, state.transcript_id)
+def new_transcript(
+    db, project, state, selection, actor, provenance, originals=None, *, input_facets=None
+):
+    facets = {} if input_facets is None else input_facets
+    invalidate_transcript(db, project, state.transcript_id, input_facets=facets)
     transcript = TranscriptRevision(
         id=new_id(),
         **owner(project),
@@ -189,22 +192,27 @@ def new_transcript(db, project, state, selection, actor, provenance, originals=N
     db.flush()
     state.transcript_id = transcript.id
     db.flush()
-    set_inputs(db, project, {"source.transcript": transcript.id})
+    facets["source.transcript"] = transcript.id
+    if input_facets is None:
+        set_inputs(db, project, facets)
     return transcript
 
 
-def invalidate_transcript(db, project, transcript_id):
+def invalidate_transcript(db, project, transcript_id, *, input_facets=None):
     if not transcript_id:
         return
     from ..models.dubbing import Segment
     from .segments import invalidate_segment
 
+    facets = {} if input_facets is None else input_facets
     for segment in db.scalars(
         scope(Segment, project).where(
             Segment.transcript_id == transcript_id, Segment.archived.is_(False)
         )
     ):
-        invalidate_segment(db, project, segment)
+        invalidate_segment(db, project, segment, input_facets=facets)
+    if input_facets is None and facets:
+        set_inputs(db, project, facets)
 
 
 def current_selection(db, project, *, required=True):

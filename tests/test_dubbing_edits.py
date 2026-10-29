@@ -72,7 +72,14 @@ def test_independent_targets_stale_locked_reapproval_and_context_snapshot(dubbin
         response = c.patch(
             base + f"/language-tracks/{tag}/segments/{sid}",
             headers=h,
-            json=g | dict(revision=0, text=text, locked=True, approved=True),
+            json=g
+            | dict(
+                revision=0,
+                text=text,
+                locked=True,
+                approved=True,
+                expected_source_text_fingerprint=a["segment"]["source_text_fingerprint"],
+            ),
         )
         assert response.status_code == 200, response.text
     edit = c.patch(base + f"/segments/{sid}", headers=h, json=g | dict(revision=1, text="Goodbye"))
@@ -83,11 +90,22 @@ def test_independent_targets_stale_locked_reapproval_and_context_snapshot(dubbin
     approved = c.post(
         base + "/language-tracks/zh/approve",
         headers=h,
-        json=g | {"segments": [{"id": sid, "revision": 1}]},
+        json=g
+        | {
+            "segments": [
+                {
+                    "id": sid,
+                    "revision": tr["revision"],
+                    "expected_source_text_fingerprint": view["segments"][0][
+                        "source_text_fingerprint"
+                    ],
+                }
+            ]
+        },
     )
     assert approved.status_code == 200, approved.text
     tr = c.get(base + "/timeline?target_language=zh").json()["segments"][0]["translation"]
-    assert not tr["stale"] and tr["approved"] and tr["revision"] == 2
+    assert not tr["stale"] and tr["approved"] and tr["revision"] == 3
     assert c.get(base + "/timeline?target_language=ja").json()["segments"][0]["translation"][
         "stale"
     ]
@@ -170,7 +188,13 @@ def test_meaning_change_invalidates_committed_manual_translation_descendants_onl
         c.patch(
             base + f"/language-tracks/zh/segments/{sid}",
             headers=h,
-            json=g | {"revision": 0, "text": "你好", "locked": True},
+            json=g
+            | {
+                "revision": 0,
+                "expected_source_text_fingerprint": a["segment"]["source_text_fingerprint"],
+                "text": "你好",
+                "locked": True,
+            },
         ).status_code
         == 200
     )
@@ -270,7 +294,12 @@ def test_archiving_segment_invalidates_existing_manual_target_audio(dubbing_proj
         c.patch(
             base + f"/language-tracks/zh/segments/{sid}",
             headers=h,
-            json=g | {"revision": 0, "text": "你好"},
+            json=g
+            | {
+                "revision": 0,
+                "expected_source_text_fingerprint": a["segment"]["source_text_fingerprint"],
+                "text": "你好",
+            },
         ).status_code
         == 200
     )
@@ -474,4 +503,321 @@ def test_historical_role_is_rejected_in_source_import_mapping(dubbing_project):
             },
         ).status_code
         == 404
+    )
+
+
+def test_translation_creation_requires_source_review_fingerprint(dubbing_project):
+    c, h, p = dubbing_project
+    s = selected(dubbing_project)
+    a = create_line(dubbing_project, s)
+    base = f"/api/projects/{p['id']}"
+    make_track(c, h, base, "zh")
+    response = c.patch(
+        base + f"/language-tracks/zh/segments/{a['segment']['id']}",
+        headers=h,
+        json=guard(s, a["transcript_revision"])
+        | {"revision": 0, "text": "禁止进入", "approved": True},
+    )
+    assert response.status_code == 422
+    initial = c.patch(
+        base + f"/language-tracks/zh/segments/{a['segment']['id']}",
+        headers=h,
+        json=guard(s, a["transcript_revision"])
+        | {
+            "revision": 0,
+            "text": "禁止进入",
+            "expected_source_text_fingerprint": a["segment"]["source_text_fingerprint"],
+        },
+    )
+    assert initial.status_code == 200, initial.text
+    missing_approval_proof = c.post(
+        base + "/language-tracks/zh/approve",
+        headers=h,
+        json=guard(s, a["transcript_revision"])
+        | {"segments": [{"id": a["segment"]["id"], "revision": 1}]},
+    )
+    assert missing_approval_proof.status_code == 422
+
+
+def test_source_meaning_edit_advances_stale_target_state_revision_every_time(dubbing_project):
+    c, h, p = dubbing_project
+    s = selected(dubbing_project)
+    a = create_line(dubbing_project, s, text="Do not enter")
+    base = f"/api/projects/{p['id']}"
+    sid = a["segment"]["id"]
+    g = guard(s, a["transcript_revision"])
+    make_track(c, h, base, "zh")
+    initial = c.patch(
+        base + f"/language-tracks/zh/segments/{sid}",
+        headers=h,
+        json=g
+        | {
+            "revision": 0,
+            "expected_source_text_fingerprint": a["segment"]["source_text_fingerprint"],
+            "text": "禁止进入",
+            "approved": True,
+            "locked": True,
+        },
+    )
+    assert initial.status_code == 200, initial.text
+    for revision, text in [(1, "Please enter"), (2, "Leave immediately")]:
+        assert (
+            c.patch(
+                base + f"/segments/{sid}", headers=h, json=g | {"revision": revision, "text": text}
+            ).status_code
+            == 200
+        )
+        cell = c.get(base + "/timeline?target_language=zh").json()["segments"][0]["translation"]
+        assert cell["revision"] == revision + 1
+        assert cell["stale"] and cell["text"] == "禁止进入"
+
+
+def test_canonical_visible_order_survives_split_merge_insertion_and_timing_edits(dubbing_project):
+    c, h, p = dubbing_project
+    s = selected(dubbing_project)
+    a = create_line(dubbing_project, s, text="Please enter")
+    later = create_line(
+        dubbing_project,
+        s,
+        text="Later",
+        transcript=a["transcript_revision"],
+        start_ms=1000,
+        end_ms=1500,
+    )
+    base = f"/api/projects/{p['id']}"
+    g = guard(s, a["transcript_revision"])
+    split = c.post(
+        base + f"/segments/{a['segment']['id']}/split",
+        headers=h,
+        json=g
+        | {
+            "revision": 1,
+            "parts": [
+                {"text": "Please", "start_ms": 0, "end_ms": 250, "speaker_id": None},
+                {"text": "enter", "start_ms": 250, "end_ms": 500, "speaker_id": None},
+            ],
+        },
+    )
+    assert split.status_code == 201, split.text
+    parts = split.json()["segments"]
+    assert [row["text"] for row in c.get(base + "/timeline").json()["segments"]] == [
+        "Please",
+        "enter",
+        "Later",
+    ]
+    make_track(c, h, base, "zh")
+
+    def numbered(expected):
+        content = "\n".join(f"{index + 1}. target" for index in range(len(expected)))
+        preview = c.post(
+            base + "/language-tracks/zh/import/preview",
+            headers=h,
+            json=g | {"format": "numbered", "content": content},
+        )
+        assert preview.status_code == 200, preview.text
+        assert [
+            row["proposed_matches"][0]["segment_id"] for row in preview.json()["cues"]
+        ] == expected
+
+    numbered([parts[0]["id"], parts[1]["id"], later["segment"]["id"]])
+    merged = c.post(
+        base + "/segments/merge",
+        headers=h,
+        json=g
+        | {
+            "segments": [{"id": r["id"], "revision": 1} for r in parts],
+            "text": "Please enter",
+            "start_ms": 0,
+            "end_ms": 500,
+            "speaker_id": None,
+        },
+    )
+    assert merged.status_code == 201, merged.text
+    merged_id = merged.json()["segment"]["id"]
+    numbered([merged_id, later["segment"]["id"]])
+    middle = create_line(
+        dubbing_project,
+        s,
+        text="Middle",
+        transcript=a["transcript_revision"],
+        start_ms=600,
+        end_ms=900,
+    )
+    numbered([merged_id, middle["segment"]["id"], later["segment"]["id"]])
+    assert (
+        c.patch(
+            base + f"/segments/{merged_id}",
+            headers=h,
+            json=g | {"revision": 1, "start_ms": 1600, "end_ms": 1900},
+        ).status_code
+        == 200
+    )
+    numbered([middle["segment"]["id"], later["segment"]["id"], merged_id])
+    view = c.get(base + "/timeline").json()["segments"]
+    assert [row["display_index"] for row in view] == [0, 1, 2]
+
+
+def test_manual_translation_and_approval_require_the_reviewed_source_meaning(dubbing_project):
+    c, h, p = dubbing_project
+    s = selected(dubbing_project)
+    a = create_line(dubbing_project, s, text="Do not enter")
+    base = f"/api/projects/{p['id']}"
+    sid = a["segment"]["id"]
+    g = guard(s, a["transcript_revision"])
+    original_fp = a["segment"]["source_text_fingerprint"]
+    make_track(c, h, base, "zh")
+    make_track(c, h, base, "ja")
+    initial = c.patch(
+        base + f"/language-tracks/zh/segments/{sid}",
+        headers=h,
+        json=g
+        | {
+            "revision": 0,
+            "text": "禁止进入",
+            "approved": True,
+            "locked": True,
+            "expected_source_text_fingerprint": original_fp,
+        },
+    )
+    assert initial.status_code == 200, initial.text
+    changed = c.patch(
+        base + f"/segments/{sid}", headers=h, json=g | {"revision": 1, "text": "Please enter"}
+    )
+    assert changed.status_code == 200, changed.text
+    intermediate_fp = changed.json()["source_text_fingerprint"]
+
+    def approve(revision, fp):
+        return c.post(
+            base + "/language-tracks/zh/approve",
+            headers=h,
+            json=g
+            | {
+                "segments": [
+                    {"id": sid, "revision": revision, "expected_source_text_fingerprint": fp}
+                ]
+            },
+        )
+
+    assert approve(1, original_fp).status_code == 409
+    assert approve(2, original_fp).status_code == 409
+    assert (
+        c.patch(
+            base + f"/language-tracks/zh/segments/{sid}",
+            headers=h,
+            json=g
+            | {
+                "revision": 2,
+                "text": "禁止进入",
+                "approved": True,
+                "expected_source_text_fingerprint": original_fp,
+            },
+        ).status_code
+        == 409
+    )
+    # A first target edit (row revision zero) must also prove the reviewed source.
+    assert (
+        c.patch(
+            base + f"/language-tracks/ja/segments/{sid}",
+            headers=h,
+            json=g
+            | {
+                "revision": 0,
+                "text": "入らないで",
+                "expected_source_text_fingerprint": original_fp,
+            },
+        ).status_code
+        == 409
+    )
+    changed_again = c.patch(
+        base + f"/segments/{sid}", headers=h, json=g | {"revision": 2, "text": "Leave immediately"}
+    )
+    assert changed_again.status_code == 200, changed_again.text
+    assert approve(3, intermediate_fp).status_code == 409
+    current_fp = changed_again.json()["source_text_fingerprint"]
+    approved = approve(3, current_fp)
+    assert approved.status_code == 200, approved.text
+    assert approved.json()["items"][0]["revision"] == 4
+    history = c.get(base + f"/language-tracks/zh/segments/{sid}/revisions").json()
+    assert history["total"] == 2
+    assert history["items"][-1]["source_text_fingerprint"] == current_fp
+    # Timing and work-label changes do not change semantic review proof or target CAS.
+    role = c.post(base + "/speakers", headers=h, json={"name": "A"}).json()
+    timed = c.patch(
+        base + f"/segments/{sid}",
+        headers=h,
+        json=g | {"revision": 3, "end_ms": 600, "speaker_id": role["id"]},
+    )
+    assert timed.status_code == 200, timed.text
+    assert timed.json()["source_text_fingerprint"] == current_fp
+    assert (
+        c.patch(
+            base + f"/speakers/{role['id']}", headers=h, json={"revision": 1, "name": "Narrator"}
+        ).status_code
+        == 200
+    )
+    assert approve(4, current_fp).status_code == 200
+
+
+def test_approval_source_proof_failure_rolls_back_entire_multirow_review(dubbing_project):
+    c, h, p = dubbing_project
+    s = selected(dubbing_project)
+    a = create_line(dubbing_project, s)
+    b = create_line(
+        dubbing_project,
+        s,
+        text="Other",
+        transcript=a["transcript_revision"],
+        start_ms=600,
+        end_ms=1000,
+    )
+    base = f"/api/projects/{p['id']}"
+    g = guard(s, a["transcript_revision"])
+    make_track(c, h, base, "zh")
+    for row in (a["segment"], b["segment"]):
+        response = c.patch(
+            base + f"/language-tracks/zh/segments/{row['id']}",
+            headers=h,
+            json=g
+            | {
+                "revision": 0,
+                "text": "译文",
+                "expected_source_text_fingerprint": row["source_text_fingerprint"],
+            },
+        )
+        assert response.status_code == 200, response.text
+    assert (
+        c.patch(
+            base + f"/segments/{b['segment']['id']}",
+            headers=h,
+            json=g | {"revision": 1, "text": "Changed"},
+        ).status_code
+        == 200
+    )
+    events = c.get(base + "/events").json()
+    response = c.post(
+        base + "/language-tracks/zh/approve",
+        headers=h,
+        json=g
+        | {
+            "segments": [
+                {
+                    "id": a["segment"]["id"],
+                    "revision": 1,
+                    "expected_source_text_fingerprint": a["segment"]["source_text_fingerprint"],
+                },
+                {
+                    "id": b["segment"]["id"],
+                    "revision": 2,
+                    "expected_source_text_fingerprint": b["segment"]["source_text_fingerprint"],
+                },
+            ]
+        },
+    )
+    assert response.status_code == 409, response.text
+    view = c.get(base + "/timeline?target_language=zh").json()["segments"]
+    assert view[0]["translation"]["revision"] == 1 and not view[0]["translation"]["approved"]
+    assert c.get(base + "/events").json() == events
+    assert (
+        c.get(base + f"/language-tracks/zh/segments/{a['segment']['id']}/revisions").json()["total"]
+        == 1
     )

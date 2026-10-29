@@ -168,10 +168,12 @@ def write_translation(
     text,
     actor,
     *,
+    expected_source_text_fingerprint,
     locked=None,
     approved=False,
     provenance="manual",
     force_locked=True,
+    input_facets=None,
 ):
     state = translation_state(db, project, track, segment)
     if (state.revision if state else 0) != expected:
@@ -182,6 +184,8 @@ def write_translation(
     previous_lock = state.locked if state else False
     source = owned(db, SegmentRevision, project, segment.current_revision_id)
     source_fp = fingerprint(source.text)
+    if expected_source_text_fingerprint != source_fp:
+        conflict()
     lock = state.locked if state and locked is None else bool(locked)
     if (
         previous
@@ -229,17 +233,17 @@ def write_translation(
         state.stale = False
         state.needs_review = not approved
     db.flush()
-    set_inputs(
-        db,
-        project,
-        {
-            f"translation.{track.tag}.{segment.id}": {
-                "text": fingerprint(text),
-                "source": source_fp,
-                "stale": False,
-            }
-        },
-    )
+    facets = {
+        f"translation.{track.tag}.{segment.id}": {
+            "text": fingerprint(text),
+            "source": source_fp,
+            "stale": False,
+        }
+    }
+    if input_facets is None:
+        set_inputs(db, project, facets)
+    else:
+        input_facets.update(facets)
     changed(
         db,
         project,
@@ -279,6 +283,7 @@ def patch_translation(db, project, tag, segment_id, body, actor):
         body.revision,
         body.text,
         actor,
+        expected_source_text_fingerprint=body.expected_source_text_fingerprint,
         locked=body.locked,
         approved=body.approved,
     )
@@ -305,6 +310,7 @@ def approve_translations(db, project, tag, body, actor):
             row.revision,
             revision.text,
             actor,
+            expected_source_text_fingerprint=row.expected_source_text_fingerprint,
             approved=True,
             provenance="reapproval",
         )

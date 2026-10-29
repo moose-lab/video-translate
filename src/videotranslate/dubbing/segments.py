@@ -1,6 +1,6 @@
 """Stable source lines and append-only corrections/split/merge lineage."""
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 
 from ..execution.inputs import fingerprint, set_inputs
 from ..models.core import new_id
@@ -39,8 +39,39 @@ def revision_values(revision):
     return {key: getattr(revision, key) for key in ("text", "start_ms", "end_ms", "speaker_id")}
 
 
-def segment_json(db, project, segment, *, window_start=0):
+def active_segments_query(project, transcript_id):
+    """Canonical visible order; stored display_index remains immutable creation lineage."""
+    return (
+        scope(Segment, project)
+        .join(SegmentRevision, Segment.current_revision_id == SegmentRevision.id)
+        .where(
+            Segment.transcript_id == transcript_id,
+            Segment.archived.is_(False),
+            SegmentRevision.segment_id == Segment.id,
+            SegmentRevision.project_id == project.id,
+            SegmentRevision.workspace_id == project.workspace_id,
+        )
+        .order_by(SegmentRevision.start_ms, Segment.display_index, Segment.id)
+    )
+
+
+def segment_json(db, project, segment, *, window_start=0, position=None):
     revision = owned(db, SegmentRevision, project, segment.current_revision_id)
+    if position is None and not segment.archived:
+        before = (
+            active_segments_query(project, segment.transcript_id)
+            .order_by(None)
+            .where(
+                or_(
+                    SegmentRevision.start_ms < revision.start_ms,
+                    and_(
+                        SegmentRevision.start_ms == revision.start_ms,
+                        Segment.display_index < segment.display_index,
+                    ),
+                )
+            )
+        )
+        position = db.scalar(select(func.count()).select_from(before.subquery()))
     parents = db.scalars(
         scope(SegmentParent, project)
         .where(SegmentParent.segment_id == segment.id)
@@ -51,18 +82,20 @@ def segment_json(db, project, segment, *, window_start=0):
         "revision": segment.revision,
         "revision_id": revision.id,
         "transcript_revision": segment.transcript_id,
-        "display_index": segment.display_index,
+        "display_index": position,
+        "original_index": segment.display_index,
         "archived": segment.archived,
         "original_text": segment.original_text,
         "original_speaker_label": segment.original_speaker_label,
         "parent_segment_ids": [row.parent_segment_id for row in parents],
         "absolute_start_ms": window_start + revision.start_ms,
         "absolute_end_ms": window_start + revision.end_ms,
+        "source_text_fingerprint": fingerprint(revision.text),
         **revision_values(revision),
     }
 
 
-def append_revision(db, project, segment, values, actor, provenance):
+def append_revision(db, project, segment, values, actor, provenance, *, input_facets=None):
     previous = (
         owned(db, SegmentRevision, project, segment.current_revision_id)
         if segment.current_revision_id
@@ -92,6 +125,7 @@ def append_revision(db, project, segment, values, actor, provenance):
         ):
             state.stale = True
             state.needs_review = True
+            state.revision += 1
             target = owned(db, LanguageTrack, project, state.track_id)
             target_revision = owned(db, TranslationRevision, project, state.current_revision_id)
             facets[f"translation.{target.tag}.{segment.id}"] = {
@@ -106,21 +140,36 @@ def append_revision(db, project, segment, values, actor, provenance):
         facets[f"segment.{segment.id}.timing"] = [revision.start_ms, revision.end_ms]
     if previous is None or previous.speaker_id != revision.speaker_id:
         facets[f"segment.{segment.id}.voice"] = revision.speaker_id
-    set_inputs(db, project, facets)
+    if input_facets is None:
+        set_inputs(db, project, facets)
+    else:
+        input_facets.update(facets)
     return True
 
 
 def insert_segment(
-    db, project, transcript, values, actor, provenance="manual", parents=(), label=None
+    db,
+    project,
+    transcript,
+    values,
+    actor,
+    provenance="manual",
+    parents=(),
+    label=None,
+    *,
+    input_facets=None,
+    original_index=None,
 ):
-    last = db.scalar(
-        select(func.max(Segment.display_index)).where(Segment.transcript_id == transcript.id)
-    )
+    if original_index is None:
+        last = db.scalar(
+            select(func.max(Segment.display_index)).where(Segment.transcript_id == transcript.id)
+        )
+        original_index = 0 if last is None else last + 1
     segment = Segment(
         id=new_id(),
         **owner(project),
         transcript_id=transcript.id,
-        display_index=0 if last is None else last + 1,
+        display_index=original_index,
         original_text=values["text"],
         original_speaker_label=label,
         revision=0,
@@ -129,7 +178,7 @@ def insert_segment(
     db.flush()
     for parent_id in parents:
         db.add(SegmentParent(**owner(project), segment_id=segment.id, parent_segment_id=parent_id))
-    append_revision(db, project, segment, values, actor, provenance)
+    append_revision(db, project, segment, values, actor, provenance, input_facets=input_facets)
     return segment
 
 
@@ -177,7 +226,7 @@ def patch_segment(db, project, segment_id, body, actor):
     return segment_json(db, project, segment, window_start=selection.start_ms)
 
 
-def invalidate_segment(db, project, segment):
+def invalidate_segment(db, project, segment, *, input_facets=None):
     facets = {
         f"segment.{segment.id}.{kind}": {"historical": True} for kind in ("text", "timing", "voice")
     }
@@ -186,9 +235,13 @@ def invalidate_segment(db, project, segment):
     ):
         state.stale = True
         state.needs_review = True
+        state.revision += 1
         track = owned(db, LanguageTrack, project, state.track_id)
         facets[f"translation.{track.tag}.{segment.id}"] = {"historical": True}
-    set_inputs(db, project, facets)
+    if input_facets is None:
+        set_inputs(db, project, facets)
+    else:
+        input_facets.update(facets)
 
 
 def archive_segment(db, project, segment):

@@ -1,10 +1,10 @@
 """Deterministic read-only previews and guarded, explicitly mapped caption application."""
 
-from ..execution.inputs import fingerprint
-from ..models.dubbing import Segment, SegmentRevision
+from ..execution.inputs import fingerprint, set_inputs
+from ..models.dubbing import SegmentRevision
 from .contracts import SpeakerCreate
-from .ownership import changed, conflict, invalid, owned, scope
-from .segments import active_segment, insert_segment, validate_fields
+from .ownership import changed, conflict, invalid, owned
+from .segments import active_segment, active_segments_query, insert_segment, validate_fields
 from .source import active_source, new_transcript
 from .speakers import active_speaker, create_speaker
 from .subtitles import parse_subtitles
@@ -30,17 +30,13 @@ def preview_import(db, project, body, tag=None):
 
     snapshot = hashlib.sha256()
     matches = {cue["id"]: [] for cue in cues}
-    indexed = {cue["index"]: cue for cue in cues} if body.format == "numbered" else {}
+    indexed = {cue["number"] - 1: cue for cue in cues} if body.format == "numbered" else {}
     timing = {}
     for cue in cues:
         timing.setdefault((cue["start_ms"], cue["end_ms"]), []).append(cue)
     if transcript:
-        query = (
-            scope(Segment, project)
-            .where(Segment.transcript_id == transcript.id, Segment.archived.is_(False))
-            .order_by(Segment.display_index, Segment.id)
-        )
-        for segment in db.scalars(query).yield_per(100):
+        query = active_segments_query(project, transcript.id)
+        for position, segment in enumerate(db.scalars(query).yield_per(100)):
             revision = owned(db, SegmentRevision, project, segment.current_revision_id)
             state = translation_state(db, project, track, segment) if track else None
             snapshot.update(
@@ -56,8 +52,8 @@ def preview_import(db, project, body, tag=None):
                 ).encode()
             )
             candidates = (
-                [indexed[segment.display_index]]
-                if segment.display_index in indexed
+                [indexed[position]]
+                if position in indexed
                 else timing.get((revision.start_ms, revision.end_ms), [])
             )
             for cue in candidates:
@@ -65,6 +61,8 @@ def preview_import(db, project, body, tag=None):
                     matches[cue["id"]].append(
                         {
                             "segment_id": segment.id,
+                            "source_number": position + 1,
+                            "source_text_fingerprint": fingerprint(revision.text),
                             "source_revision": segment.revision,
                             "revision": state.revision if state else 0,
                             "locked": state.locked if state else False,
@@ -111,6 +109,7 @@ def apply_import(db, project, body, actor, tag=None):
     if any(cue["errors"] for cue in cues.values()):
         invalid()
     state, selection, transcript = active_source(db, project, body)
+    facets = {}
     if tag:
         if transcript is None:
             conflict()
@@ -130,6 +129,9 @@ def apply_import(db, project, body, actor, tag=None):
                 conflict()
             rows.append((segment, item, cues[cue_id]))
         for segment, item, cue in rows:
+            # The recomputed preview digest has already proved the client's source
+            # snapshot, so imports may supply its current fingerprint internally.
+            source_revision = owned(db, SegmentRevision, project, segment.current_revision_id)
             write_translation(
                 db,
                 project,
@@ -138,9 +140,12 @@ def apply_import(db, project, body, actor, tag=None):
                 item.revision,
                 cue["text"],
                 actor,
+                expected_source_text_fingerprint=fingerprint(source_revision.text),
                 provenance="import_forced" if body.force_locked else "import",
                 force_locked=body.force_locked,
+                input_facets=facets,
             )
+        set_inputs(db, project, facets)
         changed(
             db,
             project,
@@ -157,9 +162,11 @@ def apply_import(db, project, body, actor, tag=None):
     for item in mapping.values():
         if item.speaker_id:
             active_speaker(db, project, item.speaker_id, selection)
-    new = new_transcript(db, project, state, selection, actor, "import", list(cues.values()))
+    new = new_transcript(
+        db, project, state, selection, actor, "import", list(cues.values()), input_facets=facets
+    )
     voice_labels = {}
-    for cue in preview["cues"]:
+    for index, cue in enumerate(preview["cues"]):
         item = mapping[cue["id"]]
         speaker_id = item.speaker_id
         if item.use_voice_label:
@@ -178,7 +185,18 @@ def apply_import(db, project, body, actor, tag=None):
             "speaker_id": speaker_id,
         }
         validate_fields(db, project, selection, values)
-        insert_segment(db, project, new, values, actor, "import", label=cue["voice_label"])
+        insert_segment(
+            db,
+            project,
+            new,
+            values,
+            actor,
+            "import",
+            label=cue["voice_label"],
+            input_facets=facets,
+            original_index=index,
+        )
+    set_inputs(db, project, facets)
     changed(
         db,
         project,

@@ -5,7 +5,6 @@ from sqlalchemy import func, select
 from ..models.dubbing import (
     ContextRevision,
     LanguageTrack,
-    Segment,
     SegmentRevision,
     SourceSelection,
     Speaker,
@@ -14,7 +13,7 @@ from ..models.dubbing import (
     TranslationState,
 )
 from .ownership import owned, scope
-from .segments import segment_json
+from .segments import active_segments_query, segment_json
 from .source import selection_current, selection_json, source_state
 from .speakers import speaker_json, speakers_query
 from .translations import canonical_target, track_json, translation_json
@@ -41,13 +40,9 @@ def timeline(db, project, tag, limit, offset):
             transcript.selection_id != selection.id or not selection_current(db, project, selection)
         )
     )
-    query = scope(Segment, project).where(
-        Segment.transcript_id == (transcript.id if transcript else ""), Segment.archived.is_(False)
-    )
+    query = active_segments_query(project, transcript.id if transcript else "")
     total = db.scalar(select(func.count()).select_from(query.subquery()))
-    rows = db.scalars(
-        query.order_by(Segment.display_index, Segment.id).limit(limit).offset(offset)
-    ).all()
+    rows = db.scalars(query.limit(limit).offset(offset)).all()
     track = (
         db.scalar(scope(LanguageTrack, project).where(LanguageTrack.tag == tag)) if tag else None
     )
@@ -56,8 +51,10 @@ def timeline(db, project, tag, limit, offset):
         owned(db, SourceSelection, project, transcript.selection_id) if transcript else selection
     )
     segments = []
-    for segment in rows:
-        data = segment_json(db, project, segment, window_start=lineage_selection.start_ms)
+    for position, segment in enumerate(rows, start=offset):
+        data = segment_json(
+            db, project, segment, window_start=lineage_selection.start_ms, position=position
+        )
         if track:
             cell = db.scalar(
                 scope(TranslationState, project).where(

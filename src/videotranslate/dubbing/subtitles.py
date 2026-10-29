@@ -58,6 +58,7 @@ def parse_subtitles(content, format):
         raise ValueError("Caption body limit")
     content = content.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
     cues = []
+    numbers = set()
     total = 0
     blocks = re.split(r"\n[ \t]*\n", content.strip())
     if format == "numbered":
@@ -73,11 +74,18 @@ def parse_subtitles(content, format):
         warnings = []
         errors = []
         start = end = None
+        number = None
         if format == "numbered":
-            match = re.fullmatch(r"\s*\d+[.)]\s*(.+)", block)
+            match = re.fullmatch(r"\s*(\d{1,8})[.)]\s*(.+)", block)
             if not match:
                 raise ValueError("Numbered captions required")
-            text = match[1]
+            number = int(match[1])
+            if number < 1:
+                raise ValueError("Positive caption number required")
+            if number in numbers:
+                raise ValueError("Ambiguous duplicate caption number")
+            numbers.add(number)
+            text = match[2]
         else:
             timing = 0 if "-->" in lines[0] else 1
             if timing >= len(lines) or "-->" not in lines[timing]:
@@ -114,6 +122,7 @@ def parse_subtitles(content, format):
             {
                 "id": f"cue-{index + 1}-{digest}",
                 "index": index,
+                "number": number,
                 "start_ms": start,
                 "end_ms": end,
                 "text": text,

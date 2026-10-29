@@ -10,6 +10,7 @@ ID = Annotated[str, Field(min_length=1, max_length=36)]
 Revision = Annotated[int, Field(ge=1, le=2**31 - 1)]
 Millis = Annotated[int, Field(ge=0, le=2**31 - 1)]
 Text = Annotated[str, Field(min_length=1, max_length=10000)]
+Fingerprint = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
 
 
 class Strict(BaseModel):
@@ -204,6 +205,7 @@ class TrackPatch(ContextFields):
 
 class TranslationPatch(SourceGuard):
     revision: Annotated[int, Field(ge=0, le=2**31 - 1)]
+    expected_source_text_fingerprint: Fingerprint
     text: Text
     locked: bool | None = None
     approved: bool = False
@@ -216,8 +218,12 @@ class TranslationPatch(SourceGuard):
         return value
 
 
+class ApprovalRow(RowRevision):
+    expected_source_text_fingerprint: Fingerprint
+
+
 class Approve(SourceGuard):
-    segments: Annotated[list[RowRevision], Field(min_length=1, max_length=200)]
+    segments: Annotated[list[ApprovalRow], Field(min_length=1, max_length=200)]
 
 
 class CueMapping(Strict):
