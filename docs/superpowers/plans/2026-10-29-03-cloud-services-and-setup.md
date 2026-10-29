@@ -48,11 +48,14 @@ Use one shared `huggingface` workspace credential for HF adapters; an optional s
 ```text
 GET /api/provider-settings
 PUT /api/credentials/huggingface    {revision,token?:SecretStr,clear?:bool}
+PUT /api/credentials/translation    {revision,token?:SecretStr,clear?:bool}
 PUT /api/providers/{slot}          {revision,adapter,endpoint?,space_id?,model?,controls,credential_ref?}
 POST /api/providers/{slot}/check   {revision}
 ```
 
 Revision0 creates a missing record; stale writes return409. Omitted token keeps the old secret; empty token is invalid; clear and token together are invalid. Clearing is an explicit user action. Every mutation requires CSRF; reads/checks are workspace-scoped; foreign records are404. Validation, error messages and logs never echo secret inputs.
+
+The optional `translation` credential serves a separately configured OpenAI-compatible host. Do not send the shared HF token to a non-HF host. Public NVIDIA and CPU Demucs presets need no credential; official OmniVoice may use the HF credential for authenticated quota, while HF router translation/QC require it. Credential use follows each connection's explicit auth setting, never blanket attachment to all requests.
 
 Read-only settings may include validated preset descriptions without creating records on GET. Selecting/saving presets writes the actual five connections; it does not start inference. A check performs bounded metadata/health and credential validation only. Report separately `reachable`, `credentials_valid` (nullable when untested/not needed), declared capabilities, check time and `inference_verified=false`. A successful whoami or schema fetch must not be called a successful model run. If settings/credential revision changes during a check, the old result cannot overwrite current status.
 
