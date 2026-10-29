@@ -35,6 +35,8 @@ def reference_options(options):
 
 def reference_inputs(db, project, request):
     record = owned(db, ReferenceRequest, project, request.options["request_id"])
+    if record.origin == "uploaded" and record.upload_state not in {"orphan", "published"}:
+        raise APIError(409, "INPUT_REQUIRED", "Reference input must be uploaded again")
     if request.target_language or request.segment_id:
         raise APIError(422, "INVALID_SCOPE", "Reference scope is fixed by its request")
     return record.dependency_snapshot | capture_inputs(
@@ -287,6 +289,8 @@ def publish_reference(db, run, result):
     )
     db.add(version)
     db.flush()
+    if record.origin == "uploaded":
+        record.upload_state = "published"
     changed(
         db,
         project,

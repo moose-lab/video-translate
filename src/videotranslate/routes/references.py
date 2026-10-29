@@ -1,6 +1,8 @@
 """Authenticated bounded private audio uploads; CPU validation runs in the worker."""
 
 import hashlib
+import secrets
+from datetime import timedelta
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -17,7 +19,7 @@ from ..dubbing.ownership import owner, project_for
 from ..errors import APIError
 from ..languages.catalog import resolve
 from ..models.analysis import ReferenceRequest
-from ..models.core import new_id
+from ..models.core import new_id, utcnow
 from ..security import Identity, require_csrf, require_identity
 from .dubbing import BoundedDubbingRoute
 
@@ -88,7 +90,7 @@ def persist_upload(request, project_id, identity, file, body):
     if size == 0:
         raise APIError(422, "EMPTY_UPLOAD", "Reference is empty")
     file.file.seek(0)
-    record_id = new_id()
+    record_id, token = new_id(), secrets.token_hex(32)
     key = f"{identity.workspace.id}/{project_id}/reference-uploads/{record_id}"
     with request.app.state.session_factory.begin() as db:
         project = project_for(db, identity, project_id, write=True)
@@ -102,21 +104,35 @@ def persist_upload(request, project_id, identity, file, body):
             upload_size=size,
             upload_sha256=digest.hexdigest(),
             upload_state="writing",
+            upload_token=token,
+            upload_lease_expires_at=utcnow() + timedelta(minutes=5),
         )
         db.add(record)
+    failed = False
     try:
         request.app.state.storage.put(key, file.file, "application/octet-stream")
     except Exception:
-        with request.app.state.session_factory.begin() as db:
-            db.get(ReferenceRequest, record_id).upload_state = "orphan"
-        raise APIError(
-            503, "STORAGE_UNAVAILABLE", "Reference could not be stored", retryable=True
-        ) from None
+        failed = True
+    from ..execution.uploads import settle_upload
+
+    result, enqueue_error = None, None
     with request.app.state.session_factory.begin() as db:
-        project = project_for(db, identity, project_id, write=True)
-        record = db.get(ReferenceRequest, record_id)
-        record.upload_state = "orphan"
-        return references.enqueue(db, project, record)
+        project, record, owns = settle_upload(db, identity.workspace.id, record_id, token)
+        if not failed and owns and project.deleted_at is None:
+            try:
+                # Keep the settled input/orphan checkpoint even if queue creation
+                # fails, while serializing enqueue against concurrent GC fencing.
+                with db.begin_nested():
+                    result = references.enqueue(db, project, record)
+            except Exception as error:
+                enqueue_error = error
+    if project.deleted_at is not None:
+        raise APIError(404, "NOT_FOUND", "Resource not found")
+    if isinstance(enqueue_error, APIError):
+        raise enqueue_error
+    if result is None:
+        raise APIError(503, "STORAGE_UNAVAILABLE", "Reference could not be stored", retryable=True)
+    return result
 
 
 @router.post("/references/upload", status_code=202)

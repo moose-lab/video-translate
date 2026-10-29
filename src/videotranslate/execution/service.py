@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from ..errors import APIError
 from ..models.core import Project, utcnow
-from ..models.execution import RunAttempt, StageRun
+from ..models.execution import RunAttempt, RunRequestKey, StageRun
 from ..routes.projects import owned_project
 from .contracts import FailureCode, RunCreate, StageFailure, StageResult
 from .events import append_event
@@ -44,6 +44,17 @@ def create_run(
         request.model_dump() | {"options": options, "dependencies": snapshot}
     )
     if idempotency_key:
+        alias = db.scalar(
+            select(RunRequestKey).where(
+                RunRequestKey.project_id == project.id,
+                RunRequestKey.workspace_id == workspace_id,
+                RunRequestKey.key == idempotency_key,
+            )
+        )
+        if alias:
+            if alias.request_fingerprint != request_fingerprint:
+                raise APIError(409, "IDEMPOTENCY_CONFLICT", "Key was used with different inputs")
+            return owned_run(db, workspace_id, alias.run_id)
         prior = db.scalar(
             select(StageRun).where(
                 StageRun.project_id == project.id, StageRun.idempotency_key == idempotency_key
@@ -54,7 +65,7 @@ def create_run(
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Key was used with different inputs")
             return prior
     scope = ":".join(filter(None, [request.stage, request.target_language, request.segment_id]))
-    if idempotency_key is None:
+    if idempotency_key is None or request.stage in {"extract", "separate"}:
         # The creation signature above remains immutable for keyed requests.
         # Cache matching instead uses the run's current retried dependencies and
         # normalized options; canonical hashes ignore dictionary key order.
@@ -107,6 +118,8 @@ def create_run(
                 prior.dependency_snapshot == snapshot
                 and fingerprint(prior.options) == options_fingerprint
             ):
+                if idempotency_key:
+                    _bind_request_key(db, project, idempotency_key, request_fingerprint, prior)
                 return prior
     run = StageRun(
         workspace_id=workspace_id,
@@ -125,8 +138,24 @@ def create_run(
     )
     db.add(run)
     db.flush()
+    if idempotency_key:
+        _bind_request_key(db, project, idempotency_key, request_fingerprint, run)
     append_event(db, project, "run.queued", run=run, facts={"revision": project.revision})
     return run
+
+
+def _bind_request_key(db, project, key, request_fingerprint, run):
+    # The project lock serializes aliases with generic and workflow enqueue paths.
+    db.add(
+        RunRequestKey(
+            project_id=project.id,
+            workspace_id=project.workspace_id,
+            run_id=run.id,
+            key=key,
+            request_fingerprint=request_fingerprint,
+        )
+    )
+    db.flush()
 
 
 def owned_run(db: Session, workspace_id: str, run_id: str) -> StageRun:
@@ -231,6 +260,17 @@ def _clear_lease(run):
     run.updated_at = utcnow()
 
 
+def _recovery_kind(db, run):
+    from .prepared import current_operation
+
+    operation = current_operation(db, run)
+    if operation and operation.phase == "prepared":
+        return "reuse_prepared"
+    if operation and operation.phase == "terminal":
+        return "resume_download"
+    return "resume_remote" if run.remote_id else "rerun_local"
+
+
 def claim_run(db: Session, owner: str, *, lease_seconds: int = 60, registry=None):
     if not 1 <= lease_seconds <= 3600 or not owner or len(owner) > 120:
         raise ValueError("Invalid worker lease settings")
@@ -302,7 +342,7 @@ def claim_run(db: Session, owner: str, *, lease_seconds: int = 60, registry=None
                 project,
                 "run.recovery",
                 run=run,
-                facts={"recovery": "resume_remote" if run.remote_id else "rerun_local"},
+                facts={"recovery": _recovery_kind(db, run)},
             )
             db.flush()
         if run.status not in {"queued", "retry_wait"} or run.due_at > now:

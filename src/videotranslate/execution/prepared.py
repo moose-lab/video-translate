@@ -289,4 +289,10 @@ def cleanup_orphans(session_factory, storage, *, workspace_id, before, limit=100
             if record.workspace_id == workspace_id and record.state == "deleting":
                 record.state = "deleted"
                 count += 1
+    if count < limit:
+        from .uploads import cleanup_raw_uploads
+
+        count += cleanup_raw_uploads(
+            session_factory, storage, workspace_id=workspace_id, before=before, limit=limit - count
+        )
     return count

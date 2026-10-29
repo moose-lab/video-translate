@@ -100,6 +100,7 @@ def test_initial_migration_on_clean_database(tmp_path):
             "assets",
             "stage_runs",
             "run_attempts",
+            "run_request_keys",
             "input_states",
             "project_events",
             "workspace_credentials",

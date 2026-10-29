@@ -1,16 +1,22 @@
 """Private analysis recovery state. Never serialize these rows to public run facts."""
 
+from datetime import datetime
+
 from sqlalchemy import (
     JSON,
+    Boolean,
     CheckConstraint,
     ForeignKeyConstraint,
+    Index,
     Integer,
     String,
     UniqueConstraint,
+    false,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db import Base
+from .core import UTCDateTime
 from .dubbing import Owned, owned_fk, owner_constraints
 
 
@@ -118,6 +124,7 @@ class ReferenceRequest(Owned, Base):
         CheckConstraint(
             "origin IN ('uploaded','source','vocals')", name="ck_reference_request_origin"
         ),
+        Index("ix_reference_upload_gc", "workspace_id", "upload_state", "created_at"),
     )
     run_id: Mapped[str | None] = mapped_column(String(36))
     origin: Mapped[str] = mapped_column(String(20))
@@ -128,6 +135,12 @@ class ReferenceRequest(Owned, Base):
     upload_size: Mapped[int | None] = mapped_column(Integer)
     upload_sha256: Mapped[str | None] = mapped_column(String(64))
     upload_state: Mapped[str | None] = mapped_column(String(20))
+    upload_token: Mapped[str | None] = mapped_column(String(64))
+    upload_lease_expires_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    upload_write_settled: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false()
+    )
+    upload_gc_checked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
 
 
 class VoiceReference(Owned, Base):

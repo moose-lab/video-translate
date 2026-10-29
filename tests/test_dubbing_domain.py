@@ -309,6 +309,7 @@ def test_verified_unversioned_baseline_upgrade_preserves_fake_credentials(tmp_pa
     baseline = MetaData()
     for table in Base.metadata.tables.values():
         if table.name not in domain and table.name not in {
+            "run_request_keys",
             "private_operations",
             "prepared_objects",
             "analysis_media",

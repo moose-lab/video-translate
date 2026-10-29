@@ -138,3 +138,30 @@ class ProjectEvent(Base):
     attempt: Mapped[int | None] = mapped_column(Integer)
     facts: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class RunRequestKey(Base):
+    """Immutable request aliases can share one run without sharing key identity."""
+
+    __tablename__ = "run_request_keys"
+    __table_args__ = (
+        UniqueConstraint("project_id", "key", name="uq_run_request_key"),
+        ForeignKeyConstraint(
+            ["project_id", "workspace_id"],
+            ["projects.id", "projects.workspace_id"],
+            name="fk_request_key_project",
+        ),
+        ForeignKeyConstraint(
+            ["run_id", "project_id", "workspace_id"],
+            ["stage_runs.id", "stage_runs.project_id", "stage_runs.workspace_id"],
+            name="fk_request_key_run",
+        ),
+        Index("ix_request_keys_run", "run_id"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    project_id: Mapped[str] = mapped_column(String(36))
+    workspace_id: Mapped[str] = mapped_column(String(36))
+    run_id: Mapped[str] = mapped_column(String(36))
+    key: Mapped[str] = mapped_column(String(128))
+    request_fingerprint: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
