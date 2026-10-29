@@ -1,0 +1,40 @@
+{
+  "source_video_id": "SIZsFGvtClM",
+  "space": "nvidia/nemotron-diarization",
+  "space_sha": "7e62c797615676c5785b4508ef6d1d976c53a464",
+  "model": "nemotron-diarization",
+  "input_duration_ms": 5000,
+  "input_sha256": "eec2e468de29352d84b91157a7e89e007b18feb4577b8576d3a19fba84d95a0e",
+  "credential_used": false,
+  "remote_id": null,
+  "product_stage": false,
+  "product_transcript_published": false,
+  "diagnostic_attempts": 2,
+  "last_attempt_kind": "explicit_retry_after_known_terminal_failure",
+  "received_message_types": [
+    "ready",
+    "result",
+    "result",
+    "result",
+    "result"
+  ],
+  "final": {
+    "type": "result",
+    "sequence": 4,
+    "receivedAudioMs": 5000,
+    "isFinal": true,
+    "segments": [
+      {
+        "startTime": 0.8,
+        "endTime": 5.04,
+        "speaker": 0,
+        "text": "Imagine being a software developer and not having to write any code. Boy, does this"
+      }
+    ]
+  },
+  "client_rejected": true,
+  "identified_contract_mismatches": [
+    "uint32 speaker ID rejected by string-only validation",
+    "40ms tail accepted by low-level tolerance but rejected by strict publication bounds"
+  ]
+}
