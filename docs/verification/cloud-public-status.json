@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-10-29T19:03:31.154639+00:00",
+  "inference_submitted": false,
+  "services": {
+    "separation": {
+      "space": "kajise/Demucs_v4-FT_2s",
+      "sha": "b24f0dc29c2a01917aff0e204d209af5b7dcf8b3",
+      "runtime_stage": "RUNNING",
+      "host": "https://kajise-demucs-v4-ft-2s.hf.space",
+      "schema_matches_adapter": true
+    },
+    "transcription": {
+      "space": "nvidia/nemotron-diarization",
+      "sha": "7e62c797615676c5785b4508ef6d1d976c53a464",
+      "runtime_stage": "RUNNING",
+      "host": "https://nvidia-nemotron-diarization.hf.space",
+      "health_ok": true
+    },
+    "synthesis": {
+      "space": "k2-fsa/OmniVoice",
+      "sha": "64deef91cf1f7bfdfc97ff07502b4cd47a0e361e",
+      "runtime_stage": "RUNNING",
+      "host": "https://k2-fsa-omnivoice.hf.space",
+      "schema_matches_adapter": true,
+      "language_enum_count": 647
+    }
+  }
+}

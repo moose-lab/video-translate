@@ -16,3 +16,13 @@ Both assets were retrieved through the authorized content endpoint, checked agai
 Structured facts are retained in[source-cpu-preflight.json](source-cpu-preflight.json). The throwaway database/media and generated test login were removed when the isolated app/worker closed; the original whole source was retained. The temporary controller harness corrected its own HTTP-status/DTO assumptions before this successful pass. No product code was changed for the preflight.
 
 Subsequent acceptance still requires a fresh upload in the completed product, actual configured cloud separation/ASR/translation/clone/QC operations, independently editable Chinese/Japanese tracks, fitting and background mixing, retained video/subtitle exports, and normal-speed review. Original English working audio cannot stand in for those deliverables.
+
+## Public service preflight
+
+At2026-10-29T19:03:31UTC (2026-10-30 local time), the controller also read official public Space metadata and health/schema endpoints through the production`SafeHTTP` transport with the existing administrator proxy/trusted DNS settings. No credential was supplied and no audio upload or named inference call occurred. [Structured observations](cloud-public-status.json) retain the exact timestamp and returned revisions.
+
+- [Demucs metadata](https://huggingface.co/api/spaces/kajise/Demucs_v4-FT_2s) reported`RUNNING` at`b24f0dc29c2a01917aff0e204d209af5b7dcf8b3`; its two-stem named endpoint schema matched the adapter.
+- [NVIDIA metadata](https://huggingface.co/api/spaces/nvidia/nemotron-diarization) reported`RUNNING` at`7e62c797615676c5785b4508ef6d1d976c53a464`; the public`/health` response had`ok:true`.
+- [OmniVoice metadata](https://huggingface.co/api/spaces/k2-fsa/OmniVoice) reported`RUNNING` at`64deef91cf1f7bfdfc97ff07502b4cd47a0e361e`; its clone schema matched the adapter and language enum had647 entries (catalog choices plus Auto).
+
+Availability can change. These observations do not prove an accepted inference job, available account quota/credit, correct output or a language-quality result. They only reduce the risk of discovering an already changed/unavailable public interface when reviewed product integration begins.
