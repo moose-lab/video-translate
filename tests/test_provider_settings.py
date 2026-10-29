@@ -939,27 +939,27 @@ def test_hf_provider_suffix_uses_repository_for_metadata(client_factory, registe
         "revision": 0,
         "adapter": "hf_router",
         "endpoint": "https://router.huggingface.co/v1",
-        "model": "openai/whisper-large-v3:fastest",
+        "model": "Qwen/Qwen3-235B-A22B-Instruct-2507:deepinfra",
         "credential_ref": "huggingface",
         "controls": {},
     }
-    client.put("/api/providers/verification", headers=headers, json=body)
+    client.put("/api/providers/translation", headers=headers, json=body)
     seen = []
 
     def get(self, url, **kwargs):
         seen.append(url)
-        return b'{"id":"openai/whisper-large-v3"}' if "/api/models/" in url else b"{}"
+        return b'{"id":"Qwen/Qwen3-235B-A22B-Instruct-2507"}' if "/api/models/" in url else b"{}"
 
     monkeypatch.setattr(SafeHTTP, "get", get)
     assert (
         client.post(
-            "/api/providers/verification/check", headers=headers, json={"revision": 1}
+            "/api/providers/translation/check", headers=headers, json={"revision": 1}
         ).json()["reachable"]
         is True
     )
-    assert seen[0] == "https://huggingface.co/api/models/openai/whisper-large-v3"
+    assert seen[0] == "https://huggingface.co/api/models/Qwen/Qwen3-235B-A22B-Instruct-2507"
     assert (
-        client.get("/api/provider-settings").json()["providers"]["verification"]["model"]
+        client.get("/api/provider-settings").json()["providers"]["translation"]["model"]
         == body["model"]
     )
 
@@ -1135,3 +1135,50 @@ def test_nvidia_capability_declares_english_only_and_no_resumption():
         and not data["resumable"]
         and not data["cancel_supported"]
     )
+
+
+def test_asr_verification_rejects_provider_suffix_and_legacy_check_is_configuration_required(
+    client_factory, register, monkeypatch
+):
+    from sqlalchemy import select
+
+    from videotranslate.models.providers import ProviderConnection
+    from videotranslate.providers.network import SafeHTTP
+
+    client = client_factory()
+    identity = register(client)
+    headers = {"X-CSRF-Token": identity["csrf_token"]}
+    client.put(
+        "/api/credentials/huggingface", headers=headers, json={"revision": 0, "token": "hf_fake"}
+    )
+    body = {
+        "revision": 0,
+        "adapter": "hf_router",
+        "endpoint": "https://router.huggingface.co/v1",
+        "model": "openai/whisper-large-v3",
+        "credential_ref": "huggingface",
+        "controls": {},
+    }
+    assert (
+        client.put(
+            "/api/providers/verification",
+            headers=headers,
+            json={**body, "model": "openai/whisper-large-v3:fastest"},
+        ).status_code
+        == 422
+    )
+    assert client.put("/api/providers/verification", headers=headers, json=body).status_code == 200
+    with client.app.state.session_factory.begin() as db:
+        row = db.scalar(select(ProviderConnection))
+        row.settings = {**row.settings, "model": "openai/whisper-large-v3:fastest"}
+    monkeypatch.setattr(
+        SafeHTTP,
+        "get",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("must not contact provider")),
+    )
+    response = client.post(
+        "/api/providers/verification/check", headers=headers, json={"revision": 1}
+    )
+    assert response.status_code == 200
+    assert response.json()["state"] == "configuration_required"
+    assert response.json()["inference_verified"] is False

@@ -202,6 +202,8 @@ def put_provider(
         or body.credential_ref not in valid_refs[body.adapter]
     ):
         raise APIError(422, "VALIDATION_ERROR", "Invalid provider configuration")
+    if slot == "verification" and body.adapter == "hf_router" and body.model and ":" in body.model:
+        raise APIError(422, "VALIDATION_ERROR", "Provider suffix is unsupported for verification")
     if not preset_supported(body.adapter, body.model, body.space_id, body.endpoint):
         raise APIError(422, "VALIDATION_ERROR", "Unsupported provider configuration")
     try:
@@ -340,7 +342,13 @@ def check_provider(
         result["credential_mode"] = (
             "authenticated" if credential and credential.ciphertext else "public_demo"
         )
-    if not preset_supported(
+    if (
+        slot == "verification"
+        and values["adapter"] == "hf_router"
+        and ":" in (values.get("model") or "")
+    ):
+        result["state"] = "configuration_required"
+    elif not preset_supported(
         values["adapter"], values.get("model"), values.get("space_id"), values.get("endpoint")
     ):
         result["state"] = "configuration_required"
