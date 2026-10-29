@@ -120,6 +120,24 @@ def update_project(
             409, "REVISION_CONFLICT", "Project changed; reload and try again", retryable=True
         )
     db.refresh(project)
+    from ..execution.inputs import set_inputs
+
+    values = {}
+    if "source_track_index" in changes:
+        values["source.audio_track"] = project.source_track_index
+    if "source_language" in changes:
+        values["source.language"] = project.source_language
+    if values:
+        set_inputs(db, project, values)
+    if "source_track_index" in changes:
+        from ..execution.events import append_event
+
+        append_event(
+            db,
+            project,
+            "source.track_selected",
+            facts={"audio_ordinal": project.source_track_index},
+        )
     return project
 
 

@@ -7,6 +7,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -22,6 +23,12 @@ class StageRun(Base):
     __tablename__ = "stage_runs"
     __table_args__ = (
         UniqueConstraint("project_id", "idempotency_key"),
+        UniqueConstraint("id", "project_id", "workspace_id", name="uq_run_owner"),
+        ForeignKeyConstraint(
+            ["project_id", "workspace_id"],
+            ["projects.id", "projects.workspace_id"],
+            name="fk_run_project_owner",
+        ),
         CheckConstraint("attempt_count >= 0 AND auto_failures >= 0", name="ck_run_counts"),
         CheckConstraint(
             "status IN ('queued','running','retry_wait','succeeded','needs_review','failed','stale','cancelling','cancelled')",
@@ -87,7 +94,14 @@ class RunAttempt(Base):
 
 class InputState(Base):
     __tablename__ = "input_states"
-    __table_args__ = (UniqueConstraint("workspace_id", "project_id", "key"),)
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "project_id", "key"),
+        ForeignKeyConstraint(
+            ["project_id", "workspace_id"],
+            ["projects.id", "projects.workspace_id"],
+            name="fk_input_project_owner",
+        ),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"))
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"), index=True)
@@ -99,6 +113,16 @@ class ProjectEvent(Base):
     __tablename__ = "project_events"
     __table_args__ = (
         UniqueConstraint("project_id", "sequence"),
+        ForeignKeyConstraint(
+            ["project_id", "workspace_id"],
+            ["projects.id", "projects.workspace_id"],
+            name="fk_event_project_owner",
+        ),
+        ForeignKeyConstraint(
+            ["run_id", "project_id", "workspace_id"],
+            ["stage_runs.id", "stage_runs.project_id", "stage_runs.workspace_id"],
+            name="fk_event_run_owner",
+        ),
         CheckConstraint("sequence > 0", name="ck_event_sequence"),
         Index("ix_events_project", "workspace_id", "project_id", "sequence"),
     )

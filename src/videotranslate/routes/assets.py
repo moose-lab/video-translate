@@ -98,6 +98,13 @@ def persist_source(
         db.add(asset)
         db.flush()
         update_project(db, project, {"source_asset_id": asset.id, "status": "uploaded"})
+        from ..execution.events import append_event
+        from ..execution.inputs import set_inputs
+
+        set_inputs(db, project, {"source.video": {"asset_id": asset.id, "sha256": asset.sha256}})
+        append_event(
+            db, project, "source.upload_completed", facts={"asset_id": asset.id, "byte_size": size}
+        )
         db.commit()
     except Exception:
         db.rollback()

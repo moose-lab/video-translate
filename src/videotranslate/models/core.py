@@ -108,7 +108,10 @@ class Project(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
-    __table_args__ = (Index("ix_projects_workspace_active", "workspace_id", "deleted_at"),)
+    __table_args__ = (
+        Index("ix_projects_workspace_active", "workspace_id", "deleted_at"),
+        Index("uq_projects_id_workspace", "id", "workspace_id", unique=True),
+    )
 
 
 class Asset(Base):

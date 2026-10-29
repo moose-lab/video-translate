@@ -143,3 +143,18 @@ def paginated_collections(client_factory, register):
         "deleted_project_id": deleted[0].id,
         "foreign_project_id": foreign[0].id,
     }
+
+
+@pytest.fixture
+def execution_project(client_factory, register, tiny_mp4):
+    client = client_factory()
+    auth = register(client)
+    headers = {"X-CSRF-Token": auth["csrf_token"]}
+    project = client.post("/api/projects", json={"name": "Film"}, headers=headers).json()
+    response = client.post(
+        f"/api/projects/{project['id']}/source",
+        files={"file": ("tiny.mp4", tiny_mp4, "video/mp4")},
+        headers=headers,
+    )
+    assert response.status_code == 201, response.text
+    return client, headers, response.json()["project"]
