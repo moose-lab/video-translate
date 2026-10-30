@@ -320,7 +320,8 @@ def build_plan(source_duration_ms, lines, settings=FitSettings()):
 
 
 def map_time(plan, source_ms):
-    require_integer(source_ms, 0, plan.source_duration_ms)
+    if type(source_ms) is not int or not 0 <= source_ms <= plan.source_duration_ms:
+        raise FitInputError("INVALID_FIT_TIME")
     return map_pieces(plan.pieces, source_ms)
 ```
 
