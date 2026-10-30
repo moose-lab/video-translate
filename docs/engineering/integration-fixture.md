@@ -31,7 +31,7 @@ Raw extractor output contains temporary media URLs and is kept outside the repos
 
 The source is an English technical explainer. It exercises technical terminology and narration. A separate multi-speaker fixture remains required by the broader approved design; passing this source alone cannot prove multi-role dubbing quality.
 
-## Current status
+## Initial acquisition status (2026-10-29)
 
 Source acquired at `/tmp/videotranslate-fixtures/SIZsFGvtClM-original.mp4` for later fresh product upload. Acquisition selected YouTube formats398+140 and remuxed them without generation: 25,861,753 bytes, 1280×720 AV1 video and AAC stereo44.1kHz, English audio metadata. FFprobe reports700.406712 seconds. SHA-256: `18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f`. Original absolute stream1 is audio ordinal0; select that original English track.
 
@@ -42,3 +42,13 @@ Acquisition and source probing are preparation only. Real model runs, product wo
 ## Persistent reacquisition after runtime restart
 
 The former temporary fixture and preview state were absent on2026-10-30 resumption. The same formats were reacquired through the documented yt-dlp route into `/Users/moose/.agent-reach/fixtures/SIZsFGvtClM/SIZsFGvtClM.mp4`. Its25,861,753bytes and SHA256 exactly match the source above; FFprobe again reports700.406712seconds. English VTT is retained alongside it. New product upload/jobs must have their own real lineage; old temporary IDs cannot be treated as live. Initial sample selection is0–59,510ms to stop at the publisher's utterance boundary, consistent with the approved approximately60-second sample. See `docs/verification/2026-10-30-runtime-recovery.md` for the observed recovery boundary.
+
+## Current retained integration status (2026-10-31)
+
+The reacquired file was freshly uploaded into the persistent product project. Registered probe, extraction, remote four-stem separation, timestamped HF ASR and source-reference extraction succeeded. The two returned working stems were authenticated-download/hash/full-decode checked. The source has eight real ASR rows; the provider supplied no automatic speaker labels, so its one narrator has an explicit manual work label. The selected reference is the complete5,620ms current source row, bound as that role's default. See [source/cast/reference evidence](../verification/registered-source-cast-reference.json), [separation evidence](../verification/registered-separation-59510ms.json) and [live chronology](../verification/2026-10-31-source-and-translation-live.md).
+
+Chinese and Japanese Cinematic commands exist, but each initial context request has an uncertain remote outcome. No draft/refinement result is claimed. The user's one approved source-ASR retry was consumed successfully; it does not authorize retries of these context calls. A bounded chat-wait repair and both independent reviews precede fresh approval for one retry of each affected context task. Retained jobs must not be bypassed by making a new project or editing their context.
+
+Task5A natural synthesis passed independent SPEC/QUALITY through`6303ad3`, with650 full backend tests and independent163 plus88+5 tests. That establishes backend behavior, not real registered clones or human listening. The protected preview still runs schema0008 while the repair is built. Actual target wording/clones, independent QC, fitting, background mix, captions, both videos and workbench acceptance remain open. Human listening findings must stay separate from automatic ASR/decode evidence; do not mark them passed merely to unblock an export.
+
+The broader two-role test has a researched [candidate and attribution record](../verification/multi-role-fixture-candidate.md). No additional fixture has yet been acquired or passed. The primary source and approved approximately60-second paired-language test remain unchanged.
