@@ -348,3 +348,39 @@ def test_thousand_lines_have_bounded_map_and_stable_json():
         fit_plan.build_plan(10000, tuple(reversed(lines)), FitSettings(mode="smart"))
     )
     assert len(json.dumps(fit_plan.plan_json(plan))) < 1_000_000
+
+
+def test_smart_json_golden_coordinates_and_endpoint_interpolation():
+    rows = [FitLine("zh", "a", "r", 0, 2000, 3000), FitLine("zh", "b", "s", 1000, 3000, 4000)]
+    settings = FitSettings(mode="smart", max_audio_speed=F(1))
+    plan = fit_plan.build_plan(4000, rows, settings)
+    encoded = fit_plan.plan_json(plan)
+    assert encoded == fit_plan.plan_json(fit_plan.build_plan(4000, rows[::-1], settings))
+    assert [piece["output_end_ms"] for piece in encoded["pieces"]] == [
+        {"numerator": value, "denominator": 1} for value in [1500, 3500, 5500, 6500]
+    ]
+    assert encoded["placements"][0]["voice_end_ms"] == {"numerator": 3000, "denominator": 1}
+    assert encoded["placements"][0]["source_caption_end_ms"] == {
+        "numerator": 3500,
+        "denominator": 1,
+    }
+    assert [
+        fit_plan.map_time(plan, value)
+        for value in [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
+    ] == list(map(F, [0, 750, 1500, 2500, 3500, 4500, 5500, 6000, 6500]))
+
+
+def test_malformed_endpoints_backwards_source_and_unresolved_nulls_rejected():
+    plan = valid_plan()
+    for pieces in [
+        (replace(plan.pieces[0], source_start_ms=1), *plan.pieces[1:]),
+        (*plan.pieces[:-1], replace(plan.pieces[-1], source_end_ms=3999)),
+        (*plan.pieces[:-1], replace(plan.pieces[-1], source_end_ms=1000)),
+        (plan.pieces[0], replace(plan.pieces[1], output_start_ms=F(2001))),
+        (replace(plan.pieces[0], output_end_ms=F(0)), *plan.pieces[1:]),
+    ]:
+        bad = replace(plan, pieces=pieces)
+        rejected("INVALID_FIT_PLAN", lambda bad=bad: fit_plan.validate_plan(bad))
+    for field in ["audio_speed", "voice_end_ms"]:
+        bad = replace(plan, placements=(replace(plan.placements[0], **{field: False}),))
+        rejected("INVALID_FIT_PLAN", lambda bad=bad: fit_plan.validate_plan(bad))
