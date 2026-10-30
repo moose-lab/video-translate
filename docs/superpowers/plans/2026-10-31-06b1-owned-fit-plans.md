@@ -63,6 +63,7 @@ payload = {
 ```python
 class FitRow(Strict):
     id: ID
+    expected_source_revision_id: ID
     expected_source_text_fingerprint: Fingerprint
     translation_revision: ZeroRevision
     selection_revision: ZeroRevision  # natural-audio selection, not root source
@@ -83,6 +84,8 @@ class FitPlanCreate(SourceGuard):
 ```
 
 Apply actual Pydantic length/range/tag validators rather than leaving comments as implementation. Envelope≤4MiB through `BoundedDubbingRoute`; all selected rows across all tracks≤1000; duplicates/aliases resolving to the same target or cell are invalid before partial writes. Original-only requires zero tracks; dub/preview require at least one track and current active transcript. Root selection guard remains required for all purposes. Target source IDs must be currently active, not foreign or historical.
+
+Admission proof clarification: source transcript identity and text fingerprint intentionally do not change for every timing/role edit. Therefore each new `FitRow` requires the exact `expected_source_revision_id`, compared with the owned segment's current revision pointer under the project lock. Reuse its existing authorized timeline projection if available; otherwise expose an additive `source_revision_id` on that row with regression coverage. Do not substitute a broad project revision or silently weaken pre-admission timing/role CAS to text-only matching. Post-admission source revision/times/role remain captured and guarded separately; speaker display-name changes alone do not alter the source segment revision.
 
 - [ ] RED: capture two targets sharing one actual source and two roles; retain source selection+absolute window, transcript, exact fit settings/policy, canonical target/cell IDs, current source revision/text fingerprint/times/role, translation revision, selected audio root/version/output/SHA/measurement, and listening/evidence guards. Changing a source span, role assignment, selected output, expected wording, settings or a submitted guard before admission must409 without creating partial records. A speaker display-name change alone must not alter the planner role identity.
 - [ ] Implement immutable `FitPlanCommand`, `FitPlanLine` and `FitPlanResult` with composite owner/cell FKs for command/run/source/track/segment/source revision/current translation/audio root/version/natural output as applicable. Store every explicitly selected row, including visibly excluded preview rows, with `included` and bounded issue codes. Normal/current selection pointers are never overwritten. All user-supplied IDs/proofs are checked before enqueueing. Record precise command fingerprint and immutable actor; identical admitted command may reuse the existing record/run without duplicating history/events, returning an explicit reuse indication. Clock order must not choose an active plan implicitly; endpoints use explicit owned command IDs. Use durable event admission for meaningful history ordering. Follow existing command/run creation patterns when assigning a nullable run link before the surrounding transaction commits.
