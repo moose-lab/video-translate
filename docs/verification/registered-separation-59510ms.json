@@ -1,0 +1,40 @@
+{
+  "kind": "registered_retained_source_separation_after_reviewed_upload_repair",
+  "project_id": "c9fb8ab6-5cd0-4836-a6c7-71c1a466bf05",
+  "run_id": "0e44b164-fff1-4076-b381-95fb4b92a6e1",
+  "remote_id": "f7d08960b57a4d40bec48ffcc5e8ec15",
+  "named_separation_post_count": 1,
+  "window_ms": [
+    0,
+    59510
+  ],
+  "upload_seconds": 79.703,
+  "artifacts": [
+    {
+      "kind": "vocals",
+      "asset_id": "3c6c26cc-5b89-430d-a531-d23543ef81e0",
+      "path": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-HF-product-analysis/vocals.wav",
+      "sha256": "7134790c6301c376e0db7c752361da837269aa3d3c1d963335ae316ec753bb8d",
+      "byte_size": 22851932,
+      "duration_seconds": "59.510000",
+      "codec": "pcm_f32le",
+      "sample_rate": "48000",
+      "channels": 2,
+      "full_decode": true
+    },
+    {
+      "kind": "instrumental",
+      "asset_id": "67466091-84b8-4b9b-a313-217c74e477e7",
+      "path": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-HF-product-analysis/instrumental.wav",
+      "sha256": "03190236275262293447706c36126be60b4d747cc401ab6073d4ca35b227a145",
+      "byte_size": 22851932,
+      "duration_seconds": "59.510000",
+      "codec": "pcm_f32le",
+      "sample_rate": "48000",
+      "channels": 2,
+      "full_decode": true
+    }
+  ],
+  "source_asr_status": "submission_uncertain",
+  "final_dubbing_acceptance": false
+}

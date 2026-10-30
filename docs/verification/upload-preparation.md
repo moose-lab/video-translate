@@ -21,3 +21,13 @@ Recording transports inspect the actual multipart, GET and named POST request ex
 - A separate broad `ruff format --check .` found only existing Python fence formatting in three historical plan Markdown files (`2026-10-29-01`, `02`, `03`); those unrelated documents were left unchanged.
 
 Pytest commands use the existing Python 3.12 environment, `PYTHONPATH=src`, and `/opt/homebrew/bin` on PATH for FFmpeg. The focused/full runs own a `TemporaryDirectory` under `/tmp` and remove only that directory on completion. Initial task-owned RED/GREEN temporary directories were also removed. Frontend checks are unnecessary because no frontend file changed. Independent SPEC then QUALITY review and any controller-owned retained-source live retry remain separate gates.
+
+## Independent closure and actual retained-source retry
+
+Independent SPEC passed54 focused tests in35.77seconds plus interrupted-stream/invalid-response probes. Independent QUALITY passed95 focused tests in9.89seconds and9 separately authored lifecycle/resource-cleanup probes in5.72seconds. No actionable findings remained at`df6211c`. Later README edits did not change production code.
+
+The controller activated an exact frozen`df6211c` archive after both gates, preserving/backing up its existing persistent DB and server key. Schema7→8 migration retained original table counts, credential ciphertext/revisions and key; integrity/FK checks and metadata comparison passed. It resumed the retained failed separation run through the actual authenticated retry API, with no new source upload or extraction and no uncertainty acknowledgement for the known not-submitted preparation failure.
+
+The unchanged11,425,998-byte upload then succeeded in79.703seconds. The actual named separation job returned`f7d08960b57a4d40bec48ffcc5e8ec15`; terminal files were retained and both published outputs downloaded through authenticated asset endpoints. Each output is59.510seconds,48kHz stereo float32 WAV,22,851,932bytes, independently hashed/probed/fully decoded. Exact artifacts/proof are in`registered-separation-59510ms.json`. This is actual registered product separation, not a recording provider.
+
+The subsequent HF source recognition entered genuine submission uncertainty with no returned result/ID. It is a distinct named inference boundary and was not automatically retried. The user explicitly accepted one possible duplicate-charge retry; the controller invoked one acknowledged retry with a one-shot worker and passive diagnostic. Its eventual result is recorded separately. Complete source/target speech, final dubbed video, mixing and exports remain pending; this upload repair alone does not satisfy that acceptance.
