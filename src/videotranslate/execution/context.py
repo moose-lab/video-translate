@@ -57,7 +57,7 @@ class RunContext:
                 raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
             return run.remote_id
 
-    def begin_submission(self, provider: str, model: str) -> str:
+    def begin_submission(self, provider: str, model: str, *, guard=None) -> str:
         provider, model = safe_identifier(provider, 60), safe_identifier(model, 120)
         with self.session_factory.begin() as db:
             project, run = self._locked(db)
@@ -71,6 +71,8 @@ class RunContext:
                 raise CancellationRequested()
             if run.remote_state != "not_submitted" or run.remote_id:
                 raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
+            if guard is not None:
+                guard(db, project, run)
             run.provider, run.model = provider, model
             run.request_key = run.request_key or secrets.token_hex(32)
             run.remote_state = "submitting"

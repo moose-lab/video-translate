@@ -21,12 +21,14 @@ class VoiceQCCommand(Owned, Base):
     __table_args__ = owner_constraints("voice_qc_command") + (
         owned_fk("track_id", "language_tracks", "fk_voice_qc_command_track"),
         UniqueConstraint("project_id", "signature", name="uq_voice_qc_command_signature"),
+        CheckConstraint("admission_sequence >= 0", name="ck_voice_qc_admission"),
         UniqueConstraint(
             "id", "track_id", "project_id", "workspace_id", name="uq_voice_qc_command_track"
         ),
     )
     track_id: Mapped[str] = mapped_column(String(36))
     signature: Mapped[str] = mapped_column(String(64))
+    admission_sequence: Mapped[int] = mapped_column(Integer)
     actor_id: Mapped[str] = mapped_column(String(36))
 
 
@@ -105,4 +107,5 @@ class AudioReview(Owned, Base):
     decision: Mapped[str] = mapped_column(String(16))
     note: Mapped[str] = mapped_column(Text)
     qc_evidence_fingerprint: Mapped[str] = mapped_column(String(64))
+    qc_acknowledgement: Mapped[dict] = mapped_column(JSON)
     guard_snapshot: Mapped[dict] = mapped_column(JSON)

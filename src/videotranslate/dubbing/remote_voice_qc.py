@@ -1,13 +1,14 @@
 """Synchronous independent ASR with existing durable prepared-object lifecycle."""
 
 from ..errors import APIError
-from ..execution.contracts import FailureCode, StageFailure, StageResult
+from ..execution.contracts import FailureCode, StageFailure, StagePending, StageResult
 from ..execution.inputs import capture_inputs, fingerprint
 from ..execution.prepared import Operations, current_operation
 from ..models.voice_qc import VoiceQCCommand, VoiceQCLine
 from .analysis import make_http
 from .ownership import invalid, owned, scope
 from .synthesis_contracts import LineOptions
+from .voice_qc_cache import cached_recognition, resume_alias, validate_recognition
 
 
 def line_options(options):
@@ -42,6 +43,9 @@ def line_for(db, project, request):
         or fingerprint(line.recognition_input) != line.recognition_identity
     ):
         invalid()
+    from .voice_qc_cache import validate_line
+
+    validate_line(db, project, line, output)
     return line
 
 
@@ -59,98 +63,16 @@ def publication_current(db, run):
         return False
 
 
-def cached_recognition(db, project, line):
-    """Check private original operation + settled preprocessing manifest before reuse."""
-    from ..execution.prepared import bounded
-    from ..models.analysis import PreparedObject
-    from ..models.execution import StageRun
-    from ..providers.hf_router import normalize_asr
-    from .voice_qc import POLICY
+def paid_guard(line):
+    def guard(db, project, run):
+        from .voice_qc import line_current, unresolved_recognition
 
-    run = owned(db, StageRun, project, line.run_id)
-    operation = current_operation(db, run)
-    if operation is None or operation.phase != "prepared":
-        raise ValueError("Recognition unavailable")
-    request, payload = operation.request_payload, operation.prepared_payload
-    bounded(request)
-    bounded(payload)
-    if (
-        request.get("input") != line.recognition_input
-        or payload.get("identity") != line.recognition_identity
-    ):
-        raise ValueError("Recognition input mismatch")
-    if "reuse_line_id" in request:
-        original = owned(db, VoiceQCLine, project, request["reuse_line_id"])
-        if original.id == line.id or original.recognition_input != line.recognition_input:
-            raise ValueError("Invalid recognition alias")
-        # Aliases always point directly to producing operations.
-        origin_run = owned(db, StageRun, project, original.run_id)
-        origin = current_operation(db, origin_run)
-        if origin is None or "reuse_line_id" in origin.request_payload:
-            raise ValueError("Invalid recognition origin")
-        original_payload, original_operation = cached_recognition(db, project, original)
-        if original_payload != payload:
-            raise ValueError("Recognition alias changed")
-        return payload, original_operation
-    expected = line.recognition_input
-    if (
-        operation.provider != "hf_router"
-        or operation.model != expected["config"]["model"]
-        or operation.connection_revision != expected["connection_revision"]
-        or operation.remote_id is not None
-        or operation.host != "https://router.huggingface.co"
-        or operation.prefix != "/hf-inference"
-        or request.get("policy") != POLICY
-        or expected["preprocessing"] != POLICY
-        or run.dependency_snapshot
-        != {"voice_qc.input:" + line.recognition_identity: line.recognition_identity}
-    ):
-        raise ValueError("Invalid recognition provenance")
-    record = owned(db, PreparedObject, project, payload["prepared_object_id"])
-    metadata = payload["preprocessing"]
-    if (
-        record.operation_id != operation.id
-        or record.state not in {"orphan", "published"}
-        or not record.write_settled
-        or record.delete_pending
-        or metadata != request.get("preprocessing")
-        or record.metadata_json != metadata | {"kind": "voice_qc_input"}
-        or metadata["sample_rate"] != 16000
-        or metadata["channels"] != 1
-        or metadata["codec"] != "pcm_s16le"
-        or metadata["container"] != "wav"
-        or not 0 < metadata["byte_size"] <= 16 * 1024 * 1024
-        or payload.get("source_sha256") != expected["audio_sha256"]
-    ):
-        raise ValueError("Invalid preprocessing evidence")
-    recognition = payload["recognition"]
-    normalized = normalize_asr(
-        {
-            "chunks": [
-                {"text": r["text"], "timestamp": [r["start"], r["end"]]}
-                for r in recognition["segments"]
-            ]
-        }
-    )
-    if normalized != recognition["segments"]:
-        raise ValueError("Invalid saved recognition")
-    validate_recognition(recognition, metadata["duration_ms"])
-    if operation.public_facts != {
-        "segment_count": len(normalized),
-        "sha256": metadata["sha256"],
-        "reused": False,
-    }:
-        raise ValueError("Invalid recognition facts")
-    return payload, operation
+        if not line_current(db, project, line):
+            raise StageFailure(FailureCode.CONFIGURATION, review=True)
+        if unresolved_recognition(db, project, line.recognition_identity, exclude_run_id=run.id):
+            raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
 
-
-def validate_recognition(value, duration):
-    from .analysis import working_timings
-    from .analysis_contracts import NormalizedTranscript
-
-    # Reuse actual bounded provider transcript validator, with no fake language/ID.
-    NormalizedTranscript.model_validate({"selection_id": "qc", **value})
-    working_timings(value["segments"], duration, "hf_asr", model="openai/whisper-large-v3")
+    return guard
 
 
 def handler(context):
@@ -166,7 +88,7 @@ def handler(context):
     from .analysis import materialize, provider_failure
     from .remote_synthesis import credential_token
     from .synthesis_cache import validate_output_evidence
-    from .voice_qc import POLICY, line_current
+    from .voice_qc import POLICY, earlier_active_recognition, line_current, unresolved_recognition
 
     operations = Operations(context)
     with context.session_factory.begin() as db:
@@ -186,10 +108,19 @@ def handler(context):
             except (APIError, ValueError, KeyError, TypeError, AttributeError):
                 raise StageFailure(FailureCode.CONFIGURATION, review=True) from None
             return StageResult(existing.public_facts, existing.id)
+        reusable, original, origin = None, None, None
+        if existing and "reuse_line_id" in existing.request_payload:
+            try:
+                reusable, origin = resume_alias(db, project, line, existing)
+            except (APIError, ValueError, KeyError, TypeError, AttributeError):
+                raise StageFailure(FailureCode.CONFIGURATION, review=True) from None
         if existing and existing.phase == "submitting":
             raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
-        reusable, original = None, None
         if existing is None:
+            if unresolved_recognition(
+                db, project, line.recognition_identity, exclude_run_id=run.id
+            ):
+                raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
             for candidate in db.scalars(
                 scope(VoiceQCLine, project)
                 .where(
@@ -214,6 +145,8 @@ def handler(context):
                     break
                 except (APIError, ValueError, KeyError, TypeError, AttributeError):
                     continue
+            if reusable is None and earlier_active_recognition(db, project, line):
+                raise StagePending()
             if not line_current(db, project, line):
                 raise StageFailure(FailureCode.CONFIGURATION, review=True)
         inputs = line.recognition_input
@@ -222,12 +155,18 @@ def handler(context):
         )
         asset = owned(db, Asset, project, output.audio_asset_id)
     if reusable is not None:
-        operations.prepare(
-            provider="hf_router",
-            model=inputs["config"]["model"],
-            connection_revision=inputs["connection_revision"],
-            request_payload={"input": inputs, "reuse_line_id": original.id},
-        )
+        if existing is None:
+            operations.prepare(
+                provider="hf_router",
+                model=inputs["config"]["model"],
+                connection_revision=inputs["connection_revision"],
+                request_payload={
+                    "input": inputs,
+                    "reuse_line_id": original.id,
+                    "origin_operation_id": origin.id,
+                    "prepared_fingerprint": fingerprint(reusable),
+                },
+            )
         return operations.cache(
             reusable,
             {
@@ -307,7 +246,7 @@ def handler(context):
             if object_id is None:
                 object_id = store_audio(context, existing.id, normalized, "voice_qc_input")
             http = make_http(context)
-            operations.begin()
+            operations.begin(guard=paid_guard(line))
             response = transcribe(
                 http,
                 audio=normalized.path.read_bytes(),
@@ -316,7 +255,7 @@ def handler(context):
                 include_metadata=True,
             )
             try:
-                validate_recognition(response, normalized.duration_ms)
+                timings = validate_recognition(response, normalized.duration_ms, existing.model)
             except ValueError:
                 operations.failed()
                 raise StageFailure(FailureCode.INVALID_MEDIA) from None
@@ -326,8 +265,9 @@ def handler(context):
                     "identity": line.recognition_identity,
                     "source_sha256": inputs["audio_sha256"],
                     "preprocessing": normalized.metadata(),
-                    "prepared_object_id": object_id,
+                    "objects": [object_id],
                     "recognition": response,
+                    "working_timings": timings,
                 },
                 {
                     "segment_count": len(response["segments"]),
@@ -361,12 +301,12 @@ def publish(db, run, result):
     payload, origin = cached_recognition(db, project, line)
     from ..models.analysis import PreparedObject
 
-    record = owned(db, PreparedObject, project, payload["prepared_object_id"])
+    record = owned(db, PreparedObject, project, payload["objects"][0])
     if record.asset_id is None:
         from ..models.execution import StageRun
 
         publish_objects(db, owned(db, StageRun, project, origin.run_id), [record.id])
-    recognized = " ".join(row["text"] for row in payload["recognition"]["segments"])
+    recognized = "".join(row["text"] for row in payload["recognition"]["segments"])
     comparison = compare(
         line.comparison_input["expected"],
         recognized,
@@ -382,7 +322,7 @@ def publish(db, run, result):
         line_id=line.id,
         operation_id=origin.id,
         recognition_identity=line.recognition_identity,
-        recognition=payload["recognition"],
+        recognition=payload["recognition"] | {"working_timings": payload["working_timings"]},
         comparison=comparison,
     )
     db.add(saved)

@@ -104,6 +104,7 @@ def test_voice_qc_frozen_populated_roundtrip_parity_and_owner_fences(tmp_path, b
                 workspace_id=w1,
                 track_id=t1,
                 signature=uuid4().hex,
+                admission_sequence=0,
                 actor_id=str(uuid4()),
                 created_at=now,
             )

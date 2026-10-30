@@ -94,12 +94,12 @@ class Operations:
             db.flush()
             return operation
 
-    def begin(self):
+    def begin(self, *, guard=None):
         operation = self.current()
         if not operation or operation.phase != "ready":
             raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
         # Metadata/schema GETs and upload must finish before this exact boundary.
-        self.context.begin_submission(operation.provider, operation.model)
+        self.context.begin_submission(operation.provider, operation.model, guard=guard)
         from .receipts import SubmissionBinding
 
         return SubmissionBinding.capture(operation)

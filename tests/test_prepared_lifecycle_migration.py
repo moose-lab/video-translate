@@ -220,6 +220,10 @@ def test_populated_prepared_lifecycle_migration_roundtrip(tmp_path, backend):
                 "natural_outputs",
                 "audio_selections",
                 "audio_selection_versions",
+                "voice_qc_commands",
+                "voice_qc_lines",
+                "voice_qc_results",
+                "audio_reviews",
             }:
                 table.to_metadata(historical)
         for _ in range(2):

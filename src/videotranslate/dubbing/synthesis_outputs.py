@@ -71,7 +71,7 @@ def output_json(db, project, track, segment, output):
 
     assessment = output_assessment(db, project, track, segment, output)
     assessment["ready"] = assessment["ready"] and not stale and evidence_status == "validated"
-    if stale:
+    if stale and "NATURAL_AUDIO_STALE" not in assessment["issues"]:
         assessment["issues"].append("NATURAL_AUDIO_STALE")
     if evidence_status != "validated":
         assessment["issues"].append("AUDIO_EVIDENCE_INVALID")
@@ -257,8 +257,13 @@ def current_lines(db, project, tag, limit=100, offset=0):
                 ],
             }
         )
+    from .voice_qc import target_readiness
+
+    readiness = target_readiness(db, project, track, transcript)
     return {
         "items": result,
+        "ready": readiness["ready"],
+        "readiness": readiness,
         "total": db.scalar(select(func.count()).select_from(query.subquery())),
-        "acceptance": "not_assessed",
+        "acceptance": "accepted" if readiness["ready"] else "incomplete",
     }
