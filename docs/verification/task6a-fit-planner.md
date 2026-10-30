@@ -104,3 +104,9 @@ extraction coordinates, audio/review identities and guarded persistent commands.
 Later 6C must render and verify the actual media, captions, mix/peak handling,
 private export and recovery behavior. Neither increment is completed by this
 planner or its numerical tests.
+
+## Controller closure: independent gates
+
+Independent SPEC passed at`53182a6`: fresh137 focused tests in24.25s, plus240 deterministic mixed-mode cases against an independent per-millisecond occupancy/integration oracle and66 strict numeric-substitution cases. A distinct QUALITY reviewer then passed: fresh137 in23.01s,120 metamorphic families and maximum1000-line/3001-piece stress probes. No Critical/Important/Minor issue remained. The controller opened both reports in parent`outputs/.runtime/task6a-fit-{spec,quality}-review.md`; retained evidence stays private outsideGit.
+
+The valid quality stress JSON measured1,265,679bytes; future request/storage limits must not assume every valid plan fits1MiB. Its observed build0.960s and validation/JSON0.976s are local measurements, not a latency promise.6B1 therefore uses the existing durable Worker to compute/validate maps outside SQL, with explicit2MiB limits/headroom and owned publication guards.6A arithmetic gates are closed; actual fitting, background/mix/caption/media and live product acceptance remain open.
