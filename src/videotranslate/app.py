@@ -15,6 +15,7 @@ from .routes import (
     providers,
     references,
     runs,
+    synthesis,
     workflow,
 )
 from .storage import make_storage
@@ -40,4 +41,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(dubbing.router, prefix="/api")
     app.include_router(workflow.router, prefix="/api")
     app.include_router(references.router, prefix="/api")
+    app.include_router(synthesis.router, prefix="/api")
     return app

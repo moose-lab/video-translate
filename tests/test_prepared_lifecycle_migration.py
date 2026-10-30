@@ -210,7 +210,17 @@ def test_populated_prepared_lifecycle_migration_roundtrip(tmp_path, backend):
             )
         historical = MetaData()
         for table in Base.metadata.tables.values():
-            if table.name not in {"translation_commands", "translation_phases"}:
+            if table.name not in {
+                "translation_commands",
+                "translation_phases",
+                "voice_settings",
+                "voice_settings_versions",
+                "synthesis_commands",
+                "synthesis_lines",
+                "natural_outputs",
+                "audio_selections",
+                "audio_selection_versions",
+            }:
                 table.to_metadata(historical)
         for _ in range(2):
             command.upgrade(config, "0007_prepared_object_lifecycle")

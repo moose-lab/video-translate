@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
-from ..dubbing import remote_translation
+from ..dubbing import remote_synthesis, remote_translation
 from ..dubbing.analysis import (
     extract_handler,
     extract_inputs,
@@ -118,3 +118,14 @@ for _phase in ("context", "draft", "critique", "rewrite", "shorten"):
         command_only=True,
         scope_suffix=remote_translation.phase_scope,
     )
+
+STAGES["synthesize"] = StageDefinition(
+    "synthesize",
+    remote_synthesis.line_options,
+    remote_synthesis.line_inputs,
+    remote_synthesis.handler,
+    remote_synthesis.publish,
+    remote_synthesis.publication_current,
+    command_only=True,
+    scope_suffix=remote_synthesis.line_scope,
+)

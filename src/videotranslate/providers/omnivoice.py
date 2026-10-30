@@ -4,6 +4,10 @@ from ..languages.catalog import key, resolve
 from .settings import validate_controls
 
 
+class OmniVoiceLanguageUnavailable(ValueError):
+    """The validated provider enum has no unique mapping for the explicit target."""
+
+
 def model_name_from_enum(language, enum):
     row = resolve(language)
     matches = [
@@ -12,7 +16,7 @@ def model_name_from_enum(language, enum):
         if isinstance(candidate, str) and key(candidate) == key(row["model_name"])
     ]
     if len(matches) != 1:
-        raise ValueError("Language unavailable or ambiguous in provider schema")
+        raise OmniVoiceLanguageUnavailable("Language unavailable or ambiguous in provider schema")
     return matches[0]
 
 
@@ -133,3 +137,66 @@ def poll_clone(http, handle, *, hf_token=None):
         remote_id=handle.remote_id,
         payload={"local_audio_path": str(local_path)},
     )
+
+
+def prepare_clone(http, *, inputs, reference_audio, hf_token=None):
+    """Metadata/schema/upload only. Caller checkpoints this before named inference POST."""
+    import json
+
+    from ..execution.inputs import fingerprint
+    from .gradio import GradioClient, discover_prefix, resolve_space, validate_endpoint_schema
+
+    config = inputs["config"]
+    if config["model"] != "OmniVoice":
+        raise ValueError("Unsupported model")
+    host = resolve_space(http, config["space_id"])
+    metadata = json.loads(
+        http.get("https://huggingface.co/api/spaces/" + config["space_id"], max_bytes=1024 * 1024)
+    )
+    revision = metadata.get("sha")
+    if (
+        metadata.get("host", "").rstrip("/") != host
+        or not isinstance(revision, str)
+        or not 1 <= len(revision) <= 200
+    ):
+        raise ValueError("Model metadata revision unavailable")
+    if config.get("endpoint") and config["endpoint"].rstrip("/") != host:
+        raise ValueError("Resolved model host differs from configured endpoint")
+    prefix = discover_prefix(http, host, "/_clone_fn")
+    schema = json.loads(http.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024))
+    validate_endpoint_schema(schema, "omnivoice")
+    enum = schema["named_endpoints"]["/_clone_fn"]["parameters"][1]["type"]["enum"]
+    if (
+        not isinstance(enum, list)
+        or not 1 <= len(enum) <= 2000
+        or any(not isinstance(x, str) or len(x) > 200 for x in enum)
+    ):
+        raise ValueError("Invalid language enum")
+    clone_arguments(
+        inputs["text"],
+        inputs["target"],
+        {"path": "pending"},
+        inputs["reference_text"],
+        language_enum=enum,
+        controls=inputs["controls"],
+    )
+    client = GradioClient(http, host, prefix, hf_token=hf_token)
+    reference = client.upload("reference.wav", reference_audio, "audio/wav")
+    args = clone_arguments(
+        inputs["text"],
+        inputs["target"],
+        reference,
+        inputs["reference_text"],
+        language_enum=enum,
+        controls=inputs["controls"],
+    )
+    return {
+        "host": host,
+        "prefix": prefix,
+        "api_name": "_clone_fn",
+        "metadata_revision": revision,
+        "schema_sha256": fingerprint(schema),
+        "language_enum": enum,
+        "model_language": args[1],
+        "args": args,
+    }
