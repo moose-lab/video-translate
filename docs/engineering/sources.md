@@ -20,7 +20,7 @@ Official documentation pointers used for the foundation:
 | Alembic | https://alembic.sqlalchemy.org/en/latest/tutorial.html | Explicit upgrade/downgrade migration |
 | Psycopg 3 | https://www.psycopg.org/psycopg3/docs/basic/install.html | PostgreSQL production driver |
 | argon2-cffi | https://argon2-cffi.readthedocs.io/en/stable/howto.html | Password hashing and verification |
-| cryptography | https://cryptography.io/en/latest/fernet/ | Reserved for the upcoming credential-vault increment |
+| cryptography | https://cryptography.io/en/latest/fernet/ | Workspace/purpose-bound encrypted provider credentials |
 | boto3 S3 put | https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html | Private uploads without public ACLs |
 | boto3 S3 get | https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/get_object.html | Server-side Range retrieval |
 | HTTPX | https://www.python-httpx.org/ | Runtime remote-provider HTTP client |
@@ -52,3 +52,24 @@ HTTPX2 transport verification (2026-10-29):
 - [Fernet](https://cryptography.io/en/latest/fernet/) and [HKDF](https://cryptography.io/en/latest/hazmat/primitives/key-derivation-functions/#hkdf) provide the credential envelope and purpose/workspace key derivation. [HTTPX transports](https://www.python-httpx.org/advanced/transports/) and [websockets sync client](https://websockets.readthedocs.io/en/stable/reference/sync/client.html) define network interfaces; the installed lock fixes exact implementations.
 
 The optional same-origin Nginx gateway uses official [`try_files`](https://nginx.org/en/docs/http/ngx_http_core_module.html#try_files) and [`proxy_buffering`](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering) semantics. Its `proxy_pass` has no URI suffix, preserving the API request URI. Nginx was unavailable locally, so its syntax and runtime routing have not been verified in this environment.
+
+## Publisher declaration recheck (2026-10-31 Asia/Shanghai)
+
+Agent Reach's GitHub/GH and web/Jina routes rechecked the same pinned application
+and model sources; [retained evidence](../verification/publisher-license-recheck.json)
+records their revisions. VoiceStudio's [publisher notice](https://github.com/debpalash/VoiceStudio/blob/5abc33602d17b81805731717b2a117857a98751c/LICENSE-NOTICE.md)
+states AGPL-3.0-only for the application and separates third-party model terms.
+GitHub's automatic license endpoint returned `NOASSERTION`; that classifier does
+not replace the explicit notice and license text. The OmniVoice model repository
+still resolves to the pinned revision above, whose card distinguishes Apache-2.0
+code from CC-BY-NC pretrained weights without specifying the latter's version.
+Its machine-readable card license fields were absent; absence is not permission.
+
+The current model page also reports no Inference Provider deployment; the existing
+adapter uses the separately observed official Space/Gradio path. This observation
+does not establish production capacity or an SLA. The local dependency manifests
+do not declare VoiceStudio or OmniVoice packages; the project uses remote HTTP
+interfaces. That narrow dependency observation is not a legal clearance for code,
+weights, recordings or outputs. The approved independent-SaaS design and planned
+service/source information remain unchanged; no paid/public release or commercial
+authorization was established by this documentation check.

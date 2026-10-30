@@ -1,0 +1,41 @@
+{
+  "kind": "publisher_declaration_recheck_not_rights_clearance",
+  "checked_at_utc": "2026-10-30T20:09:39Z",
+  "checked_date_asia_shanghai": "2026-10-31",
+  "routes": ["Agent Reach GitHub/gh", "Agent Reach web/Jina", "primary-page web verification"],
+  "voicestudio": {
+    "revision": "5abc33602d17b81805731717b2a117857a98751c",
+    "license_url": "https://github.com/debpalash/VoiceStudio/blob/5abc33602d17b81805731717b2a117857a98751c/LICENSE",
+    "license_blob_sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "notice_url": "https://github.com/debpalash/VoiceStudio/blob/5abc33602d17b81805731717b2a117857a98751c/LICENSE-NOTICE.md",
+    "notice_blob_sha": "d5d0478f628e090883ef617ce23376050e94ba45",
+    "publisher_declared_application_license": "AGPL-3.0-only",
+    "github_automatic_spdx": "NOASSERTION",
+    "automatic_classifier_is_not_publisher_permission": true
+  },
+  "omnivoice": {
+    "repository": "k2-fsa/OmniVoice",
+    "observed_revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "card_url": "https://huggingface.co/k2-fsa/OmniVoice/blob/c5fdb5ccb189668d56333f77ba2629f4cd7535f4/README.md",
+    "publisher_declared_code_license": "Apache-2.0",
+    "publisher_declared_pretrained_weight_license": "CC-BY-NC",
+    "pretrained_license_version_specified_in_card": false,
+    "machine_card_license": null,
+    "machine_card_license_name": null,
+    "missing_machine_fields_are_not_permission": true,
+    "model_page_reported_no_inference_provider_deployment_at_check": true,
+    "existing_adapter_path": "official Space/Gradio, separately observed"
+  },
+  "local_dependency_observation": {
+    "checked_files": ["pyproject.toml", "uv.lock", "web/package.json"],
+    "voicestudio_or_omnivoice_package_declaration_found": false,
+    "observation_scope": "dependency manifests only, not a legal code-provenance determination"
+  },
+  "commercial_clearance_verified": false,
+  "production_sla_verified": false,
+  "rights_granted_by_this_note": false,
+  "weights_or_runtime_downloaded": false,
+  "inference_called": false,
+  "provider_configuration_changed": false,
+  "public_or_paid_release_performed": false
+}
