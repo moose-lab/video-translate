@@ -13,7 +13,7 @@ from ..execution.inputs import (
     set_inputs,
 )
 from ..execution.prepared import Operations, bounded, current_operation
-from ..models.core import Project, new_id
+from ..models.core import Project, new_id, utcnow
 from ..models.dubbing import (
     ContextRevision,
     Segment,
@@ -432,3 +432,46 @@ def slot_ms(db, project, segment_id):
     segment = owned(db, Segment, project, segment_id)
     revision = owned(db, SegmentRevision, project, segment.current_revision_id)
     return revision.end_ms - revision.start_ms
+
+
+def retire_obsolete_uncertainty(db, project, run):
+    """Explicit acknowledgement retires an obsolete command locally, never its unknown history."""
+    if (
+        run.stage
+        not in {
+            STAGE_PREFIX + phase for phase in ("context", "draft", "critique", "rewrite", "shorten")
+        }
+        or run.status not in {"failed", "stale", "needs_review", "cancelled"}
+        or run.lease_token is not None
+        or run.remote_state != "submitting"
+        or run.remote_id is not None
+    ):
+        return False
+    phase, _ = phase_for(db, project, run)
+    # Lifecycle/permission guards are not inference input changes. In particular,
+    # a manual target save or lock must not silently retire an unknown paid call.
+    actual_inputs = {
+        key: value
+        for key, value in phase.dependency_snapshot.items()
+        if not (key.startswith("target.") and key.endswith(".active"))
+    }
+    if is_current(db, project, actual_inputs):
+        return False
+    # Displace only the current-generation pointer. The old PrivateOperation keeps
+    # its submitting phase, generation and captured request for reconciliation.
+    run.request_key = None
+    run.remote_state = "not_submitted"
+    run.provider = run.model = None
+    run.status, run.is_stale = "stale", True
+    run.safe_error = run.result = None
+    run.finished_at = run.updated_at = utcnow()
+    from ..execution.events import append_event
+
+    append_event(
+        db,
+        project,
+        "run.uncertainty_acknowledged",
+        run=run,
+        facts={"recovery": "retire_obsolete_generation"},
+    )
+    return True

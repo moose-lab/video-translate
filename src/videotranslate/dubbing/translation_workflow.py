@@ -2,7 +2,7 @@
 
 from urllib.parse import urlsplit
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from ..errors import APIError
 from ..execution.inputs import (
@@ -40,6 +40,7 @@ from .translations import track_for, translation_state, write_translation
 
 BATCH_ROWS = 20
 BATCH_BYTES = 48000
+ACTIVE_STATUSES = ("queued", "running", "retry_wait", "cancelling")
 
 
 def validate_config(db, project, runtime, target):
@@ -220,7 +221,10 @@ def command(db, project, tag, body, actor, runtime):
         scope(StageRun, project).where(
             StageRun.stage.like("translation_%"),
             StageRun.target_language == track.tag,
-            StageRun.remote_state == "submitting",
+            or_(
+                StageRun.remote_state == "submitting",
+                StageRun.status.in_(ACTIVE_STATUSES),
+            ),
         )
     ):
         prior_phase_row = db.scalar(
@@ -244,8 +248,11 @@ def command(db, project, tag, body, actor, runtime):
         if selected_ids.intersection(prior_ids) or same_context:
             raise APIError(
                 409,
-                "SUBMISSION_UNCERTAIN",
-                "Overlapping translation work needs explicit acknowledgement before another request",
+                "SUBMISSION_UNCERTAIN"
+                if uncertain.remote_state == "submitting"
+                and uncertain.status not in ACTIVE_STATUSES
+                else "RUN_ACTIVE",
+                "Overlapping translation work must be reviewed or completed before another request",
             )
     intent = TranslationCommand(
         id=new_id(),
@@ -392,8 +399,12 @@ def queue_phase(db, project, intent, name, index, parent=None):
 def command_json(db, project, intent):
     phases = phase_rows(db, project, intent)
     public, suggestions = [], []
+    unresolved_submission = False
     for phase in phases:
         run = owned(db, StageRun, project, phase.run_id)
+        unresolved_submission |= (
+            run.remote_state == "submitting" and run.status not in ACTIVE_STATUSES
+        )
         public.append(
             {
                 "id": phase.id,
@@ -424,10 +435,21 @@ def command_json(db, project, intent):
             except ValueError:
                 pass
     statuses = [row["status"] for row in public]
-    if any(value in {"queued", "running", "retry_wait", "cancelling"} for value in statuses):
+    if any(value in ACTIVE_STATUSES for value in statuses):
         status, action = "running", None
     elif any(value in {"failed", "needs_review", "cancelled", "stale"} for value in statuses):
-        status, action = "incomplete", "retry_translation_phase"
+        status, action = (
+            "incomplete",
+            (
+                "acknowledge_uncertain_submission"
+                if unresolved_submission
+                else (
+                    "review_translation_changes"
+                    if "stale" in statuses
+                    else "retry_translation_phase"
+                )
+            ),
+        )
     elif any(
         not publication_current(db, owned(db, StageRun, project, phase.run_id))
         for phase in phases

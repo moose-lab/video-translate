@@ -271,6 +271,7 @@ def test_critique_lost_response_retry_requires_ack_reuses_prior_phases(
     drain(c)
     state = c.get(path + "/" + queued["id"]).json()
     assert state["status"] == "incomplete" and view(c, p, line)["text"] == "IBM 製造電腦產品。"
+    assert state["next_action"] == "acknowledge_uncertain_submission"
     run_id = state["phases"][-1]["run_id"]
     assert c.post(f"/api/runs/{run_id}/retry", headers=h, json={}).status_code == 409
     chat.fail = None
@@ -1079,3 +1080,180 @@ def test_same_unresolved_shared_context_blocks_only_duplicate_context_work(
     drain(c)
     assert view(c, p, other) is not None and view(c, p, line) is None
     assert [phase for phase, _ in chat.calls] == ["context", "draft"]
+
+
+def test_queued_overlap_and_shared_context_are_reserved_without_freezing_independent_fast(
+    translation_project, monkeypatch
+):
+    c, h, p, s, line, track = translation_project
+    other = create_line(
+        (c, h, p),
+        s,
+        "Independent queued row",
+        transcript=line["transcript_revision"],
+        start_ms=500,
+        end_ms=1000,
+    )["segment"]
+    chat = install_chat(monkeypatch)
+    path = f"/api/projects/{p['id']}/language-tracks/zh-Hant/translate"
+    c.post(path, headers=h, json=request_body(s, line, track))
+    overlap = c.post(path, headers=h, json=request_body(s, line, track, force_replace=True))
+    assert overlap.status_code == 409 and overlap.json()["error"]["code"] == "RUN_ACTIVE"
+    assert c.post(path, headers=h, json=request_body(s, other, track)).status_code == 202
+    drain(c)
+    assert len(chat.calls) == 2
+    track = set_mode(c, h, p, track, "Cinematic")
+    first_body, second_body = request_body(s, line, track), request_body(s, other, track)
+    first_body["segments"][0]["revision"] = view(c, p, line)["revision"]
+    second_body["segments"][0]["revision"] = view(c, p, other)["revision"]
+    assert c.post(path, headers=h, json=first_body).status_code == 202
+    shared = c.post(path, headers=h, json=second_body)
+    assert shared.status_code == 409 and shared.json()["error"]["code"] == "RUN_ACTIVE"
+
+
+def test_live_running_submission_conflict_is_active_not_uncertain(translation_project, monkeypatch):
+    c, h, p, s, line, track = translation_project
+    chat = install_chat(monkeypatch)
+    path = f"/api/projects/{p['id']}/language-tracks/zh-Hant/translate"
+    conflicts = []
+
+    def overlap(phase):
+        conflicts.append(
+            c.post(path, headers=h, json=request_body(s, line, track, force_replace=True))
+        )
+
+    chat.hook = overlap
+    first = c.post(path, headers=h, json=request_body(s, line, track)).json()
+    drain(c)
+    assert len(conflicts) == 1 and conflicts[0].status_code == 409
+    assert conflicts[0].json()["error"]["code"] == "RUN_ACTIVE"
+    assert c.get(path + "/" + first["id"]).json()["status"] == "review"
+
+
+@pytest.mark.parametrize("changed_input", ["source", "context", "glossary"])
+def test_obsolete_uncertain_phase_can_be_acknowledged_locally_before_fresh_guarded_command(
+    translation_project, monkeypatch, changed_input
+):
+    from videotranslate.execution.prepared import current_operation
+
+    c, h, p, s, line, track = translation_project
+    chat = install_chat(monkeypatch)
+    chat.fail = "draft"
+    path = f"/api/projects/{p['id']}/language-tracks/zh-Hant/translate"
+    first = c.post(path, headers=h, json=request_body(s, line, track)).json()
+    drain(c)
+    run_id = first["phases"][0]["run_id"]
+    if changed_input == "source":
+        edited = c.patch(
+            f"/api/projects/{p['id']}/segments/{line['id']}",
+            headers=h,
+            json=guard(s, line["transcript_revision"])
+            | {"revision": line["revision"], "text": "Corrected current source"},
+        )
+        assert edited.status_code == 200
+        new_body = request_body(s, edited.json(), track)
+    else:
+        edited = c.patch(
+            f"/api/projects/{p['id']}/language-tracks/zh-Hant",
+            headers=h,
+            json={"revision": track["revision"]}
+            | (
+                {"summary": "New supplied context"}
+                if changed_input == "context"
+                else {"glossary": {"IBM": "International Business Machines"}}
+            ),
+        )
+        assert edited.status_code == 200
+        new_body = request_body(s, line, edited.json())
+    assert c.post(path, headers=h, json=new_body).status_code == 409
+    assert c.post(f"/api/runs/{run_id}/retry", headers=h, json={}).status_code == 409
+    with c.app.state.session_factory() as db:
+        old = current_operation(db, db.get(StageRun, run_id))
+        old_id, generation = old.id, old.generation
+    acknowledged = c.post(
+        f"/api/runs/{run_id}/retry", headers=h, json={"acknowledge_uncertain_submission": True}
+    )
+    assert acknowledged.status_code == 200, acknowledged.text
+    assert acknowledged.json()["status"] == "stale"
+    assert c.get(path + "/" + first["id"]).json()["next_action"] == "review_translation_changes"
+    assert len(chat.calls) == 1
+    with c.app.state.session_factory() as db:
+        old_run = db.get(StageRun, run_id)
+        assert current_operation(db, old_run) is None
+        from videotranslate.models.execution import ProjectEvent
+
+        events = db.scalars(
+            select(ProjectEvent).where(
+                ProjectEvent.run_id == run_id, ProjectEvent.kind == "run.uncertainty_acknowledged"
+            )
+        ).all()
+        assert len(events) == 1 and events[0].facts == {"recovery": "retire_obsolete_generation"}
+        old = db.get(PrivateOperation, old_id)
+        assert old.generation == generation and old.phase == "submitting"
+        assert old.request_payload["segments"][0]["text"] == line["text"]
+        assert old.request_payload["context"] == {"supplied_summary": "Supplied summary"}
+        assert old.request_payload["glossary"] == {"IBM": "IBM"}
+    chat.fail = None
+    fresh = c.post(path, headers=h, json=new_body)
+    assert fresh.status_code == 202, fresh.text
+    assert fresh.json()["id"] != first["id"]
+    drain(c)
+    assert len(chat.calls) == 2
+    assert c.get(path + "/" + fresh.json()["id"]).json()["status"] == "review"
+
+
+def test_uncertain_manual_publication_change_keeps_normal_acknowledged_retry_semantics(
+    translation_project, monkeypatch
+):
+    from videotranslate.models.execution import ProjectEvent
+
+    c, h, p, s, line, track = translation_project
+    chat = install_chat(monkeypatch)
+    chat.fail = "draft"
+    path = f"/api/projects/{p['id']}/language-tracks/zh-Hant/translate"
+    first = c.post(path, headers=h, json=request_body(s, line, track)).json()
+    drain(c)
+    run_id = first["phases"][0]["run_id"]
+    assert target_edit(c, h, p, s, line, revision=0).status_code == 200
+    assert c.post(f"/api/runs/{run_id}/retry", headers=h, json={}).status_code == 409
+    acknowledged = c.post(
+        f"/api/runs/{run_id}/retry", headers=h, json={"acknowledge_uncertain_submission": True}
+    )
+    assert acknowledged.status_code == 200 and acknowledged.json()["status"] == "queued"
+    with c.app.state.session_factory() as db:
+        assert not db.scalars(
+            select(ProjectEvent).where(
+                ProjectEvent.run_id == run_id, ProjectEvent.kind == "run.uncertainty_acknowledged"
+            )
+        ).all()
+    chat.fail = None
+    drain(c)
+    assert len(chat.calls) == 1 and view(c, p, line)["text"] == "Human translation"
+
+
+def test_translation_commands_are_isolated_by_workspace_and_project(
+    translation_project, client_factory, register, monkeypatch
+):
+    c, h, p, s, line, track = translation_project
+    chat = install_chat(monkeypatch)
+    path = f"/api/projects/{p['id']}/language-tracks/zh-Hant/translate"
+    body = request_body(s, line, track)
+    first = c.post(path, headers=h, json=body).json()
+    foreign = client_factory(database_url=c.app.state.settings.database_url.get_secret_value())
+    auth = register(foreign, "translation-other@example.com")
+    foreign_headers = {"X-CSRF-Token": auth["csrf_token"]}
+    assert foreign.get(path + "/" + first["id"]).status_code == 404
+    assert foreign.post(path, headers=foreign_headers, json=body).status_code == 404
+    other_project = c.post("/api/projects", headers=h, json={"name": "Other owned project"}).json()
+    other_base = f"/api/projects/{other_project['id']}"
+    make_track(c, h, other_base, "zh-Hant")
+    assert (
+        c.get(other_base + "/language-tracks/zh-Hant/translate/" + first["id"]).status_code == 404
+    )
+    assert (
+        c.post(other_base + "/language-tracks/zh-Hant/translate", headers=h, json=body).status_code
+        == 409
+    )
+    assert not chat.calls
+    drain(c)
+    assert len(chat.calls) == 1

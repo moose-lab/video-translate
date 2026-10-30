@@ -504,7 +504,15 @@ def retry_run(
             segment_id=owned.segment_id,
             options=owned.options,
         )
-        snapshot = definition.resolve_inputs(db, project, request)
+        try:
+            snapshot = definition.resolve_inputs(db, project, request)
+        except APIError as error:
+            if uncertain and acknowledge_uncertain_submission and error.code == "INPUT_REQUIRED":
+                from ..dubbing.remote_translation import retire_obsolete_uncertainty
+
+                if retire_obsolete_uncertainty(db, project, owned):
+                    return owned
+            raise
         from .prepared import has_prepared
 
         reusable = has_prepared(db, owned) and fingerprint(snapshot) == owned.dependency_fingerprint

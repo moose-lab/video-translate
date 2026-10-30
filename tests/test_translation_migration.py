@@ -47,6 +47,7 @@ def test_translation_migration_is_frozen_populated_roundtrip_and_parity(tmp_path
     asset_id, source_track, selection_id, transcript_id, track_id, command_id = [
         str(uuid4()) for _ in range(6)
     ]
+    other_workspace = str(uuid4())
     now = utcnow()
     try:
         command.upgrade(config, "0007_prepared_object_lifecycle")
@@ -57,6 +58,11 @@ def test_translation_migration_is_frozen_populated_roundtrip_and_parity(tmp_path
                 previous.tables["workspaces"]
                 .insert()
                 .values(id=workspace, name="Existing", created_at=now)
+            )
+            db.execute(
+                previous.tables["workspaces"]
+                .insert()
+                .values(id=other_workspace, name="Other workspace", created_at=now)
             )
             for project_id in (project, foreign):
                 db.execute(
@@ -240,6 +246,19 @@ def test_translation_migration_is_frozen_populated_roundtrip_and_parity(tmp_path
                         publication={},
                         applied=False,
                         created_at=now,
+                    )
+                )
+            with pytest.raises(IntegrityError), engine.begin() as db:
+                db.execute(
+                    commands.insert().values(
+                        **(
+                            command_values
+                            | {
+                                "id": str(uuid4()),
+                                "workspace_id": other_workspace,
+                                "signature": "c" * 64,
+                            }
+                        )
                     )
                 )
             command.downgrade(config, "0007_prepared_object_lifecycle")
