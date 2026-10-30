@@ -94,7 +94,7 @@ def capability_contract(slot, adapter, schema=None, model=None):
         controls=controls,
     )
     result = asdict(capability)
-    if adapter == "hf_asr":
+    if adapter == "hf_asr" or (slot == "verification" and adapter == "hf_router"):
         from .asr_languages import WHISPER_LANGUAGES, WHISPER_REVISION
 
         known = model == "openai/whisper-large-v3"

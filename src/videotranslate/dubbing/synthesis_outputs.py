@@ -67,7 +67,16 @@ def output_json(db, project, track, segment, output):
         evidence_status = "validated"
     except (APIError, ValueError, TypeError, KeyError, AttributeError):
         pass
+    from .voice_qc import output_assessment
+
+    assessment = output_assessment(db, project, track, segment, output)
+    assessment["ready"] = assessment["ready"] and not stale and evidence_status == "validated"
+    if stale:
+        assessment["issues"].append("NATURAL_AUDIO_STALE")
+    if evidence_status != "validated":
+        assessment["issues"].append("AUDIO_EVIDENCE_INVALID")
     return {
+        **assessment,
         "evidence_status": evidence_status,
         "id": output.id,
         "audio_asset_id": output.audio_asset_id,
@@ -82,7 +91,6 @@ def output_json(db, project, track, segment, output):
         "codec": output.codec,
         "container": output.container,
         "stale": stale,
-        "acceptance": "not_assessed",
         "created_at": output.created_at,
     }
 
