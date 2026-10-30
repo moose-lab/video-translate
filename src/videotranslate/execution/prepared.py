@@ -45,7 +45,16 @@ class Operations:
             return current_operation(db, run)
 
     def prepare(
-        self, *, provider, model, connection_revision=0, host="", prefix="", request_payload=None
+        self,
+        *,
+        provider,
+        model,
+        connection_revision=0,
+        host="",
+        prefix="",
+        request_payload=None,
+        guard=None,
+        update_ready=False,
     ):
         provider, model = safe_identifier(provider, 60), safe_identifier(model, 120)
         parts = urlsplit(host)
@@ -71,7 +80,26 @@ class Operations:
         with self.context.session_factory.begin() as db:
             project, run = self.context._locked(db)
             existing = current_operation(db, run)
+            if guard is not None:
+                guard(db, project, run)
             if existing:
+                if update_ready:
+                    # Only an unsubmitted preparation can be completed or rebound
+                    # to local reuse. Generation, provider and immutable config stay fixed.
+                    if (
+                        existing.phase != "ready"
+                        or run.remote_state != "not_submitted"
+                        or existing.remote_id is not None
+                        or existing.terminal_payload is not None
+                        or run.provider is not None
+                        or run.model is not None
+                        or existing.provider != provider
+                        or existing.model != model
+                        or existing.connection_revision != connection_revision
+                    ):
+                        raise StageFailure(FailureCode.CONFIGURATION, review=True)
+                    existing.host, existing.prefix = host, prefix
+                    existing.request_payload = request_payload or {}
                 return existing
             if run.remote_state != "not_submitted":
                 raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)

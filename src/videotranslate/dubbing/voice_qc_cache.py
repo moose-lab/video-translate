@@ -68,8 +68,15 @@ def cached_recognition(db, project, line):
         ):
             raise ValueError("Recognition alias changed")
         return payload, original_operation
-    if set(request) != {"input", "policy", "preprocessing"}:
+    if set(request) not in (
+        {"input", "policy", "preprocessing"},
+        {"input", "policy", "preprocessing", "preparation_attempt"},
+    ):
         raise ValueError("Unexpected recognition request")
+    if "preparation_attempt" in request and (
+        type(request["preparation_attempt"]) is not int or request["preparation_attempt"] < 1
+    ):
+        raise ValueError("Invalid preparation attempt")
     expected = line.recognition_input
     if (
         run.provider != operation.provider
@@ -97,7 +104,7 @@ def cached_recognition(db, project, line):
         or record.state not in {"orphan", "published"}
         or not record.write_settled
         or record.delete_pending
-        or metadata != request.get("preprocessing")
+        or fingerprint(metadata) != fingerprint(request.get("preprocessing"))
         or record.metadata_json != metadata | {"kind": "voice_qc_input"}
         or metadata["sample_rate"] != 16000
         or metadata["channels"] != 1
@@ -164,6 +171,16 @@ def validate_recognition(value, duration, model):
 
 def resume_alias(db, project, line, operation):
     request = operation.request_payload
+    if (
+        operation.provider != "hf_router"
+        or operation.model != line.recognition_input["config"]["model"]
+        or operation.connection_revision != line.recognition_input["connection_revision"]
+        or operation.host
+        or operation.prefix
+        or operation.remote_id is not None
+        or operation.terminal_payload is not None
+    ):
+        raise ValueError("Invalid local alias binding")
     if set(request) != {
         "input",
         "reuse_line_id",

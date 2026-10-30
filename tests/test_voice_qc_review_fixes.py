@@ -100,3 +100,29 @@ def test_late_old_completion_cannot_replace_newer_adverse_evidence(
     current = history(f)["outputs"][0]
     assert not current["ready"] and current["acceptance"] == "accepted"
     assert current["qc"]["evidence"]["request_id"] == newer["id"]
+
+
+def test_running_and_uncertain_work_retains_visible_negative_evidence(
+    synthesis_project, monkeypatch, tmp_path
+):
+    from videotranslate.execution.worker import Worker
+
+    f = synthesis_project
+    http = prepared(f, monkeypatch, tmp_path)
+    accept_current(f)
+    http.text = "wrong words"
+    first = enqueue(f)
+    drain(f[0])
+    configure(f, 1)
+    second = enqueue(f)
+    observed = []
+    http.hook = lambda: observed.append(history(f)["outputs"][0])
+    http.fail = True
+    assert Worker(f[0].app.state.settings).run_once()
+    for row in (observed[0], history(f)["outputs"][0]):
+        assert row["acceptance"] == "accepted" and not row["ready"]
+        assert row["qc"]["evidence"]["request_id"] == first["id"]
+        assert row["qc"]["request_id"] == second["id"]
+        assert "QC_ACKNOWLEDGEMENT_REQUIRED" in row["issues"]
+    assert observed[0]["qc"]["status"] == "running"
+    assert history(f)["outputs"][0]["qc"]["status"] == "needs_review"

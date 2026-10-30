@@ -1,7 +1,7 @@
 """Synchronous independent ASR with existing durable prepared-object lifecycle."""
 
 from ..errors import APIError
-from ..execution.contracts import FailureCode, StageFailure, StagePending, StageResult
+from ..execution.contracts import FailureCode, StageFailure, StageResult
 from ..execution.inputs import capture_inputs, fingerprint
 from ..execution.prepared import Operations, current_operation
 from ..models.voice_qc import VoiceQCCommand, VoiceQCLine
@@ -63,18 +63,6 @@ def publication_current(db, run):
         return False
 
 
-def paid_guard(line):
-    def guard(db, project, run):
-        from .voice_qc import line_current, unresolved_recognition
-
-        if not line_current(db, project, line):
-            raise StageFailure(FailureCode.CONFIGURATION, review=True)
-        if unresolved_recognition(db, project, line.recognition_identity, exclude_run_id=run.id):
-            raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
-
-    return guard
-
-
 def handler(context):
     import tempfile
     from pathlib import Path
@@ -88,7 +76,14 @@ def handler(context):
     from .analysis import materialize, provider_failure
     from .remote_synthesis import credential_token
     from .synthesis_cache import validate_output_evidence
-    from .voice_qc import POLICY, earlier_active_recognition, line_current, unresolved_recognition
+    from .voice_qc import line_current
+    from .voice_qc_arbitration import (
+        ReuseAvailable,
+        cache_reuse,
+        checkpoint_guard,
+        ready_payload,
+        reusable_recognition,
+    )
 
     operations = Operations(context)
     with context.session_factory.begin() as db:
@@ -108,77 +103,44 @@ def handler(context):
             except (APIError, ValueError, KeyError, TypeError, AttributeError):
                 raise StageFailure(FailureCode.CONFIGURATION, review=True) from None
             return StageResult(existing.public_facts, existing.id)
-        reusable, original, origin = None, None, None
+        inputs, attempt = line.recognition_input, run.attempt_count
+        reusable = None
         if existing and "reuse_line_id" in existing.request_payload:
             try:
-                reusable, origin = resume_alias(db, project, line, existing)
+                payload, origin = resume_alias(db, project, line, existing)
+                original = db.scalar(
+                    scope(VoiceQCLine, project).where(VoiceQCLine.run_id == origin.run_id)
+                )
+                reusable = payload, original.id, origin.id
             except (APIError, ValueError, KeyError, TypeError, AttributeError):
                 raise StageFailure(FailureCode.CONFIGURATION, review=True) from None
-        if existing and existing.phase == "submitting":
+        elif existing and existing.phase == "submitting":
             raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
-        if existing is None:
-            if unresolved_recognition(
-                db, project, line.recognition_identity, exclude_run_id=run.id
-            ):
-                raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
-            for candidate in db.scalars(
-                scope(VoiceQCLine, project)
-                .where(
-                    VoiceQCLine.recognition_identity == line.recognition_identity,
-                    VoiceQCLine.id != line.id,
-                )
-                .order_by(VoiceQCLine.created_at)
-                .limit(100)
-            ):
-                if candidate.recognition_input != line.recognition_input:
-                    continue
-                try:
-                    reusable, origin = cached_recognition(db, project, candidate)
-                    original = owned(
-                        db,
-                        VoiceQCLine,
-                        project,
-                        db.scalar(
-                            scope(VoiceQCLine, project).where(VoiceQCLine.run_id == origin.run_id)
-                        ).id,
-                    )
-                    break
-                except (APIError, ValueError, KeyError, TypeError, AttributeError):
-                    continue
-            if reusable is None and earlier_active_recognition(db, project, line):
-                raise StagePending()
-            if not line_current(db, project, line):
-                raise StageFailure(FailureCode.CONFIGURATION, review=True)
-        inputs = line.recognition_input
-        token = (
-            credential_token(db, project, context, inputs["config"]) if reusable is None else None
-        )
+        else:
+            preparation = ready_payload(existing, inputs, attempt)
+            reusable = reusable_recognition(db, project, line)
         asset = owned(db, Asset, project, output.audio_asset_id)
     if reusable is not None:
-        if existing is None:
-            operations.prepare(
-                provider="hf_router",
-                model=inputs["config"]["model"],
-                connection_revision=inputs["connection_revision"],
-                request_payload={
-                    "input": inputs,
-                    "reuse_line_id": original.id,
-                    "origin_operation_id": origin.id,
-                    "prepared_fingerprint": fingerprint(reusable),
-                },
-            )
-        return operations.cache(
-            reusable,
-            {
-                "segment_count": len(reusable["recognition"]["segments"]),
-                "sha256": reusable["preprocessing"]["sha256"],
-                "reused": True,
-            },
-        )
-    if not token:
-        raise StageFailure(FailureCode.AUTHENTICATION)
+        return cache_reuse(operations, line, reusable)
     http = None
     try:
+        # Persist preparation ownership under the existing project/worker lease
+        # BEFORE materialization. Retrying older commands cannot overtake it.
+        existing = operations.prepare(
+            provider="hf_router",
+            model=inputs["config"]["model"],
+            connection_revision=inputs["connection_revision"],
+            host="https://router.huggingface.co",
+            prefix="/hf-inference",
+            request_payload=preparation,
+            guard=checkpoint_guard(line),
+            update_ready=True,
+        )
+        with context.session_factory.begin() as db:
+            project, _ = context._locked(db)
+            token = credential_token(db, project, context, inputs["config"])
+        if not token:
+            raise StageFailure(FailureCode.AUTHENTICATION)
         with tempfile.TemporaryDirectory(prefix="vt-voice-qc-") as directory:
             root = Path(directory)
             materialize(context, asset, root / "source", max_bytes=64 * 1024 * 1024)
@@ -204,25 +166,17 @@ def handler(context):
             )
             if normalized.byte_size > 16 * 1024 * 1024:
                 raise StageFailure(FailureCode.MEDIA_LIMIT)
-            if existing is None:
-                existing = operations.prepare(
-                    provider="hf_router",
-                    model=inputs["config"]["model"],
-                    connection_revision=inputs["connection_revision"],
-                    host="https://router.huggingface.co",
-                    prefix="/hf-inference",
-                    request_payload={
-                        "input": inputs,
-                        "policy": POLICY,
-                        "preprocessing": normalized.metadata(),
-                    },
-                )
-            if (
-                existing.request_payload
-                != {"input": inputs, "policy": POLICY, "preprocessing": normalized.metadata()}
-                or existing.phase != "ready"
-            ):
-                raise StageFailure(FailureCode.CONFIGURATION, review=True)
+            preparation = ready_payload(existing, inputs, attempt, normalized.metadata())
+            existing = operations.prepare(
+                provider="hf_router",
+                model=inputs["config"]["model"],
+                connection_revision=inputs["connection_revision"],
+                host="https://router.huggingface.co",
+                prefix="/hf-inference",
+                request_payload=preparation,
+                guard=checkpoint_guard(line),
+                update_ready=True,
+            )
             with context.session_factory.begin() as db:
                 project, run = context._locked(db)
                 records = db.scalars(
@@ -245,8 +199,8 @@ def handler(context):
                     raise StageFailure(FailureCode.CONFIGURATION, review=True)
             if object_id is None:
                 object_id = store_audio(context, existing.id, normalized, "voice_qc_input")
+            operations.begin(guard=checkpoint_guard(line, submit=True))
             http = make_http(context)
-            operations.begin(guard=paid_guard(line))
             response = transcribe(
                 http,
                 audio=normalized.path.read_bytes(),
@@ -275,6 +229,8 @@ def handler(context):
                     "reused": False,
                 },
             )
+    except ReuseAvailable as available:
+        return cache_reuse(operations, line, available.reuse)
     except Exception as error:
         failure = provider_failure(operations, error)
         if failure:

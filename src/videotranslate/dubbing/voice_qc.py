@@ -574,36 +574,6 @@ def unresolved_recognition(db, project, identity, exclude_run_id=None):
     return db.scalar(query.limit(1))
 
 
-def earlier_active_recognition(db, project, line):
-    """Serialize paid identities using project-locked event order, never wall clocks.
-
-    All rows of a command commit together, so stable line IDs break intra-command
-    ties. Later commands defer before CPU preparation and reuse the earlier success.
-    No second lock/store or user acknowledgement is needed for ordinary active work.
-    """
-    intent = owned(db, VoiceQCCommand, project, line.command_id)
-    return db.scalar(
-        scope(StageRun, project)
-        .join(VoiceQCLine, VoiceQCLine.run_id == StageRun.id)
-        .join(VoiceQCCommand, VoiceQCLine.command_id == VoiceQCCommand.id)
-        .where(
-            VoiceQCLine.project_id == project.id,
-            VoiceQCLine.workspace_id == project.workspace_id,
-            VoiceQCCommand.project_id == project.id,
-            VoiceQCCommand.workspace_id == project.workspace_id,
-            VoiceQCLine.recognition_identity == line.recognition_identity,
-            StageRun.id != line.run_id,
-            StageRun.status.in_(ACTIVE),
-            (VoiceQCCommand.admission_sequence < intent.admission_sequence)
-            | (
-                (VoiceQCCommand.admission_sequence == intent.admission_sequence)
-                & (VoiceQCLine.id < line.id)
-            ),
-        )
-        .limit(1)
-    )
-
-
 def same_meaning_proof(left, right):
     if left is None or right is None:
         return False
