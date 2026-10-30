@@ -265,7 +265,7 @@ def test_encoded_responses_are_rejected_before_decompression_for_all_operations(
             lambda: client.upload(
                 url, filename="test.wav", content=b"fake", content_type="audio/wav"
             ),
-            "uncertain",
+            "invalid_response",
         ),
     ]
     for operation, expected in operations:
@@ -296,5 +296,5 @@ def test_oversized_or_invalid_successful_post_response_is_uncertain():
             content=b"fake",
             content_type="audio/wav",
         )
-    assert error.value.code == "uncertain"
+    assert error.value.code == "invalid_response"
     client.close()

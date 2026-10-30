@@ -212,7 +212,7 @@ class SafeHTTP:
             raise ProviderError("uncertain") from None
 
     def upload(self, url, *, filename, content, content_type, headers=None):
-        """Upload caller-owned bounded bytes once; returned paths remain opaque."""
+        """Prepare bounded media once; an upload is not a named inference submission."""
         import json
         import re
         from urllib.parse import urlsplit
@@ -243,19 +243,20 @@ class SafeHTTP:
                 url,
                 headers=identity_headers(headers),
                 files={"files": (filename, content, content_type)},
+                timeout=httpx.Timeout(connect=5.0, write=120.0, read=30.0, pool=5.0),
             ) as response:
                 if response.status_code >= 300:
                     raise status_error(response.status_code)
-                require_identity_response(response, submitted=True)
+                require_identity_response(response)
                 data = bytearray()
                 for chunk in response.iter_bytes():
                     data.extend(chunk)
                     if len(data) > 1024 * 1024:
-                        raise ProviderError("uncertain")
+                        raise ProviderError("invalid_response")
             try:
                 result = json.loads(data)
             except (ValueError, TypeError):
-                raise ProviderError("uncertain") from None
+                raise ProviderError("invalid_response") from None
             if (
                 not isinstance(result, list)
                 or len(result) != 1
@@ -263,10 +264,10 @@ class SafeHTTP:
                 or not result[0]
                 or result[0].lower().startswith(("file:", "http:", "https:"))
             ):
-                raise ProviderError("uncertain")
+                raise ProviderError("invalid_response")
             return result
         except httpx.RequestError:
-            raise ProviderError("uncertain") from None
+            raise ProviderError("network") from None
 
     def download(self, url, *, max_bytes=64 * 1024 * 1024, headers=None):
         import os
