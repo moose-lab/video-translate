@@ -116,6 +116,8 @@ GET  /api/projects/{p}/fit-plans/{plan_id}       owned detail and lines limit<=1
 
 Full common-map coordinates are bounded independently by6A's1000lines/partitions and the serialized byte limit; they may be returned with detail. Paginate per-row proofs/issues/history, and do not return100full large plan JSONs in a list query. Summaries should avoid loading all JSON payloads solely to list IDs/counts. No server storage paths/provider URLs/secrets/raw dialogue in events or error details. Authorized line/history information remains project scoped.
 
+Summary projection clarification: do not perform100plans×1000row freshness scans merely to list history. Summaries may expose stored run/status/count/admission and captured mathematical feasibility/duration, but explicitly mark currentness, stored-plan integrity and audio eligibility as`not_assessed` (or nullable with an explicit assessment marker). Never infer current/render-eligible/accepted from stored success alone. Detail and publication are authoritative full checks. Test both the lightweight query and stale/invalid detailed result; the future workbench fetches detail before offering a render action.
+
 - [ ] Record real `finishing.settings_changed`/`finishing.plan_queued`/`finishing.plan_published` events with IDs/purpose/counts/computed feasibility/current issue codes only, plus existing Worker events. No predicted render progress or model use; planned output duration must not be named a measurement. Test cursor replay and duplicate-command event behavior, CSRF, cross-project/workspace, aliases, invalid/paginated detail and unchanged natural/QC rows. Commit GREEN.
 
 ## Task5: Frozen schema, actual PostgreSQL and final gates
