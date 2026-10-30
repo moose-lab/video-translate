@@ -260,6 +260,7 @@ def structured_chat(
         endpoint.rstrip("/") + "/chat/completions",
         body,
         headers={"Authorization": "Bearer " + token} if token else {},
+        _timeout_profile="structured_chat",
     )
     try:
         if len(raw) > 1024000:

@@ -180,7 +180,14 @@ class SafeHTTP:
         raise ValueError("Too many provider redirects")
 
     def post_json(
-        self, url, body, *, headers=None, max_bytes=1024 * 1024, max_request_bytes=1024 * 1024
+        self,
+        url,
+        body,
+        *,
+        headers=None,
+        max_bytes=1024 * 1024,
+        max_request_bytes=1024 * 1024,
+        _timeout_profile=None,
     ):
         """Single submission; an interrupted POST has an uncertain remote outcome."""
         import json
@@ -188,6 +195,16 @@ class SafeHTTP:
 
         import httpx
 
+        if _timeout_profile is not None and (
+            type(_timeout_profile) is not str or _timeout_profile != "structured_chat"
+        ):
+            raise ValueError("Invalid provider timeout profile")
+        # Internal transport policy only; never take timeout values from quoted model data.
+        timeout_options = (
+            {"timeout": httpx.Timeout(connect=5.0, write=30.0, read=180.0, pool=5.0)}
+            if _timeout_profile == "structured_chat"
+            else {}
+        )
         validate_url(url, allowed_hosts=self.allowed_hosts)
         validate_public_addresses(self.resolver(urlsplit(url).hostname))
         encoded = json.dumps(body, ensure_ascii=False, allow_nan=False).encode()
@@ -197,7 +214,7 @@ class SafeHTTP:
         request_headers["Content-Type"] = "application/json"
         try:
             with self.client.stream(
-                "POST", url, headers=request_headers, content=encoded
+                "POST", url, headers=request_headers, content=encoded, **timeout_options
             ) as response:
                 if response.status_code >= 300:
                     raise status_error(response.status_code)
