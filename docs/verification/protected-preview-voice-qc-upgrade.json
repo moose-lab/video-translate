@@ -1,0 +1,78 @@
+{
+  "schema": "0010_voice_qc",
+  "reviewed_head": "c0385d83c9c67a8bf1844c323865290114e94c5b",
+  "frozen_production": "0a94d5503f58e21d25e81069720a8b87fb43c101",
+  "existing_account_login": true,
+  "new_registration_attempted": false,
+  "source_rows": 8,
+  "source_selection_current": true,
+  "bound_reference_preserved": true,
+  "credential_configured": true,
+  "source_download_bytes": 25861753,
+  "source_download_sha256": "18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f",
+  "qc_and_review_routes_registered": true,
+  "targets": {
+    "zh": {
+      "rows": 8,
+      "ready": false,
+      "readiness": {
+        "ready": false,
+        "assessed_rows": 8,
+        "ready_rows": 0,
+        "issues": {
+          "AUDIO_MISSING": 8
+        },
+        "total": 8
+      },
+      "selected_natural_outputs": 0,
+      "current_reference_rows": 8
+    },
+    "ja": {
+      "rows": 8,
+      "ready": false,
+      "readiness": {
+        "ready": false,
+        "assessed_rows": 8,
+        "ready_rows": 0,
+        "issues": {
+          "AUDIO_MISSING": 8
+        },
+        "total": 8
+      },
+      "selected_natural_outputs": 0,
+      "current_reference_rows": 8
+    }
+  },
+  "retained_contexts_unchanged": [
+    "34f0dc6b-cdfb-4814-8a85-d11c29bc472b",
+    "aa31fd22-3459-4afb-8e5f-0b1c647eed3a"
+  ],
+  "natural_outputs": 0,
+  "qc_commands": 0,
+  "new_model_calls": 0,
+  "retry_authorization_file_exists": false,
+  "integrity_and_foreign_keys_valid": true,
+  "migration_preservation": {
+    "new_code": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/.runtime/candidate-voiceqc-c0385d8",
+    "schema_revision": "0010_voice_qc",
+    "old_table_counts_preserved": true,
+    "old_table_rows_preserved": true,
+    "old_table_fingerprints_checked": 47,
+    "vault_ciphertext_and_revisions_preserved": true,
+    "server_key_preserved": true,
+    "integrity_and_foreign_keys_valid": true,
+    "backup": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/.runtime/protected-preview/backups/20261030T205840618897Z"
+  },
+  "api_pid": 94828,
+  "api_session": 49323,
+  "worker": "stopped",
+  "browser": {
+    "url": "http://127.0.0.1:5173/",
+    "existing_session_survives_reload": true,
+    "credential_shows_configured": true,
+    "credential_input_blank": true,
+    "save_credential_disabled": true,
+    "screenshot": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-QC-upgrade.png",
+    "full_workbench_complete": false
+  }
+}
