@@ -1,0 +1,47 @@
+{
+  "kind": "reviewed_preview_synthesis_chat_upgrade",
+  "reviewed_head": "f93605f21ca65f749a604b995a9f42a27305846e",
+  "migration": {
+    "new_code": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/.runtime/candidate-chat-f93605f",
+    "schema_revision": "0009_synthesis",
+    "old_table_counts_preserved": true,
+    "old_table_rows_preserved": true,
+    "old_table_fingerprints_checked": 40,
+    "vault_ciphertext_and_revisions_preserved": true,
+    "server_key_preserved": true,
+    "integrity_and_foreign_keys_valid": true,
+    "backup": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/.runtime/protected-preview/backups/20261030T184904891531Z"
+  },
+  "existing_account_authenticated": true,
+  "workspace_id": "70f45090-c02b-4c3d-9de0-748c1ec0bdbd",
+  "credential_configured": true,
+  "source_rows": 8,
+  "source_window_ms": [
+    0,
+    59510
+  ],
+  "source_stale": false,
+  "manual_cast_preserved": true,
+  "reference_version_id": "18541373-7420-4026-b900-fb9ae40740c4",
+  "reference_current": true,
+  "synthesis_route_registered": true,
+  "contexts_preserved_without_acknowledgement": {
+    "zh": {
+      "command_id": "be0258c0-3528-4d93-854e-ca43e8671637",
+      "run_id": "aa31fd22-3459-4afb-8e5f-0b1c647eed3a",
+      "status": "needs_review",
+      "remote_state": "submitting"
+    },
+    "ja": {
+      "command_id": "2cb0fcc9-db2c-45ca-86a1-5368c1fef5fb",
+      "run_id": "34f0dc6b-cdfb-4814-8a85-d11c29bc472b",
+      "status": "needs_review",
+      "remote_state": "submitting"
+    }
+  },
+  "model_calls_made": 0,
+  "retry_authorization_created": false,
+  "new_api_session": 90637,
+  "new_api_pid": 63359,
+  "harness_note": "Initial check assumed remote_state on phase projection; corrected to read /api/runs/{id}. No production change or model request."
+}

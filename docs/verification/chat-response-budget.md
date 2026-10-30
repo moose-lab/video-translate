@@ -140,3 +140,16 @@ No gate grants retry permission: the two retained uncertain context calls still
 need fresh explicit approval for at most one retry each. The earlier source-ASR
 permission was consumed. Passing tests do not establish that the old exception
 was a timeout or guarantee the real requests will succeed.
+
+## Reviewed preview activation
+
+The controller activated an exact `git archive f93605f` candidate and explicitly
+migrated the stopped owned preview from0008 to0009. The [upgrade proof](protected-preview-synthesis-chat-upgrade.json)
+records a protected DB/key backup, exact row-fingerprint preservation for all40
+pre-existing tables, unchanged vault ciphertext/revisions/server key, and passing
+integrity/FK checks. After restart the existing account authenticated without
+registration, credentials remained configured, all eight source rows/manual cast
+and the current reference remained present, and the synthesis route registered.
+Both original context jobs remained `needs_review/submitting`, with no
+acknowledgement or model call. The controller requested fresh approval for at
+most one retry each; no authorization record was created in advance.
