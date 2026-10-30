@@ -38,3 +38,7 @@ Source acquired at `/tmp/videotranslate-fixtures/SIZsFGvtClM-original.mp4` for l
 Full source decode completed with FFmpeg exit0, explicitly mapping its video and English audio to a null sink. Publisher captions were separately acquired at `/tmp/videotranslate-fixtures/SIZsFGvtClM.en.vtt`. These checks establish a readable input and independent reference, not translated-output quality.
 
 Acquisition and source probing are preparation only. Real model runs, product workflow, translated outputs and quality review remain pending. This document defines the test; it does not claim it passed.
+
+## Persistent reacquisition after runtime restart
+
+The former temporary fixture and preview state were absent on2026-10-30 resumption. The same formats were reacquired through the documented yt-dlp route into `/Users/moose/.agent-reach/fixtures/SIZsFGvtClM/SIZsFGvtClM.mp4`. Its25,861,753bytes and SHA256 exactly match the source above; FFprobe again reports700.406712seconds. English VTT is retained alongside it. New product upload/jobs must have their own real lineage; old temporary IDs cannot be treated as live. Initial sample selection is0–59,510ms to stop at the publisher's utterance boundary, consistent with the approved approximately60-second sample. See `docs/verification/2026-10-30-runtime-recovery.md` for the observed recovery boundary.

@@ -1,0 +1,91 @@
+# Remote line synthesis and independent QC implementation plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:subagent-driven-development and test-driven-development. One implementer at a time; task5A must pass independent SPEC then QUALITY before5B. Approved continuous construction requires no additional permission. Task4C must pass both gates before either implementation starts.
+
+**Goal:** Produce independently recoverable natural voice clones for every selected target line, with immutable reference/control provenance, measured duration, editable selection and independent recognition evidence.
+
+**Architecture:** Guarded project APIs capture commands; existing independent Worker and PrivateOperation/PreparedObject machinery execute remote calls and persist results before short publication transactions. Natural audio, editor selection, QC and later finishing have separate dependencies. Model inference remains remote; FFmpeg performs only bounded media preparation/validation.
+
+**Tech Stack:** Existing Python3.12/FastAPI/SQLAlchemy/Alembic/HTTPX, Gradio HTTP adapter, HF Router ASR and private storage; CPU FFmpeg. No local inference packages or system voice fallback.
+
+## Actual interfaces and source of truth
+
+- Binding resolution is in `dubbing/references.py`: `effective_voice_inputs(db, project, segment_id)` includes the resolved line-or-role binding and reference dependency snapshot. `binding_for`, `VoiceBindingVersion`, `ReferenceVersion` supply the actual immutable reference; explicit line binding wins. A dormant role must not enter an overridden line's inference identity.
+- `providers/omnivoice.py` currently has language-enum mapping, `clone_arguments`, `normalize_result` and convenience submit/poll. Convenience submit/poll wrap too much work for durable publication: the new handler must split metadata/upload, named POST, real event-ID checkpoint, terminal FileData checkpoint and download. Keep existing public helper contracts compatible.
+- `execution/prepared.py` exposes `Operations`, `current_operation`, `store_audio`, `publish_objects`; use its generation checks and `execution/prepared_objects.py` reservation/settlement rules. Do not build a second media lifecycle. Network/CPU/storage work occurs outside publication SQL.
+- `execution/registry.py` provides command-only stages, scoped output keys and publication guards. `dubbing/remote_translation.py` demonstrates strict private prepared success, separate inference/publication guards and actual remote metadata. Do not depend on a project-wide revision for a line edit.
+- `media/audio.py` exposes `validate_audio` (full decode, actual codec/rate/channels/duration/hash) and `extract_audio` (CPU16kmono preparation). Use these instead of trusting a WAV suffix or provider success string.
+- `dubbing/translation_contracts.py` and `translations.py` provide current-source guards, target row CAS and manual/approval history. Source/track/row ownership must be rechecked by the new APIs.
+- Approved semantics: `../specs/2026-10-30-synthesis-qc-boundaries.md`. Actual short provider diagnostics in `docs/verification/omnivoice-clone-smoke.json` and `hf-clone-qc-smoke.json` establish only a short Chinese path; they are not product-stage or final-video acceptance.
+
+## Task5A: Natural line clones, selection and duration measurements
+
+### Files and responsibilities
+
+- Create `models/synthesis.py`: owned immutable synthesis requests/results and versioned selected natural audio/controls. Root/current pointers and immutable revisions may share a focused module; all cross-domain links use composite owned FKs.
+- Create frozen additive `alembic/versions/0009_synthesis.py`; import models in `models/__init__.py`. Migration never imports mutable application model definitions.
+- Create `dubbing/synthesis_contracts.py`: bounded explicit selected-row commands, control updates, output selection/review and DTOs.
+- Create `dubbing/synthesis.py`: command capture, effective-reference resolution, input identity, publication CAS, output selection/history and measured slot planning.
+- Create `dubbing/remote_synthesis.py`: remote metadata/upload/POST/poll/terminal/download/prepared lifecycle; no human-state mutations outside publisher.
+- Create `routes/synthesis.py`; register it in `app.py`; register real `synthesize` handler in `execution/registry.py`.
+- Extend `providers/omnivoice.py` only for reusable preparation/poll pieces while preserving existing helper behavior. Add exact named-operation schema/control validation where needed.
+- Tests: `test_synthesis_domain.py`, `test_synthesis_operations.py`, `test_synthesis_migration.py`, `test_synthesis_postgresql.py`. Verification note: `docs/verification/task5-synthesis-qc.md`.
+
+### Command and read contract
+
+Use `/api/projects/{project_id}/language-tracks/{tag}` as the base. Implement:
+
+```text
+POST /synthesize                 explicit current selected source IDs/target row proofs
+GET  /synthesis                  paginated current line outputs and outstanding work
+GET  /synthesis/{request_id}     command and independent line-run status
+GET  /segments/{id}/audio-history  paginated immutable natural outputs/selections
+PUT  /segments/{id}/voice-settings  CAS controls revision (null clears override)
+PUT  /segments/{id}/audio-selection CAS explicit owned natural-output choice/review
+```
+
+The request captures `selection_revision`, `transcript_revision`, canonical target, explicit source IDs/current source-text fingerprints, current translation row revisions and current natural-audio selection revisions. Track defaults and line overrides must be immutable and inspectable. Existing track-level settings may be extended only with typed guards; a free-form project JSON is not an immutable controls history.
+
+- [ ] Write failing API/domain tests before adding routes/models: current owned row enqueues one actual line run; foreign/historical/missing translation or reference does not. Two targets and two speakers bind the correct references; a line override isolates dormant role changes. A reference with staleness/overlap/length warnings requires visible review, and acknowledgement captures its exact version rather than silently accepting another.
+- [ ] Implement frozen schema, owned FK/lineage, strict DTOs and guarded commands. Bound selected rows to1000, reads/history to100, controls/text to existing provider limits. Source/target/reference state is captured once under project lock; no server-side inference in the route transaction. Default preserves already chosen/approved natural audio; explicit replacement is audited and still CAS guarded.
+- [ ] Write failing tests for the exact inference identity: actual target text, canonical model language, reference audio SHA+immutable corrected transcript/version, effective binding, model/connection revision, validated effective controls. Display names, final gains/subtitle styling and natural timing slot do not trigger another clone. Timing changes still stale references cut from changed source spans. Changed meaning/reference/controls do invalidate only affected target lines.
+- [ ] Implement the real command-only per-line stage and immutable request. Use a distinct target/line scope, never one shared target output key. Reject unsupported model/control/language before the named POST; preserve unknown capability visibly. An explicitly bound valid line reference is usable without inventing a speaker.
+- [ ] Write failing recording-provider tests for metadata/upload preparation, real POST count, saved eventID immediately after acceptance, restart polling the saved host/prefix/API, saved terminal FileData before download, retryable download failure and successful recovery without a second POST. Public facts/events must contain only IDs/counts/hashes/measured values; no dialogue/reference text/paths/signed URLs/token.
+- [ ] Implement the remote handler using the existing network allowlist and vault. Before POST persist exact host, Gradio prefix, named API, metadata revision/schema/language mapping, controls and uploaded reference request. `Done.` is followed by bounded download and `validate_audio`; corrupt/empty/oversized/wrong-container output is rejected. Persist actual measured duration/rate/channels/codec/SHA and full-decode evidence in the private result. No duration estimate can masquerade as a measurement.
+- [ ] Write failing fault-injection tests for synchronous/poll completion followed by lost lease, source/target/manual-selection edit, cancellation and publication failure. Prepared success remains reusable for identical inference inputs through a fresh guarded local review; it cannot force a new paid request merely because an editor pointer changed. Unknown POST outcome requires explicit existing acknowledgement, never an automatic retry. Partial batch failure leaves all unaffected line outputs reusable.
+- [ ] Implement short publication and immutable output/selection history. A prepared output may be retained historically while a changed editor guard blocks current selection. Explicit same-input regeneration must be distinguishable from default cache reuse and recorded as an actual intentional request. No phase auto-approves listening/QC.
+- [ ] Return duration planning as `natural_duration_ms` measured, `slot_duration_ms` current, ratio and `measurement` provenance. A slot change recomputes planning and invalidates later fitting while preserving the same unchanged natural audio. A shortening suggestion or speed-control edit is explicit; no automatic wording/control alteration and no time stretching in5A.
+- [ ] Run populated upgrade/down/up/parity/FK rejection on SQLite and isolated real PostgreSQL. Run full backend suite, relevant frontend tests/build if touched, Ruff/format/compile/lock. Record actual RED/GREEN and commit. Independent SPEC then QUALITY, with no successor implementation until both pass.
+
+## Task5B: Independent line recognition QC and human repair
+
+### Files and responsibilities
+
+- Add owned immutable QC request/result/review models in `models/synthesis.py` or focused `models/voice_qc.py`; freeze additive `0010_voice_qc.py` rather than changing0009 after its gate.
+- Create `dubbing/voice_qc.py`: current generated-audio/wording proofs, command capture, comparison metrics, guarded publication and manual review.
+- Create pure `dubbing/qc_comparison.py`: documented Unicode comparison and bounded edit distance; no confidence or speaker similarity claims.
+- Extend `routes/synthesis.py` with QC/review endpoints and `execution/registry.py` with the real independent `voice_qc` stage.
+- Tests: `test_voice_qc.py`, `test_voice_qc_operations.py`, migration and real PostgreSQL extensions; update `docs/verification/task5-synthesis-qc.md`.
+
+### API and lifecycle
+
+```text
+POST /api/projects/{p}/language-tracks/{tag}/voice-qc
+GET  /api/projects/{p}/language-tracks/{tag}/voice-qc/{request_id}
+PUT  /api/projects/{p}/language-tracks/{tag}/segments/{id}/audio-review
+```
+
+- [ ] Write RED for actual selected generated audio → CPU16kmono preparation → one independent HF ASR request. The request never includes expected target words as a recognition prompt. Assert the exact remote body, canonical language/capability handling and separately saved operation/result. HF's current route has no forced-language argument; absent detected language remainsnull. Unsupported QC must be visible and still permit explicit human review.
+- [ ] Implement exact QC inference identity based on generated-audio hash and immutable verification-provider revision; bind expected current wording/selection to comparison/publication separately. A wording correction may reuse identical recognition while recomputing guarded comparison; no duplicate recognition due only to a human approval toggle. Never let an old transcript approve changed current audio or wording.
+- [ ] Store raw recognized wording/timestamps privately and return authorized bounded QC detail through project-scoped reads. Use explicit Unicode NFKC/casefold and documented punctuation/separator handling; report normalized character edit distance and word edit distance only where meaningful. Bound input to prevent unbounded quadratic work. Empty/unexpected output and reference-word carryover are review warnings with actual matching evidence, not invented quality probabilities.
+- [ ] Write RED/GREEN for failed QC retaining natural audio; retry only QC, cache/restart/uncertain submission, audio selection/manual target changes during recognition, absent detection, CJK/RTL/combining marks, empty response, reference carryover and exact-match counterexamples. Do not label normalized exact match as voice-identity or pronunciation acceptance.
+- [ ] Implement immutable actor/current-row-guarded listening acceptance/rejection and manual repair. Editing target/reference/controls, regenerating one line and retrying QC must preserve previous output/history. One accepted line cannot mark the whole target complete; report current selected-row readiness with missing/stale/failed/manual-review issues.
+- [ ] Verify owned FK and populated migrations on SQLite/real PostgreSQL; full backend checks and static/locked dependency checks. Record actual commands/results, scoped commit, independent SPEC then QUALITY. Final real model integration occurs through these registered routes after both pass; previous diagnostics remain clearly separate.
+
+## Subsequent increments remain mandatory
+
+Task6 owns overlap-aware fixed/Smart Fit shared video/audio/subtitle/background timing, mix gains/limiter, previews and validated MP4/WAV/MP3/SRT/VTT/ASS/hardsubs exports. Task7 exposes these actual APIs in the workbench. Task8 runs both EN→ZH and EN→JA from the user-selected fresh upload plus broader multi-role and recovery/isolation acceptance. This plan does not mark those deliverables complete.
+
+## Persistent controller integration environment
+
+The earlier `/tmp` preview and source DB disappeared on environment restart. New controller operational state is outside Git in parent `outputs/.runtime/`, with protected directory permissions; media fixture is retained under `~/.agent-reach/fixtures/SIZsFGvtClM`. The reacquired source has the same25,861,753bytes/SHA256 as the original record. Tests use independent disposable directories/databases; do not edit protected integration data or copy credentials into tests/docs.
