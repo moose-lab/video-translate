@@ -82,6 +82,8 @@ QC may inspect currently selected, owned and validated natural audio even when a
 
 A current explicit listening acceptance may override automated-QC failure, unavailable/unsupported coverage, unassessed evidence, text mismatch or unknown/mismatched language. Capture acknowledgement of the exact currently shown QC evidence/issues with an evidence fingerprint or equivalent CAS proof and immutable actor/audio/wording/source history. Readiness then reports a manual-review basis and retains the original QC issues; it must not rewrite failed/unknown recognition as successful. New selected audio/meaning invalidates the old acceptance. Missing/foreign/corrupt audio, invalid measured provenance and stale natural/reference/source inputs remain hard readiness blockers. This manual path is necessary for declared languages outside automatic recognition coverage; one accepted row never completes all rows.
 
+The QC evidence proof guards the review write and records what was shown; it is not the listening-acceptance identity. Additional successful QC of unchanged bytes/meaning must not revoke that acceptance. Genuinely new adverse QC issues may require fresh issue acknowledgement for the manual-override readiness basis while the listening record remains current. Expose acceptance, automated evidence/issues and overall readiness separately; none changes the paid recognition identity.
+
 ### Files and responsibilities
 
 - Add owned immutable QC request/result/review models in `models/synthesis.py` or focused `models/voice_qc.py`; freeze additive `0010_voice_qc.py` rather than changing0009 after its gate.
