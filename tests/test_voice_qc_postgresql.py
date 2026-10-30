@@ -18,7 +18,7 @@ def test_voice_qc_runtime_races_and_composite_owner_fences(
 ):
     import psycopg
     from psycopg import sql
-    from sqlalchemy import MetaData, select
+    from sqlalchemy import MetaData, select, update
     from sqlalchemy.exc import IntegrityError
 
     from videotranslate.db import Base
@@ -137,20 +137,20 @@ def test_voice_qc_runtime_races_and_composite_owner_fences(
             records = [
                 db.scalar(select(model)) for model in (VoiceQCLine, VoiceQCResult, AudioReview)
             ]
-            values = [
-                {col.name: getattr(row, col.name) for col in row.__table__.columns}
-                for row in records
-            ]
+            identities = [row.id for row in records]
             track = LanguageTrack(
                 id=new_id(), workspace_id=records[0].workspace_id, project_id=p["id"], tag="fr"
             )
             db.add(track)
             db.flush()
             foreign_track = track.id
-        for model, value in zip((VoiceQCLine, VoiceQCResult, AudioReview), values, strict=True):
+        for model, row_id in zip(
+            (VoiceQCLine, VoiceQCResult, AudioReview), identities, strict=True
+        ):
+            # Updating only the track cannot collide with an existing unique run/line ID.
+            # A rejection here must enforce the owned composite cell references.
             with pytest.raises(IntegrityError), sf.begin() as db:
-                db.add(model(**(value | {"id": new_id(), "track_id": foreign_track})))
-                db.flush()
+                db.execute(update(model).where(model.id == row_id).values(track_id=foreign_track))
         assert c.get(path(f) + "/voice-qc/" + first["id"]).json()["lines"][0]["current"]
     finally:
         release.set()
