@@ -100,10 +100,13 @@ class Operations:
             raise StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
         # Metadata/schema GETs and upload must finish before this exact boundary.
         self.context.begin_submission(operation.provider, operation.model)
+        from .receipts import SubmissionBinding
 
-    def accept(self, remote_id):
+        return SubmissionBinding.capture(operation)
+
+    def accept(self, remote_id, *, binding=None):
         # Deliberately does not check cancellation: a paid handle must survive it.
-        self.context.record_submission(remote_id)
+        self.context.record_submission(remote_id, binding=binding)
 
     def terminal(self, files):
         bounded(files)

@@ -84,8 +84,12 @@ class RunContext:
             )
             return run.request_key
 
-    def record_submission(self, remote_id: str):
+    def record_submission(self, remote_id: str, *, binding=None):
         remote_id = safe_identifier(remote_id)
+        if binding is not None:
+            from .receipts import record_receipt
+
+            return record_receipt(self, remote_id, binding)
         with self.session_factory.begin() as db:
             project, run = self._locked(db)
             if run.remote_state != "submitting" or run.remote_id:
