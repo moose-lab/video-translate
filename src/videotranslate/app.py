@@ -10,6 +10,7 @@ from .routes import (
     auth,
     dubbing,
     events,
+    finishing,
     languages,
     projects,
     providers,
@@ -42,4 +43,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(workflow.router, prefix="/api")
     app.include_router(references.router, prefix="/api")
     app.include_router(synthesis.router, prefix="/api")
+    app.include_router(finishing.router, prefix="/api")
     return app
