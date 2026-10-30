@@ -1,8 +1,10 @@
 # Video Translate
 
-Private workspace API for the approved Video Translate SaaS. This increment provides accounts,
-sessions, projects, source uploads and private downloads. Remote inference is provider-neutral;
-Hugging Face is the primary ecosystem for subsequent provider adapters. There are no local AI
+Workspace API and service-setup interface for the approved Video Translate SaaS. Implemented backend
+stages include accounts/projects, private source upload, durable execution, cloud separation/ASR,
+editable source/cast/references and independently recoverable target translation. Hugging Face is the
+primary remote ecosystem. Per-line synthesis/QC, media finishing, the full editing workbench and
+final paired-language acceptance remain in the implementation plan. There are no local AI
 models, model weights, torch, transformers, ASR or TTS runtimes in this package.
 
 ## Run locally
@@ -14,7 +16,7 @@ the test fixture generates an actual tiny MP4 rather than labelling invented byt
 uv sync --python 3.12 --extra dev
 cp .env.example .env
 mkdir -p var
-uv run uvicorn videotranslate.app:create_app --factory --host 127.0.0.1 --port 8000
+PYTHONPATH=src uv run --frozen uvicorn videotranslate.app:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
 The API is under `/api`; OpenAPI is available at `/docs`. Development/test may explicitly use
@@ -63,7 +65,8 @@ optimistic concurrency; stale revisions return 409 `REVISION_CONFLICT`. Every up
 atomic revision predicate internally. Fields are flat and follow the master contract. Current typed
 settings accept `auto_advance`; defaults remain `{}`. Unknown settings are rejected so secrets cannot
 be smuggled into frontend-visible project JSON. Language identifiers preserve complete codes and
-regional forms; this foundation validates shape without claiming a provider supports that language.
+regional forms using the646-language catalog. Catalog membership does not prove a particular provider
+supports or has tested that language.
 
 Both collection endpoints, `GET /api/projects` and `GET /api/projects/{id}/assets`, accept
 `limit` (default 50, minimum 1, maximum 200) and `offset` (default 0, minimum 0). Their `{items,total}`
@@ -73,7 +76,7 @@ foreign or deleted project asset collections remain 404.
 
 Upload one multipart `file` to `POST /api/projects/{id}/source`; the response is `{project, asset}`.
 Allowed extension/MIME pairs are MP4/M4V, MOV, WebM, MKV and AVI. Both declarations are checked;
-media decoding and analysis belong to the next worker increment. Upload sets status `uploaded`,
+media decoding and analysis run in the independent worker after upload. Upload sets status `uploaded`,
 stores SHA-256 and byte size, and increments the project revision. The default limit is 512 MiB,
 configurable via `VT_UPLOAD_MAX_BYTES`. Multipart body spooling is bounded before parsing with a
 64 KiB header allowance, then exact file size/hash are read in chunks. Files, private object keys,
@@ -95,10 +98,11 @@ tokens, storage paths/keys and credentials.
 ## Verify
 
 ```sh
-uv run pytest -q
-uv run python -m compileall -q src
-uv run ruff check src tests alembic
-uv run pip-audit --skip-editable --progress-spinner off
+PYTHONPATH=src uv run --frozen --extra dev pytest -q
+PYTHONPATH=src uv run --frozen --extra dev python -m compileall -q src
+uv run --frozen --extra dev ruff check src tests alembic
+uv run --frozen --extra dev ruff format --check src tests alembic
+uv lock --check
 ```
 
 Tests use fresh real SQLite databases and real files. They cover identity/session/CSRF, persistent
@@ -109,15 +113,15 @@ behavior; it is not a live PostgreSQL or S3 test. Cloud deployment and real infe
 acceptance stages. See [engineering sources](docs/engineering/sources.md) and
 [verification evidence](docs/engineering/foundation-verification.md).
 
-## Durable probe worker
+## Durable media and cloud worker
 
 Run the API and worker as separate processes against the same database and private storage. Apply
 Alembic migrations before starting production processes. The PostgreSQL database is the production
 queue; SQLite and local storage are for development and tests. Install FFmpeg/FFprobe on the worker.
 
 ```sh
-uv run python -m videotranslate.execution.worker
-uv run python -m videotranslate.execution.worker --once
+PYTHONPATH=src uv run --frozen python -m videotranslate.execution.worker
+PYTHONPATH=src uv run --frozen python -m videotranslate.execution.worker --once
 ```
 
 The one-shot command prints `{"claimed": true}` or `{"claimed": false}`. Configure
@@ -128,16 +132,75 @@ must be shorter than the lease. Probe limits are set with `VT_PROBE_MAX_BYTES`,
 Create a probe with `POST /api/projects/{id}/runs` and `{"stage":"probe"}`; mutations need CSRF.
 Run lists, individual run/attempt details, retries, cancellation and project events are private to
 the workspace. `GET /api/projects/{id}/events/stream` supports `after`, `Last-Event-ID`, and
-`follow=false`. Only probe is implemented; future AI stages return `STAGE_UNAVAILABLE`. Probe reports
-zero-based audio ordinals separately from FFmpeg stream indices; a video without audio can be probed,
-but no transcription stage is currently available.
+`follow=false`. Probe reports zero-based audio ordinals separately from FFmpeg stream indices; a
+video without audio can be probed but cannot produce source speech. Real registered stages include
+`extract`, `separate`, `transcribe`, `reference` and the target-specific translation phases. Guarded
+workflow/reference/translation routes capture the necessary editor proofs; generic run creation
+cannot bypass those command boundaries. Unimplemented stages return `STAGE_UNAVAILABLE`.
 
 Handlers implement `StageDefinition` with option validation, exact input resolution, and `handle`;
 an optional short database-only `publish` callback runs after lease and freshness verification.
 Remote adapters must use `RunContext` submission checkpoints and resume a saved remote ID. An
-uncertain submission requires explicit acknowledgment before retry. No inference provider is
-implemented by the probe worker. Object storage and database commits are not atomic; deployment
-needs a provider-supported, ownership-checked orphan reconciliation process.
+uncertain named inference submission requires explicit acknowledgment before retry. Upload preparation
+is separate from that boundary. Object storage and database commits are not atomic: the existing
+prepared-object reservations, settlement and cleanup must remain enabled for derived assets; broader
+deployment storage reconciliation still requires operational verification.
+
+## Source, cast, references and translation API
+
+After a fresh source upload, enqueue `probe` and wait for its successful current result. Then use
+`PUT /api/projects/{id}/source-selection` with the **current project revision**, owned source asset,
+audio ordinal and explicit millisecond window. Read `GET /api/projects/{id}/timeline` for current
+selection/transcript identity, source rows, cast, references and target summaries.
+
+`POST /api/projects/{id}/workflow` accepts `action: "analyse"` or `"prepare_media"`, the current
+timeline `expected_editor_fingerprint` and `auto_advance`. It creates real extraction/separation/ASR
+jobs and defaults to source/cast review. Poll its returned workflow ID. A provider that supplies no
+speaker labels leaves rows unassigned for manual review. Work labels are not real-person identity.
+`auto_advance` never supplies missing roles or references.
+
+Source rows support guarded edits, split/merge and SRT/VTT import preview/apply. Speakers support
+versioned edits and merge. Source and target originals/history remain available through bounded
+revision endpoints. Mutations carry the active selection/transcript plus relevant row revisions;
+reload after409 instead of overwriting newer work. Times in the current timeline are relative to
+the selected window; original absolute bounds are retained separately.
+
+`POST /references/extract` below a project extracts the complete current source segment from source
+audio or separated vocals; split the segment explicitly first when a narrower reference is needed.
+`POST /references/upload` accepts private audio with reference wording/language and validates it in
+the worker. Reference wording corrections create immutable versions. Bind a speaker default with
+`PUT /speakers/{speaker_id}/reference` or an explicit line override with
+`PUT /segments/{segment_id}/reference`. Both are project-scoped. Measured warnings and staleness are
+visible; extracted audio is not silently trimmed while retaining its old transcript.
+
+Create/materialize target tracks through `POST /language-tracks`, with an explicit catalog tag,
+`Fast`, `Cinematic` or `Autofit` mode, supplied context and glossary. A declared project target alone
+is not an initialized target record. For a chosen target, fetch the timeline with
+`?target_language=zh` (or another exact tag). `POST /language-tracks/{tag}/translate` accepts active
+selection/transcript identity, track revision and explicit source rows, each with ID, current target
+revision (0 if absent), current source-text fingerprint, lock and approval state.
+
+Fast performs direct batches. Cinematic separately checkpoints whole-source context, draft,
+critique and rewrite. Autofit adds labelled heuristic estimates and an independently recoverable
+shortening suggestion where supported; it does not measure audio or automatically change wording.
+Inspect `GET /language-tracks/{tag}/translate/{command_id}` and retry only the failed phase using its
+run ID. Locked/approved rows are preserved by default; forced replacement is explicit and audited.
+Shorter wording requires guarded `POST /language-tracks/{tag}/translate/{command_id}/apply-suggestion`.
+Manual changes and approval use the current row/source proof. No cloud phase auto-approves a target.
+
+All abbreviated routes in this section are prefixed by `/api/projects/{id}`. OpenAPI contains the
+exact finite request contracts. Configure providers through the protected setup page before invoking
+cloud work. Named jobs retain their actual host/API/ID and terminal files; prepared synchronous
+results survive publication conflicts without silently paying for inference again. An interrupted
+named submission is visibly uncertain; repeated commands do not override that state. Chinese and
+Japanese operations and row histories remain independent.
+
+Tests use explicit recording providers, real CPU media and optional isolated actual PostgreSQL.
+Set `VT_TEST_POSTGRES_ADMIN_URL` only to an administrator URL for a disposable test server; fixtures
+create/drop uniquely named test databases. See `docs/verification/task4b-analysis.md`,
+`task4c-translation.md` and `upload-preparation.md` for their actual evidence/gates. Controller live
+service diagnostics are separate from final product acceptance; no finished Chinese/Japanese dubbed
+video is claimed by backend tests. The remaining product sequence is recorded in the master plan.
 
 ### Provider credential storage
 
