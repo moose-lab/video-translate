@@ -1,0 +1,112 @@
+{
+  "kind": "actual_registered_source_cast_reference_progress",
+  "project_id": "c9fb8ab6-5cd0-4836-a6c7-71c1a466bf05",
+  "source_video_id": "SIZsFGvtClM",
+  "window_ms": [
+    0,
+    59510
+  ],
+  "source_asr": {
+    "provider": "hf_asr",
+    "model": "openai/whisper-large-v3",
+    "provenance": "provider",
+    "row_count": 8,
+    "detected_language": null,
+    "raw_last_segment": {
+      "start": 57.06,
+      "end": 59.52,
+      "text": " You've likely heard about prompt engineering,"
+    },
+    "working_last_end_ms": 59510,
+    "last_flags": [
+      "provider_end_clipped"
+    ],
+    "prior_unknown_operations_retained": 1,
+    "prepared_operations": 1,
+    "explicit_user_retry_count": 1,
+    "retry_response_received_seconds": 3.447
+  },
+  "cast": {
+    "label": "讲解者1",
+    "provenance": "manual_work_label",
+    "automatic_diarization": false,
+    "all_current_rows_assigned": true,
+    "original_speaker_labels_remain_null": true
+  },
+  "reference": {
+    "version_id": "18541373-7420-4026-b900-fb9ae40740c4",
+    "duration_ms": 5620,
+    "source_bounds_ms": [
+      42540,
+      48160
+    ],
+    "sha256": "e561692f0220adc37b2a599e0584611d99465b7da572266d68974b5bf6e957ca",
+    "flags": [],
+    "stale": false,
+    "download_path": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-HF-product-analysis/reference-en-5620ms.wav",
+    "full_decode": true
+  },
+  "translations": {
+    "zh": {
+      "command_id": "be0258c0-3528-4d93-854e-ca43e8671637",
+      "mode": "Cinematic",
+      "status": "incomplete",
+      "next_action": "acknowledge_uncertain_submission",
+      "phases": [
+        {
+          "phase": "context",
+          "run_id": "aa31fd22-3459-4afb-8e5f-0b1c647eed3a",
+          "status": "needs_review",
+          "remote_state": "submitting",
+          "safe_error": {
+            "code": "SUBMISSION_UNCERTAIN",
+            "retryable": false
+          },
+          "attempts": [
+            {
+              "number": 1,
+              "started_at": "2026-10-30T16:09:12.293351+00:00",
+              "finished_at": "2026-10-30T16:09:28.577886+00:00",
+              "outcome": "needs_review",
+              "safe_error": {
+                "code": "SUBMISSION_UNCERTAIN",
+                "retryable": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "ja": {
+      "command_id": "2cb0fcc9-db2c-45ca-86a1-5368c1fef5fb",
+      "mode": "Cinematic",
+      "status": "incomplete",
+      "next_action": "acknowledge_uncertain_submission",
+      "phases": [
+        {
+          "phase": "context",
+          "run_id": "34f0dc6b-cdfb-4814-8a85-d11c29bc472b",
+          "status": "needs_review",
+          "remote_state": "submitting",
+          "safe_error": {
+            "code": "SUBMISSION_UNCERTAIN",
+            "retryable": false
+          },
+          "attempts": [
+            {
+              "number": 1,
+              "started_at": "2026-10-30T16:09:28.580152+00:00",
+              "finished_at": "2026-10-30T16:09:45.088926+00:00",
+              "outcome": "needs_review",
+              "safe_error": {
+                "code": "SUBMISSION_UNCERTAIN",
+                "retryable": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "final_dubbing_acceptance": false
+}
