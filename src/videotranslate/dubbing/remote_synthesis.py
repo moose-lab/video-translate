@@ -115,7 +115,18 @@ def handler(context):
             from ..execution.contracts import StageResult
 
             return StageResult(existing.public_facts, existing.id)
-        reusable = None
+        reusable, reuse_binding = None, None
+        if existing is not None and not isinstance(existing.request_payload, dict):
+            raise StageFailure(FailureCode.CONFIGURATION, review=True)
+        if existing is not None and (
+            "reuse" in existing.request_payload or "prepared" not in existing.request_payload
+        ):
+            from .synthesis_aliases import resume_alias
+
+            try:
+                reusable = resume_alias(db, project, line, existing)
+            except (APIError, ValueError, KeyError, TypeError, AttributeError):
+                raise StageFailure(FailureCode.CONFIGURATION, review=True) from None
         if existing is None and not intent.regenerate:
             for candidate in db.scalars(
                 scope(SynthesisLine, project).where(
@@ -128,7 +139,12 @@ def handler(context):
                 if candidate.input_payload != inputs:
                     continue
                 try:
-                    reusable, _, _ = cached_payload(db, project, candidate)
+                    reusable, origin_run, record = cached_payload(db, project, candidate)
+                    from .synthesis_aliases import capture_alias
+
+                    reuse_binding = capture_alias(
+                        current_operation(db, origin_run), origin_run, reusable, record
+                    )
                     break
                 except (APIError, ValueError, KeyError, TypeError, AttributeError):
                     continue
@@ -137,14 +153,17 @@ def handler(context):
         token = (
             credential_token(db, project, context, inputs["config"]) if reusable is None else None
         )
-        reference = owned(db, Asset, project, inputs["reference_asset_id"])
-    if reusable is not None:
-        operations.prepare(
-            provider="omnivoice",
-            model="OmniVoice",
-            connection_revision=inputs["connection_revision"],
-            request_payload={"input": inputs},
+        reference = (
+            owned(db, Asset, project, inputs["reference_asset_id"]) if reusable is None else None
         )
+    if reusable is not None:
+        if existing is None:
+            operations.prepare(
+                provider="omnivoice",
+                model="OmniVoice",
+                connection_revision=inputs["connection_revision"],
+                request_payload={"input": inputs, "reuse": reuse_binding},
+            )
         facts = {
             "duration_ms": reusable["metadata"]["duration_ms"],
             "sha256": reusable["metadata"]["sha256"],

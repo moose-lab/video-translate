@@ -10,7 +10,7 @@ from ..execution.prepared import bounded
 from ..providers.gradio import parse_submission
 from ..providers.network import validate_url
 from ..providers.omnivoice import clone_arguments, model_name_from_enum, normalize_result
-from .contracts import Fingerprint, Strict
+from .contracts import ID, Fingerprint, Strict
 
 MAX_BYTES = 64 * 1024 * 1024
 
@@ -37,6 +37,15 @@ class DecodeProof(Strict):
     full_decode: bool
     raw_metadata: AudioEvidence
     operation: OperationProof
+
+
+class AliasBinding(Strict):
+    line_id: ID
+    operation_id: ID
+    generation: Fingerprint
+    input_fingerprint: Fingerprint
+    prepared_sha256: Fingerprint
+    provenance_sha256: Fingerprint
 
 
 class PreparedClone(Strict):
@@ -67,13 +76,16 @@ def validate_operation(operation, inputs, *, producing):
         raise ValueError("Inconsistent immutable synthesis operation")
     if not producing:
         if (
-            set(operation.request_payload) != {"input"}
+            set(operation.request_payload) not in ({"input"}, {"input", "reuse"})
+            or ("reuse" not in operation.request_payload and operation.phase != "prepared")
             or operation.host
             or operation.prefix
             or operation.remote_id is not None
             or operation.terminal_payload is not None
         ):
             raise ValueError("Invalid synthesis reuse alias")
+        if "reuse" in operation.request_payload:
+            AliasBinding.model_validate(operation.request_payload["reuse"])
         return None
     if set(operation.request_payload) != {"input", "prepared"}:
         raise ValueError("Missing immutable synthesis preparation")

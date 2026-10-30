@@ -120,6 +120,10 @@ def cached_payload(db, project, line):
     proof = DecodeProof.model_validate(record.metadata_json.get("provenance")).model_dump()
     if proof["full_decode"] is not True or proof != expected_proof:
         raise ValueError("Missing or inconsistent measured synthesis provenance")
+    if op.id != origin.id and "reuse" in op.request_payload:
+        from .synthesis_aliases import validate_alias
+
+        validate_alias(op, origin, origin_run, payload, record)
     if record.asset_id:
         asset = owned(db, Asset, project, record.asset_id)
         if (
