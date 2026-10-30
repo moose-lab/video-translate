@@ -1,0 +1,57 @@
+{
+  "kind": "persistent_preview_source_preparation",
+  "source_id": "SIZsFGvtClM",
+  "source_sha256": "18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f",
+  "window_ms": [
+    0,
+    59510
+  ],
+  "credential_configured": true,
+  "hf_account_valid": true,
+  "project_id": "c9fb8ab6-5cd0-4836-a6c7-71c1a466bf05",
+  "workflow_id": "39de2e44-db1b-4b30-9572-06e6fe8c8265",
+  "runs": [
+    {
+      "id": "0e44b164-fff1-4076-b381-95fb4b92a6e1",
+      "stage": "separate",
+      "status": "needs_review",
+      "remote_state": "not_submitted",
+      "remote_id": null,
+      "safe_error": {
+        "code": "SUBMISSION_UNCERTAIN",
+        "retryable": false
+      }
+    },
+    {
+      "id": "51197c44-1608-482b-9554-948f8d842d4a",
+      "stage": "extract",
+      "status": "succeeded",
+      "remote_state": "completed",
+      "remote_id": null,
+      "safe_error": null
+    },
+    {
+      "id": "80b59b93-6ed7-4a8e-af57-4cc320d7e65f",
+      "stage": "probe",
+      "status": "succeeded",
+      "remote_state": "not_submitted",
+      "remote_id": null,
+      "safe_error": null
+    }
+  ],
+  "upload_diagnostic": {
+    "kind": "registered_pre_inference_upload",
+    "payload_bytes": 11425998,
+    "named_inference_called_by_recorder": false,
+    "outcome": "failed",
+    "exception_types": [
+      "ProviderError",
+      "WriteTimeout",
+      "WriteTimeout",
+      "TimeoutError"
+    ],
+    "safe_code": "uncertain",
+    "elapsed_seconds": 16.03
+  },
+  "final_dubbing_acceptance": false
+}
