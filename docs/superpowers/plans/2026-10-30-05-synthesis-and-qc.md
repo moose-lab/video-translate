@@ -80,6 +80,8 @@ Recognition results may be reused for identical selected-audio bytes and verific
 
 QC may inspect currently selected, owned and validated natural audio even when a subsequent wording edit has made its original synthesis inputs stale. This is necessary to compare unchanged bytes against corrected expected words without another recognition call. Preserve the synthesis/reference staleness separately in readiness; recognizing or manually reviewing those bytes must not silently make the old generation current or unblock an ordinary final export. Invalid measured provenance remains a hard denial before remote recognition.
 
+A current explicit listening acceptance may override automated-QC failure, unavailable/unsupported coverage, unassessed evidence, text mismatch or unknown/mismatched language. Capture acknowledgement of the exact currently shown QC evidence/issues with an evidence fingerprint or equivalent CAS proof and immutable actor/audio/wording/source history. Readiness then reports a manual-review basis and retains the original QC issues; it must not rewrite failed/unknown recognition as successful. New selected audio/meaning invalidates the old acceptance. Missing/foreign/corrupt audio, invalid measured provenance and stale natural/reference/source inputs remain hard readiness blockers. This manual path is necessary for declared languages outside automatic recognition coverage; one accepted row never completes all rows.
+
 ### Files and responsibilities
 
 - Add owned immutable QC request/result/review models in `models/synthesis.py` or focused `models/voice_qc.py`; freeze additive `0010_voice_qc.py` rather than changing0009 after its gate.
