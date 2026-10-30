@@ -43,5 +43,9 @@
   "retry_authorization_created": false,
   "new_api_session": 90637,
   "new_api_pid": 63359,
-  "harness_note": "Initial check assumed remote_state on phase projection; corrected to read /api/runs/{id}. No production change or model request."
+  "harness_note": "Initial check assumed remote_state on phase projection; corrected to read /api/runs/{id}. No production change or model request.",
+  "browser_existing_session_survived_reload": true,
+  "browser_credential_field_empty_and_configured": true,
+  "browser_screenshot": "/Users/moose/Documents/Codex/2026-10-28/ace-studio-3/outputs/VideoTranslate-reviewed-upgrade.png",
+  "browser_scope": "Existing service-setup interface only; full workbench remains pending"
 }
