@@ -59,6 +59,25 @@ The request captures `selection_revision`, `transcript_revision`, canonical targ
 
 ## Task5B: Independent line recognition QC and human repair
 
+### Current5A integration points
+
+Task5A implementation is committed in`fbc0b76` plus`adca2f4` and remains under independent review at this note's creation. The following names are inspected current interfaces, not permission to skip its gates:
+
+- `models/synthesis.py`: `NaturalOutput` links the exact target/segment cell, validated audio asset/SHA, producing line/operation and measured media properties. `AudioSelection.current_version_id` points to an owned `AudioSelectionVersion.output_id` with its immutable revision/actor/provenance. A source/timing slot is not the selected generated-audio identity.
+- `dubbing/synthesis_outputs.py`: `selection_for`/`history`/`current_lines` expose selection revisions and current output; `output_json` explicitly reports `acceptance: not_assessed`.5B adds actual QC/review projection rather than replacing that placeholder with unconditional success. Keep current bounded output/history reads.
+- `dubbing/synthesis.py`: `inference_inputs` validates current target wording, effective reference, actual controls and model configuration; `editor_guard` captures source/target/selection/current-control proofs.5B must distinguish comparison/readiness guards from recognition identity, not rerun TTS or ASR merely because a manual pointer changed.
+- `execution/receipts.py` is for actual asynchronous event-ID receipts. HF ASR is synchronous and returns no guaranteed provider ID. Do not manufacture a receipt ID or repurpose a source/transcript ID as one. Use the existing private successful-response checkpoint before QC publication.
+
+After5A gates, execute the separately planned bounded chat-response policy and its reviews before5B, as recorded in`2026-10-31-04c-chat-response-budget.md`. Unknown target-context jobs cannot be bypassed by editing their source/context; source-ASR retry approval has already been consumed.
+
+### Comparison and review limits
+
+Normalize with explicit Unicode NFKC/casefold and documented punctuation/separator handling. Preserve meaningful letters and combining-script content. Compare nonempty content; two empty normalized strings must not count as a successful speech match. Cap comparison length/work explicitly before quadratic edit calculations; exceeding the budget yields a visible unavailable/manual-review reason rather than silently truncating and reporting a pass. Word metrics require meaningful tokenization; languages without such tokenization still receive bounded character evidence, not an invented word-accuracy score.
+
+Reference carryover is a warning based on actual unexpected matching phrases, not any shared generic token such as`AI`. Retain the matching evidence privately for authorized review. Missing detected language remainsnull; mismatched or unknown reported language is a review warning at the declared comparison granularity, not a fabricated detection confidence.
+
+Recognition results may be reused for identical selected-audio bytes and verification configuration/preprocessing policy while comparison is recomputed for changed expected wording. A slow result must not approve a newer selection/wording. Manual listening acceptance/rejection has exact current audio/target/source proofs, actor/provenance and immutable history. Audio selection alone remains separate from acceptance. Timing-only changes that preserve the same current natural audio and wording must not trigger a paid recognition call; stale source-derived references remain explicit.
+
 ### Files and responsibilities
 
 - Add owned immutable QC request/result/review models in `models/synthesis.py` or focused `models/voice_qc.py`; freeze additive `0010_voice_qc.py` rather than changing0009 after its gate.
