@@ -374,38 +374,7 @@ def output_assessment(db, project, track, segment, output):
     review = db.scalar(
         review_query(project, track, segment).order_by(AudioReview.revision.desc()).limit(1)
     )
-    lines = db.scalars(
-        scope(VoiceQCLine, project)
-        .where(VoiceQCLine.output_id == output.id)
-        .order_by(VoiceQCLine.created_at.desc(), VoiceQCLine.id.desc())
-        .limit(100)
-    ).all()
-    current = next((x for x in lines if same_meaning_proof(x.guard_snapshot, proof)), None)
-    qc = {"status": "unassessed", "comparison": None, "request_id": None}
-    if current:
-        run = owned(db, StageRun, project, current.run_id)
-        result = db.scalar(scope(VoiceQCResult, project).where(VoiceQCResult.line_id == current.id))
-        qc = {
-            "status": run.status,
-            "comparison": result.comparison if result else None,
-            "request_id": current.command_id,
-            "line_id": current.id,
-            "recognized_text_fingerprint": fingerprint(
-                "".join(row["text"] for row in result.recognition["segments"])
-            )
-            if result
-            else None,
-        }
-    elif lines:
-        qc["status"] = "stale"
-    else:
-        try:
-            _, caps = verification_config(db, project)
-            support = capability_status(caps, track.tag)
-            if support != "supported":
-                qc["status"] = support
-        except APIError:
-            qc["status"] = "unconfigured"
+    qc = current_qc_evidence(db, project, track, output, proof)
     evidence = fingerprint({"proof": proof, "output_id": output.id, "qc": qc})
     review_current = bool(
         review
@@ -419,7 +388,7 @@ def output_assessment(db, project, track, segment, output):
         issues.append("LISTENING_" + acceptance.upper())
     if qc["status"] != "succeeded":
         issues.append("QC_" + qc["status"].upper())
-    elif qc["comparison"] and (
+    if qc["comparison"] and (
         not qc["comparison"]["text_match"]
         or qc["comparison"]["reference_carryover"]
         or qc["comparison"]["language_status"]
@@ -464,13 +433,81 @@ def output_assessment(db, project, track, segment, output):
     }
 
 
+def current_qc_evidence(db, project, track, output, proof):
+    # Project admission is durable; worker/app clocks and completion order are not.
+    query = (
+        scope(VoiceQCLine, project)
+        .join(VoiceQCCommand, VoiceQCLine.command_id == VoiceQCCommand.id)
+        .where(
+            VoiceQCLine.output_id == output.id,
+            VoiceQCCommand.project_id == project.id,
+            VoiceQCCommand.workspace_id == project.workspace_id,
+        )
+        .order_by(VoiceQCCommand.admission_sequence.desc(), VoiceQCLine.id.desc())
+    )
+    qc = {"status": "unassessed", "comparison": None, "request_id": None, "evidence": None}
+    if proof is None:
+        applicable = query.where(False)
+    else:
+        applicable = query
+        for key, value in proof.items():
+            if key in {"translation_revision", "translation_revision_id"}:
+                continue
+            column = VoiceQCLine.guard_snapshot[key]
+            column = column.as_integer() if type(value) is int else column.as_string()
+            applicable = applicable.where(column == value)
+    current = db.scalar(applicable.limit(1))
+    # Inconclusive work cannot erase an observed result. Read the latest applicable
+    # conclusive row independently, without scanning/truncating a pending history.
+    evidence_line = db.scalar(
+        applicable.join(VoiceQCResult, VoiceQCResult.line_id == VoiceQCLine.id)
+        .where(
+            VoiceQCResult.project_id == project.id,
+            VoiceQCResult.workspace_id == project.workspace_id,
+        )
+        .limit(1)
+    )
+    if current:
+        run = owned(db, StageRun, project, current.run_id)
+        qc.update(status=run.status, request_id=current.command_id, line_id=current.id)
+    elif db.scalar(query.limit(1)):
+        qc["status"] = "stale"
+    else:
+        try:
+            _, caps = verification_config(db, project)
+            support = capability_status(caps, track.tag)
+            if support != "supported":
+                qc["status"] = support
+        except APIError:
+            qc["status"] = "unconfigured"
+    if evidence_line:
+        result = db.scalar(
+            scope(VoiceQCResult, project).where(VoiceQCResult.line_id == evidence_line.id)
+        )
+        evidence_run = owned(db, StageRun, project, evidence_line.run_id)
+        qc.update(
+            comparison=result.comparison,
+            evidence={
+                "line_id": evidence_line.id,
+                "request_id": evidence_line.command_id,
+                "status": evidence_run.status,
+            },
+            recognized_text_fingerprint=fingerprint(
+                "".join(row["text"] for row in result.recognition["segments"])
+            ),
+        )
+    return qc
+
+
 def qc_risks(qc):
-    if qc["status"] != "succeeded":
-        return {} if qc["status"] in {"queued", "running", "retry_wait"} else {"gap": qc["status"]}
+    risks = {}
+    if qc["status"] != "succeeded" and qc["status"] not in {"queued", "running", "retry_wait"}:
+        risks["gap"] = qc["status"]
     comparison = qc["comparison"]
     if not comparison:
-        return {"gap": "missing_comparison"}
-    risks = {}
+        if qc["status"] == "succeeded":
+            risks["gap"] = "missing_comparison"
+        return risks
     if not comparison["text_match"]:
         risks["text"] = fingerprint(
             {
