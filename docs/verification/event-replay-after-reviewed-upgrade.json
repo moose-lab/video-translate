@@ -1,0 +1,27 @@
+{
+  "kind": "actual_retained_project_event_reconnect_after_reviewed_upgrade",
+  "project_id": "c9fb8ab6-5cd0-4836-a6c7-71c1a466bf05",
+  "retained_previous_cursor": 19,
+  "current_cursor": 61,
+  "replayed_event_count": 42,
+  "exact_contiguous_remaining_sequences": true,
+  "new_event_kinds": [
+    "language_track.created",
+    "reference.binding_changed",
+    "reference.created",
+    "run.needs_review",
+    "run.queued",
+    "run.retried",
+    "run.started",
+    "run.submitted",
+    "run.submitting",
+    "run.succeeded",
+    "segment.edited",
+    "source.recognized",
+    "speaker.created",
+    "translation.queued",
+    "workflow.updated"
+  ],
+  "duplicate_or_missing_sequences": false,
+  "final_dubbing_acceptance": false
+}
