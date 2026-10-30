@@ -78,6 +78,8 @@ Reference carryover is a warning based on actual unexpected matching phrases, no
 
 Recognition results may be reused for identical selected-audio bytes and verification configuration/preprocessing policy while comparison is recomputed for changed expected wording. A slow result must not approve a newer selection/wording. Manual listening acceptance/rejection has exact current audio/target/source proofs, actor/provenance and immutable history. Audio selection alone remains separate from acceptance. Timing-only changes that preserve the same current natural audio and wording must not trigger a paid recognition call; stale source-derived references remain explicit.
 
+QC may inspect currently selected, owned and validated natural audio even when a subsequent wording edit has made its original synthesis inputs stale. This is necessary to compare unchanged bytes against corrected expected words without another recognition call. Preserve the synthesis/reference staleness separately in readiness; recognizing or manually reviewing those bytes must not silently make the old generation current or unblock an ordinary final export. Invalid measured provenance remains a hard denial before remote recognition.
+
 ### Files and responsibilities
 
 - Add owned immutable QC request/result/review models in `models/synthesis.py` or focused `models/voice_qc.py`; freeze additive `0010_voice_qc.py` rather than changing0009 after its gate.
