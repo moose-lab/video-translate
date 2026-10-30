@@ -94,3 +94,8 @@ captured source/target/audio/settings lineage and publication conflict/restart
 tests. All waveform/peak/frame/caption/stream expectations above still need real
 FFmpeg execution and full decode in Task6; neither this note nor its arithmetic
 check establishes finishing capability or final EN→ZH/JA acceptance.
+
+The [development environment preflight](../verification/media-environment-preflight.json)
+records current FFmpeg filter availability and font-declared coverage for small
+Chinese/Japanese/Arabic/Hebrew samples. It is not rendered glyph/shaping proof,
+a redistributable font bundle, Linux worker validation or646-language testing.

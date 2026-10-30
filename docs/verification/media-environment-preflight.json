@@ -1,0 +1,66 @@
+{
+  "kind": "development_media_environment_preflight",
+  "environment": "current macOS development worker only",
+  "ffmpeg_version": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers",
+  "required_filters_present": [
+    "alimiter",
+    "amix",
+    "asetpts",
+    "ass",
+    "astats",
+    "atempo",
+    "atrim",
+    "fps",
+    "setpts",
+    "subtitles",
+    "trim"
+  ],
+  "fontconfig_samples": {
+    "zh-cn": {
+      "requested": "sans-serif:lang=zh-cn",
+      "actual_family": "Hiragino Sans GB,冬青黑體簡體中文,冬青黑体简体中文,Hiragino Sans GB W3,冬青黑體簡體中文 W3,冬青黑体简体中文 W3",
+      "font_file": "/System/Library/Fonts/Hiragino Sans GB.ttc",
+      "face_index": 0,
+      "sample_text": "人工智能模型与智能体工程",
+      "missing_codepoints": [],
+      "declared_sample_coverage": true,
+      "render_or_shaping_verified": false
+    },
+    "ja": {
+      "requested": "sans-serif:lang=ja",
+      "actual_family": "Hiragino Sans,ヒラギノ角ゴシック,Hiragino Sans W4,ヒラギノ角ゴシック W4,荱莉荍荭詰荓荖荢荎",
+      "font_file": "/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc",
+      "face_index": 0,
+      "sample_text": "人工知能モデルとエージェント",
+      "missing_codepoints": [],
+      "declared_sample_coverage": true,
+      "render_or_shaping_verified": false
+    },
+    "ar": {
+      "requested": "sans-serif:lang=ar",
+      "actual_family": "Arial",
+      "font_file": "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "face_index": 0,
+      "sample_text": "مرحبا بالعالم",
+      "missing_codepoints": [],
+      "declared_sample_coverage": true,
+      "render_or_shaping_verified": false
+    },
+    "he": {
+      "requested": "sans-serif:lang=he",
+      "actual_family": "Arial",
+      "font_file": "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "face_index": 0,
+      "sample_text": "שלום עולם",
+      "missing_codepoints": [],
+      "declared_sample_coverage": true,
+      "render_or_shaping_verified": false
+    }
+  },
+  "model_calls": 0,
+  "fonts_copied_or_downloaded": false,
+  "media_rendered": false,
+  "production_linux_runtime_verified": false,
+  "all646_languages_verified": false,
+  "remaining": "Task6 real frames/waveforms/peak/captions/streams and final production font allowlist/runtime evidence remain required."
+}
