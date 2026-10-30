@@ -70,3 +70,31 @@ def test_canonical_noop_history_and_project_ownership(client_factory, register):
     other = client_factory(database_url=c.app.state.settings.database_url.get_secret_value())
     register(other, "fit-other@example.com")
     assert other.get(url).status_code == 404
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("mode", "other"),
+        ("max_audio_speed", {"numerator": 5, "denominator": 2}),
+        ("max_audio_speed", {"numerator": 1, "denominator": 2}),
+        ("max_picture_factor", {"numerator": 5, "denominator": 1}),
+        ("max_picture_factor", {"numerator": 1, "denominator": 1, "extra": 1}),
+        ("max_audio_speed", {"numerator": 6, "denominator": 0}),
+        ("max_audio_speed", {"numerator": 6, "denominator": True}),
+        ("max_audio_speed", {"numerator": 6, "denominator": 1_000_001}),
+        ("max_borrow_ms", 60_001),
+        ("max_borrow_ms", True),
+        ("max_borrow_ms", 1.0),
+        ("max_output_duration_ms", 0),
+        ("max_output_duration_ms", 57_600_001),
+        ("gain", 1),
+    ],
+)
+def test_strict_fit_settings_fields(field, value):
+    from pydantic import ValidationError
+
+    from videotranslate.dubbing.fit_contracts import FitSettingsBody
+
+    with pytest.raises(ValidationError):
+        FitSettingsBody.model_validate(defaults() | {field: value})

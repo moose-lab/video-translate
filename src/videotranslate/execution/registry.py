@@ -140,3 +140,16 @@ STAGES["voice_qc"] = StageDefinition(
     command_only=True,
     scope_suffix=remote_voice_qc.line_scope,
 )
+
+from ..dubbing import fit_execution  # noqa: E402
+
+STAGES["plan_fit"] = StageDefinition(
+    "plan_fit",
+    fit_execution.options,
+    fit_execution.inputs,
+    fit_execution.handler,
+    fit_execution.publish,
+    fit_execution.publication_current,
+    command_only=True,
+    scope_suffix=fit_execution.command_scope,
+)

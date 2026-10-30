@@ -1,4 +1,5 @@
 """Persistent domain records."""
+# ruff: noqa: F401
 
 from . import (
     analysis,

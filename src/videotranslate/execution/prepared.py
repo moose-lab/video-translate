@@ -147,8 +147,15 @@ class Operations:
             # Terminal SSE has been consumed; retain ID and known files privately.
             run.remote_state = "completed"
 
-    def cache(self, payload, facts):
-        bounded(payload)
+    def cache(self, payload, facts, *, payload_limit=2 * 1024 * 1024):
+        # Only the command-only CPU fit stage needs JSON envelope headroom.
+        # All existing callers retain the original 2 MiB payload bound.
+        if (
+            type(payload_limit) is not int
+            or not 2 * 1024 * 1024 <= payload_limit <= 2 * 1024 * 1024 + 65536
+        ):
+            raise ValueError("Invalid private payload limit")
+        bounded(payload, payload_limit)
         bounded(facts, 65536)
         with self.context.session_factory.begin() as db:
             _, run = self.context._locked(db)
@@ -161,6 +168,8 @@ class Operations:
                 "prepared",
             }:
                 raise ValueError("No recoverable operation")
+            if payload_limit > 2 * 1024 * 1024 and run.stage != "plan_fit":
+                raise ValueError("Private payload headroom requires fit command")
             operation.prepared_payload, operation.public_facts = payload, facts
             operation.phase = "prepared"
             run.remote_state = "completed"

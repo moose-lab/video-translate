@@ -1,6 +1,7 @@
 """Append-only safe facts, sequenced by the project row in the caller transaction."""
 
 import re
+from math import gcd
 
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -39,6 +40,7 @@ _IDS = {
     "status",
     "stage",
     "reference_id",
+    "command_id",
 }
 
 
@@ -55,6 +57,36 @@ def safe_facts(facts: dict) -> dict:
             and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,199}", value)
             and ".." not in value
             and "://" not in value
+        ):
+            result[key] = value
+        elif (
+            key == "purpose"
+            and type(value) is str
+            and value in {"dub", "incomplete_preview", "original_only"}
+        ):
+            result[key] = value
+        elif key == "included_count" and type(value) is int and 0 <= value <= 1000:
+            result[key] = value
+        elif key == "timeline_feasible" and type(value) is bool:
+            result[key] = value
+        elif (
+            key == "issues"
+            and type(value) is list
+            and len(value) <= 2
+            and all(
+                type(v) is str and v in {"LINE_FIT_LIMIT", "OUTPUT_DURATION_LIMIT"} for v in value
+            )
+        ):
+            result[key] = value
+        elif (
+            key == "planned_output_duration_ms"
+            and type(value) is dict
+            and set(value) == {"numerator", "denominator"}
+            and type(value["numerator"]) is int
+            and type(value["denominator"]) is int
+            and 0 < value["denominator"] <= 10**12
+            and 0 < value["numerator"] <= 57_600_000 * value["denominator"]
+            and gcd(value["numerator"], value["denominator"]) == 1
         ):
             result[key] = value
         else:

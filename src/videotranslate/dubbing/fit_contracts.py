@@ -56,3 +56,44 @@ class FitSettingsBody(Strict):
 class FitSettingsPut(Strict):
     revision: ZeroRevision
     settings: FitSettingsBody
+
+
+from .contracts import ID, Fingerprint, SourceGuard  # noqa: E402
+
+
+class FitRow(Strict):
+    id: ID
+    expected_source_revision_id: ID
+    expected_source_text_fingerprint: Fingerprint
+    translation_revision: ZeroRevision
+    selection_revision: ZeroRevision
+    output_id: ID | None
+    review_revision: ZeroRevision
+    qc_evidence_fingerprint: Fingerprint | None
+
+
+class FitTrack(Strict):
+    tag: Annotated[str, Field(min_length=2, max_length=40)]
+    segments: Annotated[list[FitRow], Field(min_length=1, max_length=1000)]
+
+
+class FitPlanCreate(SourceGuard):
+    settings_revision: ZeroRevision
+    purpose: Literal["dub", "incomplete_preview", "original_only"]
+    tracks: Annotated[list[FitTrack], Field(max_length=16)]
+
+    @model_validator(mode="after")
+    def bounded_cells(self):
+        if sum(len(t.segments) for t in self.tracks) > 1000:
+            raise ValueError("Fit row limit")
+        if (self.purpose == "original_only") != (not self.tracks):
+            raise ValueError("Fit purpose requires explicit targets or original only")
+        if self.purpose != "original_only" and self.transcript_revision is None:
+            raise ValueError("Transcript required")
+        if any(len({r.id for r in t.segments}) != len(t.segments) for t in self.tracks):
+            raise ValueError("Duplicate fit cell")
+        return self
+
+
+class FitOptions(Strict):
+    command_id: ID
