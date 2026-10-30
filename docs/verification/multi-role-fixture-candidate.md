@@ -1,6 +1,6 @@
 # Candidate for broader multi-role acceptance
 
-Checked 2026-10-31 through Agent Reach's Jina Reader route, with web search/source verification. This is resource preparation, not a downloaded fixture or a passed dubbing test. The user-selected `SIZsFGvtClM` remains the primary EN→ZH/JA acceptance source.
+Checked 2026-10-31 through Agent Reach's Jina Reader route, with web search/source verification. The additional original movie has now been acquired and decoded; this remains resource preparation, not a passed dubbing test. The user-selected `SIZsFGvtClM` remains the primary EN→ZH/JA acceptance source.
 
 ## Candidate and source boundaries
 
@@ -20,4 +20,14 @@ Do not use the [BBC R&D copy](https://rdmedia.bbc.co.uk/elephants_dream/) as the
 
 Acquire a bounded usable movie version through the permitted media workflow, then select a short dialogue interval containing both roles and clean reference spans. Freshly upload it through the product and record all measured provenance. Keep manually labelled roles distinct from automatic diarization output. Validate each role's reference and generated voice, retained overlap, selected-audio/QC state and shared export timing. A synthetic recording-provider case or the single-narrator IBM sample cannot replace this actual multi-role check.
 
-No media download, model call, fixture selection, role annotation, output export, public posting or commercial-rights acceptance was performed by this research note.
+## Acquired source, not yet an integration input
+
+Downloaded the exact original link observed on the Wikimedia high-quality OGV page, revision `2009-12-15T04:43:00Z`. That page explicitly links the producer's CC-BY-2.5 notice. A different `Elephants_Dream(HQ).webm` page showed ShareAlike wording without an unambiguous version in the observed response; that alternate was not downloaded or treated as equivalent.
+
+- Original URL: <https://upload.wikimedia.org/wikipedia/commons/8/83/Elephants_Dream_%28high_quality%29.ogv?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original>.
+- Original retained outside Git at `/Users/moose/.agent-reach/fixtures/elephants-dream-2009/Elephants_Dream_(high_quality).ogv`.
+- Bytes: `51,122,939`; SHA256: `0d3ab0f4fb8825fe2b51ffb68ef0ff8421531c50a897c73092eb47eeaafa65d7`.
+- Actual FFprobe: Ogg; Theora video, 480×270, reported rate23/1; Vorbis stereo48kHz; container/audio duration658.304s.
+- Actual complete video-and-audio decode: FFmpeg7.1.1, exit0, empty error output,3.566s. Raw acquisition/probe/decode records live beside the original.
+
+OGV is not a currently supported product upload container. Select and inspect the actual two-role interval, then prepare a separately hashed CPU MP4 excerpt with an explicit timeline/provenance record before uploading through the product. No native OGV support is claimed. No interval, role annotation or reference was selected, no model call or output export occurred, and no public posting or commercial-rights acceptance is recorded here.
