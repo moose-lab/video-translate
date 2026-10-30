@@ -1,0 +1,136 @@
+{
+  "purpose": "subtitle renderer resource preparation only",
+  "cjk_commit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+  "google_fonts_commit": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+  "files": [
+    {
+      "file_name": "NotoSansCJKsc-Regular.otf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+      "bytes": 16437364,
+      "git_blob_sha1": "dc15562470b4f842321894787a0d066879ccff8b",
+      "sha256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b",
+      "kind": "font"
+    },
+    {
+      "file_name": "NotoSansCJKjp-Regular.otf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Regular.otf",
+      "bytes": 16467736,
+      "git_blob_sha1": "f56224957fb13a81b4c14bac34f2f058a017f9fb",
+      "sha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+      "kind": "font"
+    },
+    {
+      "file_name": "NotoCJK-OFL.txt",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE",
+      "bytes": 4301,
+      "git_blob_sha1": "d952d62c065f3f35fb83a173496e90b21525aef3",
+      "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+      "kind": "license"
+    },
+    {
+      "file_name": "NotoSansArabic.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/notosansarabic/NotoSansArabic%5Bwdth%2Cwght%5D.ttf",
+      "bytes": 844676,
+      "git_blob_sha1": "f1d01edce4ebaedcbe9a06fc75fec07b304ec3df",
+      "sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e",
+      "kind": "font"
+    },
+    {
+      "file_name": "NotoArabic-OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/notosansarabic/OFL.txt",
+      "bytes": 4382,
+      "git_blob_sha1": "14c589f6384505ede3f8e52627d397513af3662d",
+      "sha256": "07fc70bfeb985cc1a87a8587d0a0c80bab11c86c9dc3fd95b6f0cb332f983e96",
+      "kind": "license"
+    },
+    {
+      "file_name": "NotoSansHebrew.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/notosanshebrew/NotoSansHebrew%5Bwdth%2Cwght%5D.ttf",
+      "bytes": 112640,
+      "git_blob_sha1": "f31f73b8be8086692ff0156544f80975640e5a42",
+      "sha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88",
+      "kind": "font"
+    },
+    {
+      "file_name": "NotoHebrew-OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/notosanshebrew/OFL.txt",
+      "bytes": 4382,
+      "git_blob_sha1": "56662b6243717dbe8acee6d87c3f0e795f9c4295",
+      "sha256": "9b9fe028b5ba74d231659a1bbaf0ed09b11e759d1ca6a070999e16d151616b47",
+      "kind": "license"
+    },
+    {
+      "file_name": "NotoSans.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf",
+      "bytes": 2049096,
+      "git_blob_sha1": "75575046c015ff623a848096a15779867ba71453",
+      "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+      "kind": "font"
+    },
+    {
+      "file_name": "NotoSans-OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/notosans/OFL.txt",
+      "bytes": 4396,
+      "git_blob_sha1": "6843f31878c9945e1e71e1baa275546b4eefead8",
+      "sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "kind": "license"
+    }
+  ],
+  "license": "each original license file retained; observed SIL OFL1.1",
+  "system_fonts_installed": false,
+  "model_calls": 0,
+  "rendered_or_cloud_verified": false,
+  "acquired": true,
+  "font_directory": "/Users/moose/.agent-reach/fixtures/subtitle-fonts-20261031",
+  "fontconfig_checks": [
+    {
+      "file_name": "NotoSansCJKsc-Regular.otf",
+      "family": "Noto Sans CJK SC",
+      "style": "Regular",
+      "fontversion": "131334",
+      "sample": "中文测试：人工智能",
+      "missing_sample_codepoints": [],
+      "check": "fc-scan declared charset; not rendering/shaping proof"
+    },
+    {
+      "file_name": "NotoSansCJKjp-Regular.otf",
+      "family": "Noto Sans CJK JP",
+      "style": "Regular",
+      "fontversion": "131334",
+      "sample": "日本語の字幕：人工知能",
+      "missing_sample_codepoints": [],
+      "check": "fc-scan declared charset; not rendering/shaping proof"
+    },
+    {
+      "file_name": "NotoSansArabic.ttf",
+      "family": "Noto Sans Arabic",
+      "style": "Regular",
+      "fontversion": "131858",
+      "sample": "مَرْحَبًا بِالْعَالَمِ",
+      "missing_sample_codepoints": [],
+      "check": "fc-scan declared charset; not rendering/shaping proof"
+    },
+    {
+      "file_name": "NotoSansHebrew.ttf",
+      "family": "Noto Sans Hebrew,Noto Sans Hebrew Thin",
+      "style": "Thin,Regular",
+      "fontversion": "196674",
+      "sample": "שָׁלוֹם עוֹלָם",
+      "missing_sample_codepoints": [],
+      "check": "fc-scan declared charset; not rendering/shaping proof"
+    },
+    {
+      "file_name": "NotoSans.ttf",
+      "family": "Noto Sans",
+      "style": "Regular",
+      "fontversion": "132055",
+      "sample": "Hello, world! 123",
+      "missing_sample_codepoints": [],
+      "check": "fc-scan declared charset; not rendering/shaping proof"
+    }
+  ],
+  "glyph_shaping_or_raster_render_tested": false,
+  "cloud_or_linux_worker_tested": false,
+  "all_646_language_coverage_claimed": false,
+  "no_project_configuration_or_dependencies_changed": true
+}
