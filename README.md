@@ -2,8 +2,9 @@
 
 Workspace API and service-setup interface for the approved Video Translate SaaS. Implemented backend
 stages include accounts/projects, private source upload, durable execution, cloud separation/ASR,
-editable source/cast/references and independently recoverable target translation. Hugging Face is the
-primary remote ecosystem. Per-line synthesis/QC, media finishing, the full editing workbench and
+editable source/cast/references, independently recoverable target translation and per-line natural
+voice synthesis with guarded audio selection/history. Hugging Face is the primary remote ecosystem.
+Independent voice QC, media finishing, the full editing workbench and
 final paired-language acceptance remain in the implementation plan. There are no local AI
 models, model weights, torch, transformers, ASR or TTS runtimes in this package.
 
@@ -134,8 +135,8 @@ Run lists, individual run/attempt details, retries, cancellation and project eve
 the workspace. `GET /api/projects/{id}/events/stream` supports `after`, `Last-Event-ID`, and
 `follow=false`. Probe reports zero-based audio ordinals separately from FFmpeg stream indices; a
 video without audio can be probed but cannot produce source speech. Real registered stages include
-`extract`, `separate`, `transcribe`, `reference` and the target-specific translation phases. Guarded
-workflow/reference/translation routes capture the necessary editor proofs; generic run creation
+`extract`, `separate`, `transcribe`, `reference`, target-specific translation phases and per-line
+`synthesize`. Guarded workflow/reference/translation/synthesis routes capture the necessary editor proofs; generic run creation
 cannot bypass those command boundaries. Unimplemented stages return `STAGE_UNAVAILABLE`.
 
 Handlers implement `StageDefinition` with option validation, exact input resolution, and `handle`;
@@ -201,6 +202,28 @@ create/drop uniquely named test databases. See `docs/verification/task4b-analysi
 `task4c-translation.md` and `upload-preparation.md` for their actual evidence/gates. Controller live
 service diagnostics are separate from final product acceptance; no finished Chinese/Japanese dubbed
 video is claimed by backend tests. The remaining product sequence is recorded in the master plan.
+
+## Natural per-line voice synthesis
+
+Under `/api/projects/{id}/language-tracks/{tag}`, `POST /synthesize` captures explicit current
+source rows, target revisions, effective references/controls and audio-selection revisions. Read
+`GET /synthesis`, `GET /synthesis/{command_id}` and each segment's `/audio-history` for actual line
+runs, measured natural audio and immutable selection history. Track and per-line `/voice-settings`
+are versioned; a null line override restores the track defaults. Use the guarded segment
+`/audio-selection` endpoint to choose an owned validated historical output.
+
+Default synthesis preserves chosen audio; explicit replacement or regeneration is recorded.
+Unapproved wording and reference warnings require their exact current review proofs. A model result
+is not listening approval: outputs report `acceptance: not_assessed` until the later QC/review stage
+exists. Duration planning uses decoded audio measurements; fitting and final mix/export are separate.
+
+Natural cache identity includes exact wording, model language, reference audio/transcript/binding,
+connection revision and effective controls. Slot/display changes do not automatically regenerate it.
+Durable operations retain real remote receipts and original measured provenance; interrupted local
+reuse resumes without another model POST. Invalid proof is visible and cannot be manually selected
+as verified audio. Current editor guards still prevent an old completion from replacing a newer
+choice. See `docs/verification/task5-synthesis-qc.md` for the completed backend gates; registered live
+sample clones, independent QC and final Chinese/Japanese videos remain acceptance work.
 
 ### Provider credential storage
 

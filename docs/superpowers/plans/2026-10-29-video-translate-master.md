@@ -52,7 +52,7 @@ These are implementation increments inside one approved product, not scope reduc
 - [x] 2. Concurrent claims, retry classification, restart recovery and stale-output rejection tests. Both independent gates passed at`652c0ce`; real CPU probe and recording-only remote lifecycle evidence are distinguished.
 - [x] 3. Catalog parity, cloud adapter contracts and protected setup. Independent spec and quality gates passed at`67ff839`; five real metadata checks/account authentication are distinct from still-pending inference.
 - [x] 4. Multi-speaker edits, reference lineage, translation contexts/locks and selective invalidation tests. Task4C independent SPEC/QUALITY passed through`bdb2e8d`; actual source integration and final exports remain separate. The observed cloud-upload preparation repair precedes task5.
-- [ ] 5. Line-level cloud request, cache and QC behavior; no synthetic test result presented as inference.
+- [ ] 5. Line-level cloud request, cache and QC behavior; no synthetic test result presented as inference. Task5A natural synthesis passed independent SPEC/QUALITY through`6303ad3` (full650; independent163 and88+5 probes). Task5B independent QC remains open. The bounded chat-response waiting repair and its gates precede5B/live context retries.
 - [ ] 6. Real FFmpeg media fixtures covering overlap, timing, backgrounds, multilingual subtitles and multi-track exports.
 - [ ] 7. Frontend component tests, strict type check/build and actual browser scenarios.
 - [ ] 8. Fresh uploaded video runs through real remote stages and produces verified video/subtitles, with requests/events/artifacts recorded.
