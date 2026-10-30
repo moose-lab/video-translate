@@ -323,3 +323,19 @@ def test_voice_settings_read_reports_effective_provider_controls(synthesis_proje
         path(synthesis_project) + f"/segments/{synthesis_project[4]['id']}/voice-settings"
     ).json()
     assert result["controls"]["ns"] == 48 and result["controls"]["sp"] == 1.2
+
+
+@pytest.mark.parametrize("selected_without_transcript", [False, True])
+def test_synthesis_current_read_requires_source_and_transcript_before_rows(
+    dubbing_project, selected_without_transcript
+):
+    c, h, p = dubbing_project
+    if selected_without_transcript:
+        selected(dubbing_project)
+    else:
+        p = c.post("/api/projects", headers=h, json={"name": "New synthesis project"}).json()
+    base = f"/api/projects/{p['id']}"
+    make_track(c, h, base, "ja")
+    response = c.get(base + "/language-tracks/ja/synthesis")
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "INPUT_REQUIRED"

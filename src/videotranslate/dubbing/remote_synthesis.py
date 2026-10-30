@@ -81,30 +81,9 @@ def credential_token(db, project, context, config):
 
 def validate_preparation(http, operation, inputs, token):
     from ..providers.gradio import GradioClient
-    from ..providers.omnivoice import clone_arguments, model_name_from_enum
+    from .synthesis_evidence import validate_operation
 
-    prepared = operation.request_payload["prepared"]
-    if (
-        operation.request_payload["input"] != inputs
-        or operation.host != prepared["host"]
-        or operation.prefix != prepared["prefix"]
-        or prepared["api_name"] != "_clone_fn"
-        or prepared["model_language"]
-        != model_name_from_enum(inputs["target"], prepared["language_enum"])
-        or operation.model != inputs["config"]["model"]
-        or operation.provider != "omnivoice"
-        or operation.connection_revision != inputs["connection_revision"]
-        or prepared["args"]
-        != clone_arguments(
-            inputs["text"],
-            inputs["target"],
-            prepared["args"][2],
-            inputs["reference_text"],
-            language_enum=prepared["language_enum"],
-            controls=inputs["controls"],
-        )
-    ):
-        raise ValueError("Invalid saved synthesis preparation")
+    prepared = validate_operation(operation, inputs, producing=True)
     return GradioClient(http, operation.host, operation.prefix, hf_token=token), prepared
 
 
@@ -258,7 +237,15 @@ def handler(context):
                         check=context.check_active,
                         timeout=context.settings.probe_timeout_seconds,
                     )
-                object_id = store_audio(context, existing.id, natural, "natural_audio")
+                from .synthesis_evidence import measured_provenance
+
+                object_id = store_audio(
+                    context,
+                    existing.id,
+                    natural,
+                    "natural_audio",
+                    provenance=measured_provenance(existing, raw.metadata(), natural.metadata()),
+                )
         finally:
             downloaded.unlink(missing_ok=True)
         return operations.cache(

@@ -10,6 +10,13 @@ def cached_payload(db, project, line):
     from ..models.core import Asset
     from ..models.execution import StageRun
     from .remote_synthesis import line_for
+    from .synthesis_evidence import (
+        DecodeProof,
+        measured_provenance,
+        validate_audio_pair,
+        validate_operation,
+        validate_terminal,
+    )
 
     run = owned(db, StageRun, project, line.run_id)
     actual, _ = line_for(db, project, run)
@@ -51,6 +58,25 @@ def cached_payload(db, project, line):
         or origin.prepared_payload != payload
     ):
         raise ValueError("Invalid producing operation lineage")
+    validate_operation(origin, line.input_payload, producing=True)
+    validate_terminal(origin)
+    if (
+        origin_run.provider != origin.provider
+        or origin_run.model != origin.model
+        or origin_run.remote_id != origin.remote_id
+        or origin_run.remote_state != "completed"
+    ):
+        raise ValueError("Inconsistent producing run receipt")
+    if op.id != origin.id:
+        validate_operation(op, line.input_payload, producing=False)
+        if (
+            run.provider is not None
+            or run.model is not None
+            or run.remote_id is not None
+            or run.remote_state != "completed"
+        ):
+            raise ValueError("Invalid synthesis alias receipt")
+    validate_audio_pair(payload["raw_metadata"], payload["metadata"])
     record = owned(db, PreparedObject, project, payload["objects"][0])
     metadata = payload["metadata"]
     if (
@@ -58,7 +84,8 @@ def cached_payload(db, project, line):
         or record.state not in {"orphan", "published"}
         or not record.write_settled
         or record.delete_pending
-        or metadata != {k: v for k, v in record.metadata_json.items() if k != "kind"}
+        or metadata
+        != {k: v for k, v in record.metadata_json.items() if k not in {"kind", "provenance"}}
         or record.metadata_json.get("kind") != "natural_audio"
         or metadata.get("container") != "wav"
         or metadata.get("codec") != "pcm_s16le"
@@ -84,12 +111,15 @@ def cached_payload(db, project, line):
         if type(facts.get("reused")) is not bool or facts != {
             "duration_ms": metadata["duration_ms"],
             "sha256": metadata["sha256"],
-            "reused": facts["reused"],
+            "reused": operation.id != origin.id,
         }:
             raise ValueError("Invalid safe synthesis facts")
     if origin_line.track_id != line.track_id or origin_line.segment_id != line.segment_id:
         raise ValueError("Invalid cache cell")
-    bounded(payload["raw_metadata"])
+    expected_proof = measured_provenance(origin, payload["raw_metadata"], metadata)
+    proof = DecodeProof.model_validate(record.metadata_json.get("provenance")).model_dump()
+    if proof["full_decode"] is not True or proof != expected_proof:
+        raise ValueError("Missing or inconsistent measured synthesis provenance")
     if record.asset_id:
         asset = owned(db, Asset, project, record.asset_id)
         if (
@@ -100,3 +130,22 @@ def cached_payload(db, project, line):
         ):
             raise ValueError("Invalid published audio")
     return payload, origin_run, record
+
+
+def validate_output_evidence(db, project, output):
+    from ..execution.prepared import current_operation
+    from ..models.execution import StageRun
+    from ..models.synthesis import SynthesisLine
+
+    line = owned(db, SynthesisLine, project, output.line_id)
+    payload, _, record = cached_payload(db, project, line)
+    operation = current_operation(db, owned(db, StageRun, project, line.run_id))
+    if (
+        operation is None
+        or operation.id != output.operation_id
+        or output.audio_asset_id != record.asset_id
+        or output.input_fingerprint != line.input_fingerprint
+        or output.measurement != "ffprobe_full_decode_sha256_v1"
+        or payload["metadata"] != {key: getattr(output, key) for key in payload["metadata"]}
+    ):
+        raise ValueError("Inconsistent natural output measurements")

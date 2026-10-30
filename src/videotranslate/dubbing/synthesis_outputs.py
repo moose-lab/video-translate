@@ -58,7 +58,17 @@ def output_json(db, project, track, segment, output):
 
         if not isinstance(error, (APIError, ValueError)):
             raise
+    from ..errors import APIError
+    from .synthesis_cache import validate_output_evidence
+
+    evidence_status = "invalid"
+    try:
+        validate_output_evidence(db, project, output)
+        evidence_status = "validated"
+    except (APIError, ValueError, TypeError, KeyError, AttributeError):
+        pass
     return {
+        "evidence_status": evidence_status,
         "id": output.id,
         "audio_asset_id": output.audio_asset_id,
         "line_id": output.line_id,
@@ -149,6 +159,15 @@ def put_selection(db, project, tag, segment_id, body, actor):
         or output.input_fingerprint != fingerprint(inputs)
     ):
         conflict()
+    from ..errors import APIError
+    from .synthesis_cache import validate_output_evidence
+
+    try:
+        validate_output_evidence(db, project, output)
+    except (APIError, ValueError, TypeError, KeyError, AttributeError):
+        raise APIError(
+            409, "AUDIO_EVIDENCE_INVALID", "Natural audio provenance requires review"
+        ) from None
     select_output(db, project, track, segment, output, actor, "manual")
     return history(db, project, tag, segment_id)
 
@@ -157,7 +176,14 @@ def current_lines(db, project, tag, limit=100, offset=0):
     from ..models.execution import StageRun
 
     track = track_for(db, project, tag)
-    transcript = owned(db, TranscriptRevision, project, source_state(db, project).transcript_id)
+    state = source_state(db, project)
+    if state is None or state.transcript_id is None:
+        from ..errors import APIError
+
+        raise APIError(
+            409, "INPUT_REQUIRED", "Select source audio and finish transcription before synthesis"
+        )
+    transcript = owned(db, TranscriptRevision, project, state.transcript_id)
     query = active_segments_query(project, transcript.id)
     rows = db.scalars(query.limit(limit).offset(offset)).all()
     result = []

@@ -159,10 +159,12 @@ class Operations:
             operation.phase, run.remote_state = "failed", "completed"
 
 
-def store_audio(context, operation_id, audio, kind):
+def store_audio(context, operation_id, audio, kind, *, provenance=None):
     """Reserve orphan lineage BEFORE storage I/O; no long database transaction."""
     from ..models.analysis import PreparedObject
 
+    if provenance is not None:
+        bounded(provenance, 65536)
     with context.session_factory.begin() as db:
         project, run = context._locked(db)
         operation = current_operation(db, run)
@@ -176,7 +178,9 @@ def store_audio(context, operation_id, audio, kind):
             workspace_id=project.workspace_id,
             operation_id=operation_id,
             storage_key=key,
-            metadata_json=audio.metadata() | {"kind": kind},
+            metadata_json=audio.metadata()
+            | {"kind": kind}
+            | ({"provenance": provenance} if provenance is not None else {}),
             reservation_token=token,
         )
         db.add(record)
