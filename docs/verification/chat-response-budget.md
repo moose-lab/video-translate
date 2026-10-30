@@ -115,3 +115,28 @@ No frontend files changed, so no frontend suite was run. The retained preview,
 credentials/vault, source database/project/jobs and real provider requests were
 not touched. No push, deployment, activation or user retry approval occurred.
 Independent SPEC then QUALITY review and controller activation remain separate.
+
+## Independent gate closure
+
+Both independent gates passed through frozen `f93605f` on `feature/cloud-dubbing`.
+SPEC independently ran **176 tests in77.90s**, plus **10 adversarial/actual
+PostgreSQL cases in6.70s**, reproduced baseline RED9failed/1passed and current
+GREEN12passed, and passed all static checks. It found no missing or extra scope.
+A separate fresh QUALITY reviewer ran **176 tests in74.86s** and **15 new
+adversarial probes in2.71s**, with all static checks passing and no actionable
+Critical, Important or Minor finding. Reports/probes/logs are retained in parent
+`outputs/.runtime/chat-wait-spec-*` and `chat-wait-quality-*`.
+
+Original implementation stdout was streamed into the tool transcript rather than
+retained as raw log files. The full result is original exec session2610/final
+chunk55efd5, exit0,678passed550.04s; its original PID57621 was observed live by
+the controller before completion. A clearly labelled transcript-reference note
+is retained in `outputs/.runtime/chat-wait-original-tool-evidence.json`; it is not
+a raw stdout log or an additional independent full run. The independent review
+results above are fresh measurements, not relabelled author results.
+
+Controller activation and actual model acceptance remain subsequent operations.
+No gate grants retry permission: the two retained uncertain context calls still
+need fresh explicit approval for at most one retry each. The earlier source-ASR
+permission was consumed. Passing tests do not establish that the old exception
+was a timeout or guarantee the real requests will succeed.
