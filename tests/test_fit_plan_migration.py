@@ -41,7 +41,7 @@ def test_fit_frozen_migration_populated_roundtrip_and_family_fences(tmp_path, ba
 
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", url)
-    w1, w2, p1, p2, r1, r2, v1, v2 = [str(uuid4()) for _ in range(8)]
+    w1, w2, p1, p2, r1, r2, v1, v2, probe = [str(uuid4()) for _ in range(9)]
     now = utcnow()
     try:
         command.upgrade(config, "0010_voice_qc")
@@ -94,7 +94,7 @@ def test_fit_frozen_migration_populated_roundtrip_and_family_fences(tmp_path, ba
                 current.tables["fit_settings_versions"],
             )
             with engine.begin() as db:
-                for p, r, v in ((p1, r1, v1), (p2, r2, v2)):
+                for revision, (p, r, v) in enumerate(((p1, r1, v1), (p2, r2, v2)), 1):
                     db.execute(
                         roots.insert().values(
                             id=r, project_id=p, workspace_id=w1, revision=0, created_at=now
@@ -106,7 +106,7 @@ def test_fit_frozen_migration_populated_roundtrip_and_family_fences(tmp_path, ba
                             settings_id=r,
                             project_id=p,
                             workspace_id=w1,
-                            revision=1,
+                            revision=revision,
                             settings={},
                             policy="shared_fit_v1",
                             actor_id=str(uuid4()),
@@ -116,17 +116,37 @@ def test_fit_frozen_migration_populated_roundtrip_and_family_fences(tmp_path, ba
                     db.execute(
                         roots.update()
                         .where(roots.c.id == r)
-                        .values(current_version_id=v, revision=1)
+                        .values(current_version_id=v, revision=revision)
                     )
+                # A non-current version with a disjoint revision isolates each outgoing FK:
+                # changing its root cannot hit UNIQUE(root, revision) or an incoming head FK.
+                db.execute(
+                    versions.insert().values(
+                        id=probe,
+                        settings_id=r1,
+                        project_id=p1,
+                        workspace_id=w1,
+                        revision=3,
+                        settings={},
+                        policy="shared_fit_v1",
+                        actor_id=str(uuid4()),
+                        created_at=now,
+                    )
+                )
             # UPDATE exactly one owner/family column: no unique violation can masquerade as FK protection.
-            for table, identity, wrong in (
-                (roots, r1, {"current_version_id": v2}),
-                (versions, v1, {"settings_id": r2}),
-                (versions, v1, {"workspace_id": w2}),
-                (versions, v1, {"parent_version_id": v2}),
+            for table, identity, wrong, constraint in (
+                (roots, r1, {"current_version_id": v2}, "fk_fit_settings_current"),
+                (versions, probe, {"settings_id": r2}, "fk_fit_settings_version_root"),
+                (versions, probe, {"workspace_id": w2}, "fk_fit_settings_version_project"),
+                (versions, probe, {"parent_version_id": v2}, "fk_fit_settings_version_parent"),
             ):
-                with pytest.raises(IntegrityError), engine.begin() as db:
+                with pytest.raises(IntegrityError) as error, engine.begin() as db:
                     db.execute(table.update().where(table.c.id == identity).values(**wrong))
+                if backend == "postgresql":
+                    assert error.value.orig.sqlstate == "23503"
+                    assert error.value.orig.diag.constraint_name == constraint
+                else:
+                    assert "foreign key constraint failed" in str(error.value.orig).lower()
             command.downgrade(config, "0010_voice_qc")
         command.upgrade(config, "head")
         migration = open("alembic/versions/0011_fit_plans.py").read()

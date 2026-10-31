@@ -465,46 +465,45 @@ def detail(db, project, intent, limit=100, offset=0, *, reused=False):
             {"snapshot": snapshot, "rows": plain_rows, "actor_id": intent.actor_id}
         )
         plan = record.plan
-        summary_valid = (
-            type(plan) is dict
-            and record.timeline_feasible is plan.get("feasible")
-            and record.planned_output_duration == plan.get("output_duration_ms")
-            and record.issues == plan.get("issues")
-        )
+        summary = (record.timeline_feasible, record.planned_output_duration, record.issues)
         payload_fingerprint = record.payload_fingerprint
         from ..execution.prepared import current_operation
-        from .fit_execution import binding
+        from .fit_checkpoint import (
+            canonical_facts,
+            same_json,
+            validate_checkpoint,
+            validate_operation,
+            validate_summary,
+        )
 
         operation = current_operation(db, run)
         provenance_valid = bool(
-            operation
-            and operation.id == record.operation_id
-            and record.run_id == run.id
-            and operation.provider == "cpu"
-            and operation.model == POLICY
-            and operation.phase == "prepared"
-            and operation.connection_revision == 0
-            and operation.remote_id is None
-            and operation.request_payload
-            == {"command_id": intent.id, "command_fingerprint": intent.signature, "policy": POLICY}
-            and type(operation.prepared_payload) is dict
-            and operation.prepared_payload.get("binding") == binding(intent, run, operation)
-            and operation.prepared_payload.get("payload_fingerprint") == payload_fingerprint
-            and operation.prepared_payload.get("plan") == plan
+            operation and operation.id == record.operation_id and record.run_id == run.id
         )
         db.commit()
         from .fit_snapshot import validate_stored
 
         try:
             if (
-                not summary_valid
-                or not capture_integrity_value
+                not capture_integrity_value
                 or not provenance_valid
                 or expected_signature != intent.signature
                 or fingerprint(plan) != payload_fingerprint
             ):
                 raise ValueError("Invalid owned plan")
             validate_stored(plan, snapshot, plain_rows)
+            validate_summary(*summary, plan)
+            expected_binding = validate_operation(intent, run, operation)
+            validate_checkpoint(
+                operation.prepared_payload,
+                expected_binding,
+                operation.public_facts,
+                canonical_facts(intent, plain_rows, plan),
+            )
+            if operation.prepared_payload[
+                "payload_fingerprint"
+            ] != payload_fingerprint or not same_json(operation.prepared_payload["plan"], plan):
+                raise ValueError("Invalid producing fit checkpoint")
             result["issues"] = sorted(set(result["issues"] + [r["code"] for r in plan["issues"]]))
         except (ValueError, KeyError, TypeError, AttributeError):
             result.update(
@@ -526,6 +525,8 @@ def detail(db, project, intent, limit=100, offset=0, *, reused=False):
 
 
 def summaries(db, project, limit=100, offset=0):
+    from .fit_checkpoint import captured_summary
+
     # Deliberately project only summary columns. Large maps/snapshots stay out of this query.
     total = db.scalar(
         select(func.count())
@@ -571,10 +572,7 @@ def summaries(db, project, limit=100, offset=0):
                 plan_validation="not_assessed",
                 audio_eligible=None,
                 render_eligible=None,
-                captured_result=dict(
-                    timeline_feasible=r.timeline_feasible,
-                    planned_output_duration_ms=r.planned_output_duration,
-                ),
+                captured_result=captured_summary(r.timeline_feasible, r.planned_output_duration),
             )
             for r in db.execute(selected)
         ],

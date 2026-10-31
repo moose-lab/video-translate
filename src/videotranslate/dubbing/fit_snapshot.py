@@ -3,6 +3,7 @@
 from dataclasses import fields
 from fractions import Fraction
 
+from ..execution.inputs import fingerprint
 from ..media.fit_plan import plan_json, validate_plan
 from ..media.fit_types import FitIssue, FitLine, FitPlan, LinePlacement, MapPiece
 from .fit_contracts import POLICY, FitSettingsBody
@@ -130,7 +131,9 @@ def decode(data):
         tuple(issues),
     )
     validate_plan(plan)
-    if rational(data["output_duration_ms"]) != plan.output_duration_ms or plan_json(plan) != data:
+    if rational(data["output_duration_ms"]) != plan.output_duration_ms or fingerprint(
+        plan_json(plan)
+    ) != fingerprint(data):
         raise ValueError("Noncanonical fit projection")
     return plan
 

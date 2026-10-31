@@ -8,6 +8,12 @@ from ..execution.inputs import capture_inputs, fingerprint
 from ..execution.prepared import Operations, current_operation
 from ..models.core import Project, new_id
 from ..models.finishing import FitPlanCommand, FitPlanResult
+from .fit_checkpoint import (
+    canonical_facts,
+    same_json,
+    validate_checkpoint,
+    validate_operation,
+)
 from .fit_contracts import POLICY, FitOptions, FitSettingsBody
 from .fit_plans import capture_integrity, captured_rows, current_plan_state
 from .fit_snapshot import OPERATION_LIMIT, PLAN_LIMIT, validate_stored
@@ -56,20 +62,6 @@ def publication_current(db, run):
         return False
 
 
-def binding(intent, run, operation):
-    return dict(
-        command_id=intent.id,
-        command_fingerprint=intent.signature,
-        run_id=run.id,
-        operation_id=operation.id,
-        generation=operation.generation,
-        input_fingerprint=run.dependency_fingerprint,
-        policy=POLICY,
-        provider="cpu",
-        model=POLICY,
-    )
-
-
 def handler(context):
     from ..media.fit_plan import build_plan, plan_json
     from ..media.fit_types import FitLine
@@ -102,29 +94,13 @@ def handler(context):
         actual = current_operation(db, active)
         if actual is None or actual.id != operation.id:
             raise StageFailure(FailureCode.CONFIGURATION, review=True)
-        expected = binding(intent, active, actual)
         payload = actual.prepared_payload if actual.phase == "prepared" else None
         facts = actual.public_facts
-        if (
-            actual.phase not in {"ready", "prepared"}
-            or (actual.phase == "prepared" and type(payload) is not dict)
-            or actual.provider != "cpu"
-            or actual.model != POLICY
-            or actual.connection_revision != 0
-            or actual.remote_id is not None
-            or actual.request_payload
-            != {"command_id": intent.id, "command_fingerprint": signature, "policy": POLICY}
-        ):
-            raise StageFailure(FailureCode.CONFIGURATION, review=True)
     try:
+        expected = validate_operation(intent, active, actual, prepared=False)
+        if actual.phase == "prepared" and type(payload) is not dict:
+            raise ValueError("Invalid fit checkpoint")
         if payload is not None:
-            if (
-                type(payload) is not dict
-                or set(payload) != {"binding", "plan", "payload_fingerprint"}
-                or payload["binding"] != expected
-                or fingerprint(payload["plan"]) != payload["payload_fingerprint"]
-            ):
-                raise ValueError("Invalid fit checkpoint")
             plan = validate_stored(payload["plan"], snapshot, rows)
         else:
             plan = build_plan(
@@ -148,27 +124,11 @@ def handler(context):
                 raise ValueError("Fit plan exceeds limit")
             validate_stored(data, snapshot, rows)
             payload = dict(binding=expected, plan=data, payload_fingerprint=fingerprint(data))
-            facts = dict(
-                command_id=intent.id,
-                purpose=intent.purpose,
-                count=len(rows),
-                included_count=sum(r["included"] for r in rows),
-                timeline_feasible=plan.feasible,
-                issues=sorted({i.code for i in plan.issues}),
-                planned_output_duration_ms=data["output_duration_ms"],
-            )
-        # Safe facts are derived anew even on resume, never trusted from damaged cache.
-        canonical_facts = dict(
-            command_id=intent.id,
-            purpose=intent.purpose,
-            count=len(rows),
-            included_count=sum(r["included"] for r in rows),
-            timeline_feasible=plan.feasible,
-            issues=sorted({i.code for i in plan.issues}),
-            planned_output_duration_ms=payload["plan"]["output_duration_ms"],
+            facts = canonical_facts(intent, rows, data)
+        # Canonical facts and the actual checkpoint map share one strict contract.
+        validate_checkpoint(
+            payload, expected, facts, canonical_facts(intent, rows, payload["plan"])
         )
-        if facts != canonical_facts:
-            raise ValueError("Invalid fit checkpoint facts")
     except (ValueError, KeyError, TypeError, AttributeError):
         raise StageFailure(FailureCode.CONFIGURATION, review=True) from None
     context.check_active()
@@ -182,19 +142,14 @@ def publish(db, run, result):
     project = db.get(Project, run.project_id)
     intent = command_for(db, project, run)
     operation = current_operation(db, run)
+    if not isinstance(result, ValidatedFitResult) or operation is None:
+        raise ValueError("Invalid fit publication result")
+    expected = validate_operation(intent, run, operation)
+    validate_checkpoint(operation.prepared_payload, expected, operation.public_facts, result.facts)
     if (
-        not isinstance(result, ValidatedFitResult)
-        or operation is None
-        or operation.id != result.prepared_id
-        or operation.phase != "prepared"
-        or operation.provider != "cpu"
-        or operation.model != POLICY
-        or operation.prepared_payload != result.payload
+        operation.id != result.prepared_id
+        or not same_json(operation.prepared_payload, result.payload)
         or fingerprint(operation.prepared_payload) != result.checkpoint_fingerprint
-        or result.payload["binding"] != binding(intent, run, operation)
-        or operation.request_payload
-        != {"command_id": intent.id, "command_fingerprint": intent.signature, "policy": POLICY}
-        or operation.public_facts != result.facts
     ):
         raise ValueError("Invalid fit publication checkpoint")
     prior = db.scalar(scope(FitPlanResult, project).where(FitPlanResult.command_id == intent.id))
