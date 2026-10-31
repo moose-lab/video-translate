@@ -31,6 +31,8 @@ Raw extractor output contains temporary media URLs and is kept outside the repos
 
 The source is an English technical explainer. It exercises technical terminology and narration. A separate multi-speaker fixture remains required by the broader approved design; passing this source alone cannot prove multi-role dubbing quality.
 
+The approved design's section 5 also requires a fresh product Chinese→English run and RTL editing/subtitle coverage. Those are additional acceptance cases, not replacements for this primary English→Chinese/Japanese pair. Earlier diagnostic clips, synthetic providers, catalog entries or a source-only acquisition cannot close those cases. Final integration planning must retain each language-pair, multirole and RTL requirement separately.
+
 ## Initial acquisition status (2026-10-29)
 
 Source acquired at `/tmp/videotranslate-fixtures/SIZsFGvtClM-original.mp4` for later fresh product upload. Acquisition selected YouTube formats398+140 and remuxed them without generation: 25,861,753 bytes, 1280×720 AV1 video and AAC stereo44.1kHz, English audio metadata. FFprobe reports700.406712 seconds. SHA-256: `18dab5bf7665e33842335da25c24e899d2c14a9e8ce7f43fc5b49a473bcccf9f`. Original absolute stream1 is audio ordinal0; select that original English track.
@@ -53,4 +55,4 @@ Task5A natural synthesis passed independent SPEC/QUALITY through`6303ad3`, with6
 
 Task5B then passed same-reviewer SPEC120+3+5 and distinct QUALITY46+3, with corrected frozen full748. The exact reviewed`c0385d8` tree (production`0a94d55`) is now active at schema0010; [QC upgrade proof](../verification/protected-preview-voice-qc-upgrade.json) records47 old-table fingerprints/vault/key preservation, existing-account login and browser-session survival, eight current source rows/reference bindings, unchanged source-download SHA and registered QC/review APIs. Both target reads correctly remain incomplete with8missing natural outputs each. The original2contexts remain needs_review; retry approval is still pending and no new model call or QC command occurred. These are retained-data/activation checks, not completed dubbed samples or a full workbench.
 
-The broader two-role test has a researched [candidate and attribution record](../verification/multi-role-fixture-candidate.md). No additional fixture has yet been acquired or passed. The primary source and approved approximately60-second paired-language test remain unchanged.
+The broader two-role test has a researched [candidate and attribution record](../verification/multi-role-fixture-candidate.md). Its original movie bytes have been acquired and fully decoded; no two-role excerpt has yet been selected, uploaded or passed through the product. The primary source and approved approximately60-second paired-language test remain unchanged.
