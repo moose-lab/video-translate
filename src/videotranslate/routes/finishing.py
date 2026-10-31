@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..dubbing import fit_plans, fit_settings
 from ..dubbing.fit_contracts import FitPlanCreate, FitSettingsPut
-from ..dubbing.ownership import project_for
+from ..dubbing.ownership import owned, project_for
+from ..models.finishing import FitPlanCommand
 from ..security import Identity, require_csrf, require_identity
 from .dubbing import BoundedDubbingRoute
 
@@ -51,11 +52,16 @@ def post_plan(
     identity: Identity = Depends(require_csrf),
     db: Session = Depends(get_db),
 ):
-    result = fit_plans.command(
+    admitted = fit_plans.command(
         db, project_for(db, identity, project_id, write=True), body, identity.user.id
     )
     db.commit()
-    return result
+    # Admission remains atomic. Response proofs must neither extend its write lock
+    # nor reuse the pre-commit editor heads after another writer gets that lock.
+    db.expire_all()
+    project = project_for(db, identity, project_id)
+    intent = owned(db, FitPlanCommand, project, admitted.id)
+    return fit_plans.detail(db, project, intent, reused=admitted.reused)
 
 
 @router.get("/fit-plans")
@@ -78,8 +84,5 @@ def get_plan(
     identity: Identity = Depends(require_identity),
     db: Session = Depends(get_db),
 ):
-    from ..dubbing.ownership import owned
-    from ..models.finishing import FitPlanCommand
-
     project = project_for(db, identity, project_id)
     return fit_plans.detail(db, project, owned(db, FitPlanCommand, project, plan_id), limit, offset)

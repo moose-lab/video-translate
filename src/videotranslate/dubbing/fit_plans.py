@@ -1,6 +1,7 @@
 """Immutable owned fit command capture and current-input proofs, with no media I/O."""
 
 from collections import Counter
+from dataclasses import dataclass
 
 from sqlalchemy import func, select
 
@@ -22,6 +23,14 @@ from .translations import track_for, translation_state
 from .voice_qc import current_proof, output_assessment
 
 SNAPSHOT_LIMIT = 2 * 1024 * 1024
+
+
+@dataclass(frozen=True)
+class FitAdmission:
+    """Committed identity is projected through the ordinary authoritative read path."""
+
+    id: str
+    reused: bool = False
 
 
 def json_size(value):
@@ -192,7 +201,7 @@ def command(db, project, body, actor):
     signature = fingerprint({"snapshot": snapshot, "rows": captured, "actor_id": actor})
     prior = db.scalar(scope(FitPlanCommand, project).where(FitPlanCommand.signature == signature))
     if prior:
-        return detail(db, project, prior, reused=True)
+        return FitAdmission(prior.id, reused=True)
     intent = FitPlanCommand(
         id=new_id(),
         **owner(project),
@@ -253,7 +262,7 @@ def command(db, project, body, actor):
         included_count=sum(r["included"] for r in captured),
     )
     db.flush()
-    return detail(db, project, intent)
+    return FitAdmission(intent.id)
 
 
 def captured_rows(db, project, intent):
@@ -342,6 +351,7 @@ def current_plan_state(db, project, intent, rows=None):
             issues=["FIT_CAPTURE_INVALID"],
         )
     current, ready, issues = True, bool(rows), set()
+    cells = {(r.track_id, r.segment_id): r for r in rows}
     try:
         body = FitPlanCreate(
             selection_revision=intent.snapshot["selection_revision"],
@@ -387,9 +397,7 @@ def current_plan_state(db, project, intent, rows=None):
                 ) != {r.id for r in track_body.segments}:
                     current = False
             for requested in track_body.segments:
-                captured = next(
-                    r for r in rows if r.track_id == track.id and r.segment_id == requested.id
-                )
+                captured = cells[track.id, requested.id]
                 now = capture_row(db, project, track, transcript, requested)
                 if now != captured.snapshot:
                     current = False
