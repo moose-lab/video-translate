@@ -1,5 +1,7 @@
 # Task 6B1: owned fit settings and CPU plan capture
 
+Verification chronology: the first implementation and its 925-test recovery pass below describe frozen source `7934bcd`. Independent SPEC subsequently found S1–S3; that pass is historical baseline evidence, not verification of the corrections. The final section records the corrected source and its separate evidence. Independent SPEC re-review and then distinct QUALITY remain mandatory.
+
 This increment adds project-owned fit defaults/history, guarded immutable plan commands and per-cell capture, and durable CPU `plan_fit` results. It does not render, retime, mix, create background beds, shorten text, enqueue a model, export, or alter the protected preview. Mathematical feasibility, current input proofs, audio acceptance and the captured purpose remain separate facts.
 
 ## Contract and ownership
@@ -82,3 +84,48 @@ Recovery self-review checked strict DTOs and canonical settings/no-op history; s
 No frontend files changed, so frontend checks are outside this increment. Only this verification document is committed for the recovery closure; private logs remain outside Git.
 
 This is CPU/domain/schema evidence only. Actual transformed audio/video, background treatment, peak handling, captions, export, real listening acceptance, live inference and SaaS deployment remain separate later acceptance work. Independent SPEC, then distinct QUALITY, must both pass before 6B2 begins.
+
+## Independent SPEC corrections S1–S3
+
+The controller read `outputs/.runtime/fit6b1-spec/review.md` and assigned its three findings to the same replacement implementation actor. Corrected source/tests are committed and frozen at `a6d71b76530974fd3165c7b2386901d610aa82c0`.
+
+- **S1:** Authoritative detail now validates actual boolean feasibility, exact canonical rational summary keys/integer values, and typed agreement of duration/issues with the strictly validated result map. Invalid summaries clear the plan, feasibility and duration, disable rendering and add `FIT_PLAN_INVALID`. Summary lists still read only summary columns and retain all `not_assessed` markers; malformed rational summary scalars are suppressed rather than exposed.
+- **S2:** A cohesive private `fit_checkpoint.py` contract is shared by detail, recovery and the short publisher. Exact checkpoint/binding/fact keys and bounded canonical JSON fingerprints distinguish nested bool/int/float values. It hashes the actual cached plan against that checkpoint's own stored fingerprint, then matches the producing plan to the validated owned result. Canonical public facts are derived from immutable captured rows and the validated map. Origin checks bind the current command/run/operation/generation/input/provider/model/policy and exact request. Detail and recovery perform full decode/arithmetic and these integrity checks after SQL closes; publication checks only the bounded prepared metadata, typed hashes and already validated handler result. The strict decoder's final canonical projection comparison also uses a fingerprint rather than Python numeric equality. No unrelated map can pass the immutable capture comparison.
+- **S3:** The migration test now uses a non-current version with a disjoint revision for single-column family/owner mutations. This avoids both `(settings_id, revision)` unique collisions and incidental incoming current-head references. PostgreSQL checks SQLSTATE `23503` and the intended named root/owner/parent/current FK; SQLite checks the actual foreign-key failure message. Populated upgrade/down/upgrade and fresh metadata parity remain intact. No migration or schema change was required; frozen `0011` and every earlier migration are unchanged.
+
+All correction logs are private mode-600 files under `outputs/.runtime/fit6b1-corrections/`. The copied runner keeps the same explicit Python/PATH/PYTHONPATH, actual PostgreSQL admin opt-in, owned `TemporaryDirectory` and failed-only retention policy. It removes only its own basetemp. Unchanged independent probe files remain under `fit6b1-spec/`.
+
+Observed correction evidence:
+
+| Log | Terminal observation | Exit |
+| --- | --- | --- |
+| `independent-red.log` | Original five ready-dub integrity probes plus both masked migration probes: **7 failed in 16.32s** | 1 |
+| `tracked-red.log` | Initial tracked matrix: **13 failed, 2 passed in 32.91s**; later strengthened numeric JSON injections use forced SQL UPDATE so ORM equality cannot suppress a mutation | 1 |
+| `migration-classification-red.log` | Newly explicit FK assertions expose SQLite UNIQUE / PostgreSQL `23505`: **2 failed in 2.44s** | 1 |
+| `initial-green.log` | **22 passed, 2 failed in 47.23s**; the remaining failures were an incorrect test expectation naming the root FK instead of the actual project-owner FK for a workspace mutation, corrected without production changes | 1 |
+| `migration-green.log` | Both tracked backends and unchanged independent error-cause instrumentation: **4 passed in 5.43s** | 0 |
+| `affected-green.log` | New 18-case tracked matrix, existing 71 fit cases, original seven independent findings and 13 exploratory independent cases: **109 passed in 147.84s**, no skips, actual PostgreSQL enabled | 0 |
+
+The 18 tracked regressions include forced persisted float/bool/extra summary metadata; unknown checkpoint/binding/fact fields; cached numeric corruption with both unchanged and recomputed hashes; contradicting and equal-valued malformed public facts; prepared-success restart; and edits after handler validation but before short publication. Existing SQL transaction observers, duplicate-command reuse, actual SQLite/PostgreSQL races, unrelated-plan rejection, input mutations and 1000-line stress tests remain in the affected pass.
+
+The sole corrected full invocation is:
+
+```sh
+VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres .venv/bin/python3.12 ../.runtime/fit6b1-corrections/check.py corrected-full-backend-20261031 -q --tb=short
+```
+
+Original tool session `83987`, runner PID `18678`, pytest PID `18697`, owned basetemp `/var/folders/sr/7sz78lvn5kxd436pgp4mkh1w0000gn/T/vt-fit6b1-pb8r_ynq/tests`. `corrected-full-environment-20261031.log` records frozen HEAD and selected environment. A fresh read-only SQL query reconfirmed actual PostgreSQL 14.18 / `vt_test` / `127.0.0.1:53227`. The original session was observed through terminal completion: **943 passed in 919.80s (0:15:19), EXIT: 0, no skips or failures**, retained in `corrected-full-backend-20261031.log`. This is the corrected full result; the prior 925 pass remains historical. No observation timeout triggered a restart. The runner removed only its own basetemp.
+
+Fresh post-full checks all exited 0:
+
+| Command | Observed result | Correction log |
+| --- | --- | --- |
+| `.venv/bin/ruff check src tests alembic` | All checks passed | `final-ruff.log` |
+| `.venv/bin/ruff format --check src tests alembic` | 170 files already formatted | `final-format.log` |
+| `.venv/bin/python3.12 -m compileall -q src tests alembic` | Passed | `final-compile.log` |
+| `uv lock --check --offline` | Unchanged 75-package lock resolved | `final-lock.log` |
+| `git diff --check` | Passed | `final-diff.log` |
+| `git diff --exit-code a6d71b76530974fd3165c7b2386901d610aa82c0 -- src tests alembic pyproject.toml uv.lock` | Empty: corrected tested trees remained frozen | `final-frozen-tree.log` |
+| `git diff --exit-code 7934bcd26d6f9151c6a285dd6487bf425dea525f -- alembic pyproject.toml uv.lock src/videotranslate/execution/prepared.py src/videotranslate/execution/events.py` | Empty: migrations, dependencies and shared cache/event contracts stayed unchanged | `final-frozen-schema-shared.log` |
+
+Correction self-review found the shared contract preserves the off-SQL arithmetic boundary, bounded summary-only lists, immutable capture matching, guarded publication and unchanged default Operations cache. No dependencies, migration, provider request shape, protected preview or frontend changed. This remains implementation evidence for the same independent SPEC reviewer, without self-issued SPEC/QUALITY approval or 6B2 implementation.
