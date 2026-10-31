@@ -30,7 +30,7 @@ Downloaded the exact original link observed on the Wikimedia high-quality OGV pa
 - Actual FFprobe: Ogg; Theora video, 480×270, reported rate23/1; Vorbis stereo48kHz; container/audio duration658.304s.
 - Actual complete video-and-audio decode: FFmpeg7.1.1, exit0, empty error output,3.566s. Raw acquisition/probe/decode records live beside the original.
 
-OGV is not a currently supported product upload container. Select and inspect the actual two-role interval, then prepare a separately hashed CPU MP4 excerpt with an explicit timeline/provenance record before uploading through the product. No native OGV support is claimed. No interval, role annotation or reference was selected, no model call or output export occurred, and no public posting or commercial-rights acceptance is recorded here.
+OGV is not a currently supported product upload container; a separately hashed CPU MP4 excerpt is required before product upload. No native OGV support is claimed. At original acquisition, no interval, role annotation or reference had been selected. The subsequent excerpt preparation is recorded below; no model call, dubbed export, public posting or commercial-rights acceptance is recorded here.
 
 ## Prepared MP4 input, still not a dubbing result
 
