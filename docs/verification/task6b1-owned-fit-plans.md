@@ -1,6 +1,6 @@
 # Task 6B1: owned fit settings and CPU plan capture
 
-Verification chronology: the first implementation and its 925-test recovery pass below describe frozen source `7934bcd`. Independent SPEC subsequently found S1–S3; that pass is historical baseline evidence, not verification of the corrections. The final section records the corrected source and its separate evidence. Independent SPEC re-review and then distinct QUALITY remain mandatory.
+Verification chronology: the first implementation and its 925-test recovery pass below describe frozen source `7934bcd`. Independent SPEC subsequently found S1–S3; the separate 943-test integrity-correction pass describes frozen source `a6d71b7`. Independent QUALITY then found Q1. Both earlier full passes remain historical after the Q1 source change; the final section records its separate evidence. Independent SPEC re-review and then the same distinct QUALITY reviewer remain mandatory.
 
 This increment adds project-owned fit defaults/history, guarded immutable plan commands and per-cell capture, and durable CPU `plan_fit` results. It does not render, retime, mix, create background beds, shorten text, enqueue a model, export, or alter the protected preview. Mathematical feasibility, current input proofs, audio acceptance and the captured purpose remain separate facts.
 
@@ -129,3 +129,46 @@ Fresh post-full checks all exited 0:
 | `git diff --exit-code 7934bcd26d6f9151c6a285dd6487bf425dea525f -- alembic pyproject.toml uv.lock src/videotranslate/execution/prepared.py src/videotranslate/execution/events.py` | Empty: migrations, dependencies and shared cache/event contracts stayed unchanged | `final-frozen-schema-shared.log` |
 
 Correction self-review found the shared contract preserves the off-SQL arithmetic boundary, bounded summary-only lists, immutable capture matching, guarded publication and unchanged default Operations cache. No dependencies, migration, provider request shape, protected preview or frontend changed. This remains implementation evidence for the same independent SPEC reviewer, without self-issued SPEC/QUALITY approval or 6B2 implementation.
+
+## Independent QUALITY correction Q1
+
+The distinct QUALITY reviewer demonstrated that a supported 1000-cell missing-audio preview repeated complete current-input capture while still holding the admission write lock. A legitimate competing settings save waited for the existing SQLite timeout and returned HTTP 500. The sole fixer reproduced both unchanged probes before making the correction; no artificial latency or sleeps were injected.
+
+The scoped correction keeps source/settings/cell CAS, capture, immutable lines, signature/idempotency and command-only enqueue atomic. The domain command returns only a frozen admission identity/reuse marker. The route commits that transaction, explicitly expires all session identities, reloads the authorized project and owned command, and invokes the ordinary authoritative detail path in a new read transaction. It does not return pre-commit readiness or accept a bypass flag. Already-published duplicate commands still validate the full owned map and strict checkpoint; source/settings/manual review edits between admission and projection make that historical map visibly stale and non-render-eligible. Currentness uses an indexed captured-cell lookup instead of a per-cell linear search. The SQLite timeout, 1000-cell bound, proof requirements, S1/S2 integrity checks and publication lifecycle are unchanged.
+
+Seven tracked regressions cover new, pending-duplicate and published-duplicate transaction phases; deliberately retain loaded Segment identities to prove explicit expiration; inject actual guarded source/settings/listening edits after commit before published detail; verify unchanged fit event/command counts; and race a genuine 1000-cell request with a real settings PUT while recording database errors. The unchanged independent QUALITY probe sources retain their original SHA-256 hashes from `fit6b1-quality/original-contention-sha256.txt`.
+
+Private mode-600 evidence lives in `outputs/.runtime/fit6b1-q1/`, using the same explicit environment, actual PostgreSQL opt-in and owned `TemporaryDirectory`/failed-only retention runner. Harness errors remain separate from feature evidence: `independent-red.log` omitted the outside-probe `-p conftest` loader and recorded two fixture setup errors; `initial-green.log` recorded seven tracked passes plus the same two outside-probe fixture setup errors; `affected-green.log` named nonexistent test files and collected no tests. Each was corrected with a new label, without changing the independent probe files or overwriting its log.
+
+| Log | Observation | Exit |
+| --- | --- | --- |
+| `independent-red-loaded.log` | Both original probes: **2 failed in 45.84s**. POST 202 / competing PUT 500; writer waits 20.986s / 20.994s, total 21.439s / 21.227s; diagnostic `OperationalError: database is locked` | 1 |
+| `tracked-phases-red.log` | **6 failed, 1 deselected in 11.50s**; both per-cell captures occur before commit and the intended post-commit proof phase is absent | 1 |
+| `initial-green.log` | All **7 tracked cases passed**; 1000-cell contention case completed in 2.390s. The separate two probe fixture errors above prevent counting this mixed invocation as a fully passing run | 1 |
+| `independent-green.log` | Both unchanged probes: **2 passed in 7.81s**, POST 202 / PUT 200; writer waits 2.211s / 2.225s, total 2.328s / 2.340s; diagnostic database errors empty | 0 |
+| `affected-green-corrected.log` | **183 passed in 267.30s**, no skips; fit/transaction/currentness/integrity, unchanged SPEC probes, shared execution/prepared lifecycle, dubbing and guarded QC tests, actual SQLite/PostgreSQL races and migrations | 0 |
+| `quality-boundaries-green.log` | All three unchanged boundary probes: **3 passed in 145.00s**, no skips; real 1000-cell admission/Worker/history/pagination/duplicate, absolute/relative source window and ownership/CSRF | 0 |
+
+The no-edit 1000-cell boundary probe still measured 21.895s end-to-end POST and 39.654s Worker execution. The correction releases the admission write lock before that authoritative response work; it does not claim the entire large detail calculation became fast. The competing settings edit in the unchanged contention probes can complete after the initial atomic capture, and the fresh response detects its changed settings instead of reusing a stale admission proof.
+
+Q1 source/tests are frozen at `32e9dc29e6d323eb53096ef23186f762276c9cc1`. The sole Q1-corrected full invocation is:
+
+```sh
+VT_TEST_POSTGRES_ADMIN_URL=postgresql://vt_test@127.0.0.1:53227/postgres .venv/bin/python3.12 ../.runtime/fit6b1-q1/check.py corrected-full-backend-20261031-q1 -q --tb=short
+```
+
+Original tool session `71677`, runner PID `30826`, pytest PID `30845`, owned basetemp `/var/folders/sr/7sz78lvn5kxd436pgp4mkh1w0000gn/T/vt-fit6b1-cwokk3mg/tests`. `corrected-full-environment.log` records the exact frozen HEAD and selected environment; read-only SQL reconfirmed actual PostgreSQL 14.18 / `vt_test` / `127.0.0.1:53227`. The original session was retained through terminal completion: **950 passed in 891.86s (0:14:51), EXIT: 0, no skips or failures**, in `corrected-full-backend-20261031-q1.log`. No observation timeout triggered a restart, and the wrapper removed only its owned basetemp. The historical 925/943 passes are not substitutes for this Q1 verification.
+
+Fresh post-full checks all exited 0, with separate mode-600 logs under the Q1 evidence directory:
+
+| Command | Observed result | Q1 log |
+| --- | --- | --- |
+| `.venv/bin/ruff check src tests alembic` | All checks passed | `final-ruff.log` |
+| `.venv/bin/ruff format --check src tests alembic` | 171 files already formatted | `final-format.log` |
+| `.venv/bin/python3.12 -m compileall -q src tests alembic` | Passed | `final-compile.log` |
+| `uv lock --check --offline` | Unchanged 75-package lock resolved | `final-lock.log` |
+| `git diff --check` | Passed | `final-diff.log` |
+| `git diff --exit-code 32e9dc29e6d323eb53096ef23186f762276c9cc1 -- src tests alembic pyproject.toml uv.lock` | Empty: Q1 tested trees remained frozen | `final-frozen-tree.log` |
+| Comparison to `a6d71b7` for migrations, dependencies, `db.py`, fit checkpoint/decoder/handler and shared Operations/events | Empty: protected schema/integrity/cache/timeout boundaries unchanged; full argv retained in log | `final-protected-boundaries.log` |
+
+Final self-review confirmed that only admission identity/response transaction factoring and captured-row lookup changed in production. The seven tracked transaction/freshness/contention regressions, unchanged independent Q1 probes, all prior SPEC probes, actual PostgreSQL races/migrations, guarded listening/QC, strict checkpoint recovery, SQL transaction observers and maximum-size historical reads all pass. Original Q1 probe hashes and historical evidence remain preserved. No provider/model calls, dependency/schema change, protected preview upgrade, frontend change, push or deployment occurred. This implementation handoff is for the same SPEC reviewer to check preserved requirements, followed by the same QUALITY reviewer; it does not self-issue either gate or begin 6B2.
