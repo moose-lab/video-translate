@@ -31,3 +31,21 @@ Downloaded the exact original link observed on the Wikimedia high-quality OGV pa
 - Actual complete video-and-audio decode: FFmpeg7.1.1, exit0, empty error output,3.566s. Raw acquisition/probe/decode records live beside the original.
 
 OGV is not a currently supported product upload container. Select and inspect the actual two-role interval, then prepare a separately hashed CPU MP4 excerpt with an explicit timeline/provenance record before uploading through the product. No native OGV support is claimed. No interval, role annotation or reference was selected, no model call or output export occurred, and no public posting or commercial-rights acceptance is recorded here.
+
+## Prepared MP4 input, still not a dubbing result
+
+The controller subsequently inspected decoded frames at source seconds 450, 480 and 505. Two visually distinct animated characters occur at those sampled times. The selected supplemental input window is **450,000–510,000 ms**. This visual check does not establish speech boundaries, timed role labels, clean references or voice quality; those remain product-analysis/review work.
+
+The source was decoded from the beginning for accurate output-side selection and converted into a separately retained MP4. Video is explicitly normalized from the source's reported 23 fps to CFR24; audio is transcoded from Vorbis to AAC. No dialogue, music or voice was generated or replaced. The original OGV's SHA was checked before and after conversion and remains unchanged.
+
+| Field | Measured value |
+| --- | --- |
+| File | `/Users/moose/.agent-reach/fixtures/elephants-dream-2009/elephants-dream-450-510s-cfr24.mp4` |
+| Byte size | 7,152,475 |
+| SHA-256 | `dab6c69b8f3932272fc7af7575f0371d307e31811372b53843da064889ebfdc5` |
+| Container duration | 60.000000 seconds |
+| Video | H.264, yuv420p, 480×270, 24/1 fps, 1440 decoded frames |
+| Audio | AAC, 48 kHz, stereo |
+| Complete video/audio decode | FFmpeg exit 0, empty error output |
+
+`excerpt-450-510s-provenance.json` and `excerpt-450-510s-ffprobe.json` beside the file retain the exact conversion/probe/decode argv, source window, original and derived hashes, credit and processing changes. The movie credit is also embedded in the MP4 comment. This is a proposed input for the broader multirole acceptance, not a substitute for the primary IBM EN→ZH/JA source. It has not been uploaded to the product or submitted to a model; no transcript, clone, QC, accepted role reference or mixed export is claimed.
