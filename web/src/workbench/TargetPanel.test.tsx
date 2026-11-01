@@ -85,3 +85,17 @@ it("keeps the original track revision while a mode change is unsaved", async () 
   await waitFor(() => expect(saved).toEqual({revision: 4, mode: "Cinematic"}));
   expect(await screen.findByText(/REVISION_CONFLICT/)).toBeTruthy();
 });
+it("opens current context and target import tools explicitly without cloud work", async () => {
+  const user = userEvent.setup();
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async input => {
+    const path = String(input);
+    if (path.includes("/synthesis?")) return ok(emptyAudio);
+    if (path.includes("/contexts?")) return ok({items: [{id: "context", summary: "Actual context double", glossary: {}}], total: 1});
+    return ok({...data, language_tracks: [{...data.language_tracks![0], context_revision_id: "context"}]});
+  });
+  render(<TargetPanel {...props} />); await screen.findByDisplayValue("目标文字");
+  await user.click(screen.getByRole("button", {name: "上下文、术语与译文导入"}));
+  expect(await screen.findByDisplayValue("Actual context double")).toBeTruthy();
+  expect(screen.getByLabelText("导入格式")).toBeTruthy();
+  expect(fetch.mock.calls.every(([, init]) => !init?.method)).toBe(true);
+});

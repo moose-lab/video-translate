@@ -152,3 +152,11 @@ it("opens manual role/reference editing explicitly without submitting media or p
   expect(await screen.findByLabelText("新角色名称")).toBeTruthy();
   expect(fetch.mock.calls.filter(([, init]) => init?.method && init.method !== "GET")).toHaveLength(0);
 });
+it("opens the manual source text and timing tools without applying edits or imports", async () => {
+  const user = userEvent.setup(), fetch = fixture(); open();
+  await screen.findByRole("heading", {name: "Source film"});
+  await user.click(screen.getByRole("button", {name: "编辑或导入源字幕"}));
+  expect(await screen.findByLabelText("源文字 第 1 行")).toBeTruthy();
+  expect(screen.getByLabelText("导入格式")).toBeTruthy();
+  expect(fetch.mock.calls.filter(([, init]) => init?.method && init.method !== "GET")).toHaveLength(0);
+});

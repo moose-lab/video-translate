@@ -1,0 +1,31 @@
+import {useState} from "react";
+import {api} from "../api/client";
+import {projectPath} from "../api/projects";
+import type {Segment} from "./types";
+import {seconds} from "./types";
+import type {SourceGuard} from "./targetTypes";
+import {useAction} from "./useAction";
+type Draft = SourceGuard & {revision: number; text: string; start_ms: number; end_ms: number};
+export default function SourceRowEditor({projectId, csrf, source, row, index, windowDuration, next, onSaved}: {projectId: string; csrf: string; source: SourceGuard; row: Segment; index: number; windowDuration: number; next?: Segment; onSaved: () => void}) {
+  const [draft, setDraft] = useState<Draft | null>(null), [baseWindow, setBaseWindow] = useState(windowDuration), [structure, setStructure] = useState<{source: SourceGuard; row: Segment; next?: Segment; kind: "split" | "merge"} | null>(null);
+  const [cut, setCut] = useState(0), [first, setFirst] = useState(""), [second, setSecond] = useState(""), {busy, error, perform} = useAction();
+  const values = draft ?? row, valid = values.text.trim() && values.text.length <= 10000 && Number.isSafeInteger(values.start_ms) && Number.isSafeInteger(values.end_ms) && 0 <= values.start_ms && values.start_ms < values.end_ms && values.end_ms <= (draft ? baseWindow : windowDuration);
+  function edit(change: Partial<Pick<Draft, "text" | "start_ms" | "end_ms">>) {if (!row.revision) return; if (!draft) setBaseWindow(windowDuration); setDraft(previous => ({...(previous ?? {...source, revision: row.revision!, text: row.text, start_ms: row.start_ms, end_ms: row.end_ms}), ...change}));}
+  async function save() {if (!draft || !valid) return; const result = await perform(signal => api(`${projectPath(projectId)}/segments/${encodeURIComponent(row.id)}`, {method: "PATCH", signal, body: JSON.stringify(draft)}, csrf)); if (result) {setDraft(null); onSaved();}}
+  function open(kind: "split" | "merge") {setStructure({source, row, next, kind}); setFirst(kind === "merge" ? `${row.text}\n${next!.text}` : row.text); setSecond(""); setCut(Math.floor((row.start_ms + row.end_ms) / 2));}
+  async function applyStructure() {
+    if (!structure || !structure.row.revision) return;
+    const saved = structure.row, root = projectPath(projectId);
+    const body = structure.kind === "split" ? {...structure.source, revision: saved.revision, parts: [{text: first, start_ms: saved.start_ms, end_ms: cut, speaker_id: saved.speaker_id}, {text: second, start_ms: cut, end_ms: saved.end_ms, speaker_id: saved.speaker_id}]} : {...structure.source, segments: [{id: saved.id, revision: saved.revision}, {id: structure.next!.id, revision: structure.next!.revision}], text: first, start_ms: Math.min(saved.start_ms, structure.next!.start_ms), end_ms: Math.max(saved.end_ms, structure.next!.end_ms), speaker_id: saved.speaker_id};
+    const result = await perform(signal => api(structure.kind === "split" ? `${root}/segments/${encodeURIComponent(saved.id)}/split` : `${root}/segments/merge`, {method: "POST", signal, body: JSON.stringify(body)}, csrf));
+    if (result) {setStructure(null); onSaved();}
+  }
+  const structureValid = structure && first.trim() && first.length <= 10000 && (structure.kind === "merge" || (second.trim() && second.length <= 10000 && Number.isSafeInteger(cut) && structure.row.start_ms < cut && cut < structure.row.end_ms));
+  return <div className="source-row-editor"><p className="transcript-meta">第 {index} 行 · 原片 {seconds(row.absolute_start_ms)}–{seconds(row.absolute_end_ms)} 秒</p><label>源文字 第 {index} 行<textarea dir="auto" rows={3} maxLength={10000} disabled={busy || !row.revision || !!structure} value={values.text} onChange={event => edit({text: event.target.value})} /></label><div className="range-fields"><label>源开始毫秒 第 {index} 行<input type="number" min={0} max={draft ? baseWindow : windowDuration} step={1} disabled={busy || !row.revision || !!structure} value={values.start_ms} onChange={event => edit({start_ms: Number(event.target.value)})} /></label><label>源结束毫秒 第 {index} 行<input type="number" min={1} max={draft ? baseWindow : windowDuration} step={1} disabled={busy || !row.revision || !!structure} value={values.end_ms} onChange={event => edit({end_ms: Number(event.target.value)})} /></label></div>
+    <p className="muted">时间从已选源片段的 0 毫秒开始；保存源文字或时间会使依赖它的译文、参考音或配音过期。</p>{!valid && <p className="error">请填写非空源文字和片段范围内的有效整数毫秒。</p>}
+    <div className="actions"><button className="secondary" disabled={busy || !draft || !valid || !!structure} onClick={() => void save()}>保存源第 {index} 行</button>{draft && <button className="link" disabled={busy} onClick={() => setDraft(null)}>放弃源第 {index} 行修改</button>}<button className="link" disabled={busy || !!draft || !!structure || !row.revision || row.end_ms - row.start_ms < 2} onClick={() => open("split")}>拆分源第 {index} 行</button>{next && <button className="link" disabled={busy || !!draft || !!structure || !row.revision || !next.revision || next.speaker_id !== row.speaker_id} onClick={() => open("merge")}>与下一源行合并</button>}</div>
+    {next && next.speaker_id !== row.speaker_id && <p className="muted">相邻行角色不同，请先核对角色再决定合并。</p>}
+    {structure && <div className="structure-editor"><h4>{structure.kind === "split" ? "拆为两行" : "合并相邻两行"}</h4><label>{structure.kind === "split" ? "拆分后第一行文字" : "合并后文字"}<textarea dir="auto" maxLength={10000} rows={2} value={first} disabled={busy} onChange={event => setFirst(event.target.value)} /></label>{structure.kind === "split" && <><label>拆分点（片段内毫秒）<input type="number" step={1} min={structure.row.start_ms + 1} max={structure.row.end_ms - 1} value={cut} disabled={busy} onChange={event => setCut(Number(event.target.value))} /></label><label>拆分后第二行文字<textarea dir="auto" maxLength={10000} rows={2} value={second} disabled={busy} onChange={event => setSecond(event.target.value)} /></label></>}<div className="actions"><button className="secondary" disabled={busy || !structureValid} onClick={() => void applyStructure()}>{structure.kind === "split" ? "确认拆分为两行" : "确认合并这两行"}</button><button className="link" disabled={busy} onClick={() => setStructure(null)}>放弃结构修改</button></div></div>}
+    {error && <p className="error" role="alert">{error}</p>}
+  </div>;
+}

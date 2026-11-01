@@ -1,6 +1,6 @@
 import type {Segment, Timeline} from "./types";
 export type Translation = {revision: number; revision_id?: string; text: string; locked: boolean; approved: boolean; stale: boolean; needs_review: boolean; source_text_fingerprint: string};
-export type LanguageTrack = {id?: string; tag: string; revision: number; mode: "Fast" | "Cinematic" | "Autofit"; archived: boolean; materialized: boolean};
+export type LanguageTrack = {id?: string; tag: string; revision: number; mode: "Fast" | "Cinematic" | "Autofit"; archived: boolean; materialized: boolean; context_revision_id?: string | null};
 export type SourceGuard = {selection_revision: number; transcript_revision: string};
 export type TranslationGuard = SourceGuard & {revision: number; expected_source_text_fingerprint: string};
 export type TargetDraft = TranslationGuard & {text: string; locked: boolean; approved: boolean};

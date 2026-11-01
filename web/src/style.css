@@ -450,3 +450,15 @@ textarea:focus-visible { outline: 3px solid #90bca9; outline-offset: 2px; }
 .reference-library audio { display: block; width: 100%; margin: .75rem 0; }
 .role-reference-panel p { white-space: pre-wrap; }
 @media (max-width: 500px) { #roles-reference-title { max-width: 100%; } section:has(> .section-head > #roles-reference-title) > .section-head { flex-wrap: wrap; } }
+
+.source-edit-rows { list-style: none; padding: 0; }
+.source-edit-rows > li, .import-cues > li { border-top: 1px solid #dfe9e1; padding: 1rem 0; }
+.source-row-editor .actions, .subtitle-import .actions, .context-editor .actions { flex-wrap: wrap; }
+.structure-editor, .import-review { border: 1px solid #dfe9e1; border-radius: 6px; background: #f6f8f5; padding: 1rem; margin: 1rem 0; }
+.subtitle-import, .context-editor { border-top: 1px solid #dfe9e1; margin-top: 1.25rem; padding-top: 1.25rem; }
+.import-cues p { white-space: pre-wrap; }
+.glossary-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: .75rem; align-items: end; }
+.glossary-row label { min-width: 0; }
+.glossary-row button { margin-bottom: 1rem; }
+.target-text-tools > button { padding-left: 0; }
+@media (max-width: 600px) { .glossary-row { grid-template-columns: minmax(0, 1fr); gap: 0; } .glossary-row button { justify-self: start; } .panel > .section-head { flex-wrap: wrap; } }
