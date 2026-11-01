@@ -202,7 +202,8 @@ def test_official_extractor_uses_protected_post_and_protected_media(monkeypatch,
             check_active=lambda: None,
             max_duration=100,
         )
-        assert url.startswith("https://r1.googlevideo.com/")
+        assert url.video_url.startswith("https://r1.googlevideo.com/")
+        assert url.audio_url is None
         assert len(calls) == 1 and calls[0].method == "POST"
         assert calls[0].headers["X-YouTube-Client-Name"] == "1"
         assert "Cookie" not in calls[0].headers and "Authorization" not in calls[0].headers

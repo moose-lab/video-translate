@@ -3,6 +3,7 @@
 import tempfile
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from uuid import UUID
 
 from ..errors import APIError
@@ -66,26 +67,56 @@ def handler(context):
     try:
         with tempfile.TemporaryDirectory(prefix="videotranslate-import-") as directory:
             path = Path(directory) / "source.mp4"
+            paired = False
             if adapter == "youtube":
                 from ..media.youtube_source import resolve_video
 
-                url = resolve_video(
+                selection = resolve_video(
                     http,
                     url,
                     deadline=deadline,
                     check_active=context.check_active,
                     max_duration=context.settings.probe_max_duration_seconds,
                 )
-            with path.open("wb") as output:
-                metadata = http.fetch(
-                    url,
-                    output,
-                    max_bytes=maximum,
+                paired = selection.audio_url is not None
+                url = selection.video_url
+            if paired:
+                from ..media.source_pair import download_pair
+
+                metadata = download_pair(
+                    http,
+                    selection,
+                    path,
+                    maximum=maximum,
                     deadline=deadline,
                     check_active=context.check_active,
-                    youtube=adapter == "youtube",
                 )
-            facts = probe_path(context, path)
+            else:
+                with path.open("wb") as output:
+                    metadata = http.fetch(
+                        url,
+                        output,
+                        max_bytes=maximum,
+                        deadline=deadline,
+                        check_active=context.check_active,
+                        youtube=adapter == "youtube",
+                    )
+            if paired:
+
+                def check_probe():
+                    context.check_active()
+                    if time.monotonic() >= deadline:
+                        raise StageFailure(FailureCode.MEDIA_LIMIT)
+
+                check_probe()
+                facts = probe_path(
+                    SimpleNamespace(settings=context.settings, check_active=check_probe), path
+                )
+                check_probe()
+            else:
+                facts = probe_path(context, path)
+            if paired and not facts["audio"]:
+                raise StageFailure(FailureCode.INVALID_MEDIA)
             # ffprobe already validated an allowed local container. Identify its
             # media type from bytes rather than the remote declaration or URL.
             with path.open("rb") as source:
