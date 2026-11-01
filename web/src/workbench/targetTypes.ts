@@ -9,4 +9,4 @@ export const targetPath = (project: string, tag: string) => `/projects/${encodeU
 export function sourceGuard(timeline: Timeline): SourceGuard | null {return timeline.source && timeline.transcript && !timeline.source.stale && !timeline.transcript.stale ? {selection_revision: timeline.source.revision, transcript_revision: timeline.transcript.id} : null;}
 export function rowGuard(timeline: Timeline, row: Segment): TranslationGuard | null {const source = sourceGuard(timeline); return source && row.source_text_fingerprint ? {...source, revision: row.translation?.revision ?? 0, expected_source_text_fingerprint: row.source_text_fingerprint} : null;}
 export function languageName(tag: string): string {try {return new Intl.DisplayNames(["zh"], {type: "language"}).of(tag) ?? tag;} catch {return tag;}}
-export const phaseName = (phase: string) => ({context: "提炼完整语境", draft: "生成译文", refine: "润色译文", shorten: "生成精简建议"}[phase] ?? "翻译处理");
+export const phaseName = (phase: string) => ({context: "提炼完整语境", draft: "生成译文", critique: "检查译文", rewrite: "润色译文", shorten: "生成精简建议"}[phase] ?? "翻译处理");

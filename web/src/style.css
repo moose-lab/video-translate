@@ -415,3 +415,10 @@ textarea:focus-visible { outline: 3px solid #90bca9; outline-offset: 2px; }
 .translation-command { border-top: 1px solid #dfe9e1; margin-top: 1rem; padding-top: 1rem; }
 .shorten-suggestion { padding: .75rem 0; border-bottom: 1px solid #dfe9e1; }
 @media (max-width: 700px) { .translation-columns { grid-template-columns: 1fr; gap: 0; } }
+.line-audio { border-top: 1px solid #edf1ed; margin-top: 1rem; padding-top: .5rem; }
+.line-audio audio { display: block; width: 100%; margin: .75rem 0; }
+.line-audio .actions { margin: .75rem 0; }
+.selected-audio { border-top: 1px solid #dfe9e1; margin-top: 1rem; padding-top: 1rem; }
+.audio-history { padding: 1rem; margin-top: .75rem; background: #f6f8f5; border: 1px solid #dfe9e1; border-radius: 6px; }
+.audio-history ol { padding-left: 1.25rem; }
+.audio-history li { padding: .75rem 0; border-bottom: 1px solid #dfe9e1; }

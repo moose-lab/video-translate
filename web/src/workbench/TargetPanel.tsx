@@ -7,6 +7,8 @@ import {useTargetData} from "./useTargetData";
 import {useAction} from "./useAction";
 import TargetRowEditor from "./TargetRowEditor";
 import TranslationCommandPanel from "./TranslationCommandPanel";
+import LineAudioPanel from "./LineAudioPanel";
+import {useTargetAudio} from "./useTargetAudio";
 function route() {const query = window.location.hash.split("?")[1] ?? "", params = new URLSearchParams(query); return {tag: params.get("target"), command: /^[A-Za-z0-9-]{1,36}$/.test(params.get("command") ?? "") ? params.get("command") : null};}
 type Props = {project: Project; sourceTimeline: Timeline; csrf: string; refreshVersion: number; runs: Run[]; refresh: () => void};
 export default function TargetPanel({project, sourceTimeline, csrf, refreshVersion, runs, refresh}: Props) {
@@ -20,6 +22,7 @@ export default function TargetPanel({project, sourceTimeline, csrf, refreshVersi
   function navigate(target: string, command?: string) {const params = new URLSearchParams({target}); if (command) params.set("command", command); window.location.hash = `/projects/${encodeURIComponent(project.id)}?${params}`; setLocation({tag: target, command: command ?? null});}
   function reload() {setVersion(value => value + 1); refresh();}
   const guard = timeline ? sourceGuard(timeline) : null;
+  const {audio, error: audioError} = useTargetAudio(project.id, tag, offset, refreshVersion + version, !!guard && !!track?.materialized);
   const dirty = Object.keys(drafts).some(key => key.startsWith(`${tag}/`));
   const unresolved = runs.some(run => run.target_language === tag && run.stage.startsWith("translation_") && (run.remote_state === "submitting" || run.safe_error?.code === "SUBMISSION_UNCERTAIN" || ["queued", "running", "retry_wait", "cancelling"].includes(run.status))) || data.command?.next_action === "acknowledge_uncertain_submission" || data.command?.status === "running" || error.includes("SUBMISSION_UNCERTAIN") || error.includes("RUN_ACTIVE");
   async function saveMode() {
@@ -45,7 +48,8 @@ export default function TargetPanel({project, sourceTimeline, csrf, refreshVersi
         <p className="muted">仅点击后请求云端翻译；已锁定或已确认的译文保留。Autofit 提供时长估计与精简建议，不保证配音时长。</p>
         {unresolved && <p className="error">当前目标有未完成或结果未知的翻译任务，请先在任务区核查并恢复原任务。</p>}
         {dirty && <p className="muted">有未保存的译文修改，请先保存或放弃，再请求自动翻译。</p>}
-        <ol className="target-rows">{timeline.segments.map((row, index) => <TargetRowEditor key={`${tag}/${row.id}`} projectId={project.id} tag={tag} timeline={timeline} row={row} index={offset + index + 1} csrf={csrf} draft={drafts[`${tag}/${row.id}`]} onDraft={draft => setDrafts(previous => {const next = {...previous}; if (draft) next[`${tag}/${row.id}`] = draft; else delete next[`${tag}/${row.id}`]; return next;})} onSaved={reload} />)}</ol>
+        {audioError && <p className="error" role="alert">{audioError}</p>}{audio && <p className="muted">配音听审已就绪 {audio.readiness.ready_rows} / {audio.readiness.total} 行。</p>}
+        <ol className="target-rows">{timeline.segments.map((row, index) => <TargetRowEditor key={`${tag}/${row.id}`} projectId={project.id} tag={tag} timeline={timeline} row={row} index={offset + index + 1} csrf={csrf} draft={drafts[`${tag}/${row.id}`]} onDraft={draft => setDrafts(previous => {const next = {...previous}; if (draft) next[`${tag}/${row.id}`] = draft; else delete next[`${tag}/${row.id}`]; return next;})} onSaved={reload}>{guard && audio?.items.find(line => line.segment_id === row.id) && <LineAudioPanel projectId={project.id} tag={tag} row={row} index={offset + index + 1} source={guard} line={audio.items.find(line => line.segment_id === row.id)!} csrf={csrf} refresh={reload} dirty={!!drafts[`${tag}/${row.id}`]} runs={runs} />}</TargetRowEditor>)}</ol>
         {timeline.total > 50 && <nav className="actions pagination" aria-label="译文分页"><button className="secondary" disabled={!offset || data.loading} onClick={() => setOffset(Math.max(0, offset - 50))}>上一页译文</button><span>{offset + 1}–{Math.min(offset + 50, timeline.total)} / {timeline.total}</span><button className="secondary" disabled={offset + 50 >= timeline.total || data.loading} onClick={() => setOffset(offset + 50)}>下一页译文</button></nav>}
       </>}
       {data.command && <TranslationCommandPanel command={data.command} />}{data.commandError && <p className="error" role="alert">{data.commandError}</p>}

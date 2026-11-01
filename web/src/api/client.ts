@@ -2,7 +2,7 @@ const messages: Record<string, string> = {
   VALIDATION_ERROR: "输入无效，请检查各字段。", INVALID_EDIT: "片段选择或编辑无效，请检查当前数据。", REVISION_CONFLICT: "项目已更改，请刷新后核对再保存。",
   EDITOR_CONFLICT: "源数据已更改，请刷新后核对。", SUBMISSION_UNCERTAIN: "上次提交结果未知；请核查远程任务后再决定是否重试。",
   RUN_ACTIVE: "任务仍在处理中，当前不能重试。", NOT_FOUND: "项目或资源不存在，或无权访问。",
-  PROVIDER_REQUIRED: "需要配置源分析服务，请前往服务配置。", INPUT_REQUIRED: "所需输入尚未就绪，请检查原片与选择范围。",
+  PROVIDER_REQUIRED: "所需云端服务未配置，请前往服务配置。", INPUT_REQUIRED: "所需输入尚未就绪，请检查原片与选择范围。",
   UNSUPPORTED_MEDIA: "此文件格式不受支持，请上传 MP4、MOV、WebM、MKV 或 AVI 视频。",
   UPLOAD_TOO_LARGE: "文件超过服务器上传限制。", EMPTY_UPLOAD: "所选文件为空。",
   STORAGE_UNAVAILABLE: "文件暂时无法保存，请稍后重试。", INTERNAL_ERROR: "服务器暂时无法完成操作。",
@@ -12,6 +12,11 @@ const messages: Record<string, string> = {
   UNSUPPORTED_LANGUAGE: "当前服务不支持所选语言，请检查服务配置。", TRANSIENT: "服务暂时不可用。",
   LEASE_EXPIRED: "任务执行已中断，请检查状态后重试。",
   TRANSLATION_PROTECTED: "所选译文均已锁定或已确认，请保留现有译文或先手动调整保护状态。",
+  REFERENCE_REQUIRED: "尚未配置当前行或角色的参考音。", REFERENCE_STALE: "当前参考音已过期，请重新准备并核对。",
+  REFERENCE_UNUSABLE: "当前参考音或参考文字不可用，请检查后重试。", REFERENCE_REVIEW_REQUIRED: "请先检查并确认当前参考音风险。",
+  TARGET_REQUIRED: "此行尚无译文，请先填写或翻译。", TARGET_STALE: "译文与当前源文字不匹配，请重新核对译文。",
+  TARGET_REVIEW_REQUIRED: "请先确认当前译文，再请求配音。", AUDIO_EVIDENCE_INVALID: "音频来源证据需要检查，暂时不能选用。",
+  AUDIO_REQUIRED: "请先选择有效自然音频。", INVALID_SYNTHESIS_INPUT: "当前合成语言或声音设置不受支持。",
   CONTEXT_LIMIT: "源文字超出当前完整语境处理范围，请调整片段或使用逐行模式。",
 };
 export function safeCode(value: unknown): string {return typeof value === "string" && Object.hasOwn(messages, value) ? value : "REQUEST_FAILED";}
