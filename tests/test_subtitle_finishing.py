@@ -139,14 +139,16 @@ def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path,
     text = "你好，世界 · Hello world\nمرحبا بالعالم 123 · שלום עולם"
     mixed = select_fonts(text, profile="auto", budget=budget)
     cjk = select_fonts("你好", profile="auto", budget=budget)
-    original_ass_file = subtitles.ass_file
+    original_document = subtitles.ass_document
     pixels = []
     for index in range(2):
         if index:
+
             def cjk_default(*args, **kwargs):
                 kwargs["family"] = cjk[0].family
-                return original_ass_file(*args, **kwargs)
-            monkeypatch.setattr(subtitles, "ass_file", cjk_default)
+                return original_document(*args, **kwargs)
+
+            monkeypatch.setattr(subtitles, "ass_document", cjk_default)
         result = burn_in(
             source,
             [dict(id="a", start_ms=0, end_ms=1000, text=text)],
@@ -186,3 +188,53 @@ def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path,
     # two Han characters is too weak.
     difference = sum(abs(a - b) > 40 for a, b in zip(*pixels, strict=True))
     assert difference < 20, difference
+
+
+def test_nested_fonts_and_ass_share_one_temporary_budget_and_release_on_failure(tmp_path):
+    from dataclasses import replace
+
+    from videotranslate.execution.contracts import StageFailure
+    from videotranslate.media.float_audio import Budget
+    from videotranslate.media.subtitle_finishing import burn_in
+    from videotranslate.media.subtitle_fonts import select_fonts
+
+    source = tmp_path / "base.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=black:s=64x64:r=5:d=0.4",
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            str(source),
+        ],
+        check=True,
+        timeout=30,
+    )
+    text = "Hello 你好 مرحبا שלום"
+    fonts = select_fonts(text, budget=Budget(LIMITS, lambda: None, tmp_path))
+    sizes = [font.path.stat().st_size for font in fonts]
+    assert len(sizes) > 1
+    # Each font separately fits; the complete owned working set does not.
+    limit = max(sizes) + 65536
+    assert sum(sizes) > limit
+    budget = Budget(replace(LIMITS, max_temporary_bytes=limit), lambda: None, tmp_path)
+    with pytest.raises(StageFailure) as caught:
+        burn_in(
+            source,
+            [dict(id="a", start_ms=0, end_ms=400, text=text)],
+            tmp_path / "out.mp4",
+            fonts=fonts,
+            width=64,
+            height=64,
+            budget=budget,
+        )
+    assert caught.value.code.value == "MEDIA_LIMIT"
+    assert budget.reserved_bytes == 0 and not list(tmp_path.glob("vt-subs-*"))
+    assert not (tmp_path / "out.mp4").exists()

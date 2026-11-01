@@ -2,7 +2,6 @@
 
 import hashlib
 import json
-import shutil
 import tempfile
 import unicodedata
 from pathlib import Path
@@ -68,11 +67,9 @@ def literal_font_runs(text, fonts):
     return "".join(result)
 
 
-def ass_file(cues, destination, *, width, height, family, font_size=42, fonts=None):
-    destination = Path(destination)
+def ass_document(cues, *, width, height, family, font_size=42, fonts=None):
     if (
-        destination.exists()
-        or type(width) is not int
+        type(width) is not int
         or type(height) is not int
         or not 16 <= width <= 16384
         or not 16 <= height <= 16384
@@ -111,22 +108,29 @@ def ass_file(cues, destination, *, width, height, family, font_size=42, fonts=No
     data = (header + "".join(lines)).encode("utf-8")
     if len(data) > 2 * 1024 * 1024:
         raise invalid()
-    destination.write_bytes(data)
-    return ExportedFile(
-        destination,
-        dict(
-            sha256=hashlib.sha256(data).hexdigest(),
-            byte_size=len(data),
-            cue_count=len(cues),
-            clock_policy="outward_centisecond_v1",
-            text_policy="literal_braces_backslash_word_joiner_v1",
-            format="ass",
-            width=width,
-            height=height,
-            family=family,
-            font_size=font_size,
-        ),
+    return data, dict(
+        sha256=hashlib.sha256(data).hexdigest(),
+        byte_size=len(data),
+        cue_count=len(cues),
+        clock_policy="outward_centisecond_v1",
+        text_policy="literal_braces_backslash_word_joiner_v1",
+        format="ass",
+        width=width,
+        height=height,
+        family=family,
+        font_size=font_size,
     )
+
+
+def ass_file(cues, destination, *, width, height, family, font_size=42, fonts=None):
+    destination = Path(destination)
+    if destination.exists():
+        raise invalid()
+    data, facts = ass_document(
+        cues, width=width, height=height, family=family, font_size=font_size, fonts=fonts
+    )
+    destination.write_bytes(data)
+    return ExportedFile(destination, facts)
 
 
 def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size=42):
@@ -156,25 +160,36 @@ def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size
         or not 0 < int(source[0].get("nb_read_frames", 0)) <= budget.limits.max_video_frames
     ):
         raise invalid()
-    with tempfile.TemporaryDirectory(prefix="vt-subs-", dir=destination.parent) as d:
+    data, facts = ass_document(
+        cues, width=width, height=height, family=fonts[0].family, font_size=font_size, fonts=fonts
+    )
+    sizes = [font.path.stat().st_size for font in fonts]
+    if any(not 0 < size <= 64 * 1024 * 1024 for size in sizes):
+        raise invalid()
+    # Budget's root-file accounting excludes this nested directory. Reserve its
+    # EXACT complete working set before writing; release only after cleanup.
+    with (
+        budget.reserve(sum(sizes) + len(data)),
+        tempfile.TemporaryDirectory(prefix="vt-subs-", dir=destination.parent) as d,
+    ):
         root = Path(d)
         fontsdir = root / "fonts"
         fontsdir.mkdir()
-        for index, font in enumerate(fonts):
-            budget.preflight(font.path.stat().st_size, output=False)
+        for index, (font, size) in enumerate(zip(fonts, sizes, strict=True)):
             target = fontsdir / (str(index) + font.path.suffix)
-            shutil.copyfile(font.path, target)
-            if digest(target, budget.check) != font.sha256:
+            copied, checksum = 0, hashlib.sha256()
+            with font.path.open("rb") as source_font, target.open("xb") as output_font:
+                while chunk := source_font.read(min(1024 * 1024, size - copied + 1)):
+                    budget.check()
+                    copied += len(chunk)
+                    if copied > size:
+                        raise invalid()
+                    checksum.update(chunk)
+                    output_font.write(chunk)
+            if copied != size or checksum.hexdigest() != font.sha256:
                 raise invalid()
-        subtitle = ass_file(
-            cues,
-            root / "captions.ass",
-            width=width,
-            height=height,
-            family=fonts[0].family,
-            font_size=font_size,
-            fonts=fonts,
-        )
+        subtitle = ExportedFile(root / "captions.ass", facts)
+        subtitle.path.write_bytes(data)
 
         # Paths come only from a server-owned tempfile and are escaped for the
         # FFmpeg filter grammar; dialogue lives in UTF-8 ASS, never filter text.
