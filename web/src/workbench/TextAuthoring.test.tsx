@@ -120,3 +120,32 @@ it("blocks source paging and merging a dirty next row until explicit discard", a
   await user.click(screen.getByRole("button", {name: "放弃结构修改"}));
   expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(false);
 });
+it("preserves source import preview while row edits block replacement, then releases old row flags", async () => {
+  const {default: SourceAuthoringSection} = await import("./SourceAuthoringSection"); const user = userEvent.setup(); let replaced = false; let applyCount = 0; let finish!: (value: Response) => void;
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    if (String(input).endsWith("/preview")) return ok(preview);
+    if (String(input).endsWith("/apply")) {applyCount++; replaced = true; return new Promise<Response>(resolve => {finish = resolve;});}
+    return ok({source: {revision: 2, start_ms: 0, end_ms: 10000, stale: false}, transcript: {id: replaced ? "new-transcript" : "transcript-a", stale: false}, segments: [{...row, id: replaced ? "new-row" : "s1"}], total: 51, cast: []});
+  });
+  render(<SourceAuthoringSection projectId="p" csrf="csrf" refreshVersion={0} onSaved={vi.fn()} />);
+  await user.click(screen.getByRole("button", {name: "编辑或导入源字幕"}));
+  await user.type(await screen.findByLabelText("源文字 第 1 行"), " unsaved");
+  await user.type(screen.getByLabelText("导入字幕内容"), "1\n00:00:01,000 --> 00:00:03,000\nImported words");
+  await user.click(screen.getByRole("button", {name: "预览导入"}));
+  const apply = await screen.findByRole("button", {name: "应用新源字幕版本"}) as HTMLButtonElement;
+  expect(apply.disabled).toBe(true); await user.click(apply); expect(applyCount).toBe(0);
+  expect((screen.getByLabelText("源文字 第 1 行") as HTMLTextAreaElement).value).toContain("unsaved");
+  await user.click(screen.getByRole("button", {name: "放弃源第 1 行修改"}));
+  expect(apply.disabled).toBe(false); await user.click(apply);
+  expect((screen.getByLabelText("源文字 第 1 行") as HTMLTextAreaElement).disabled).toBe(true);
+  finish(ok({count: 1}));
+  await screen.findByText(/手动导入已应用 1 行/);
+  expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(false);
+});
+it("removes the parent dirty marker when a row legitimately leaves the editor", async () => {
+  const user = userEvent.setup(), onDirty = vi.fn();
+  const view = render(<SourceRowEditor projectId="p" csrf="csrf" source={source} row={row} index={1} windowDuration={10000} onSaved={vi.fn()} onDirty={onDirty} />);
+  await user.type(screen.getByLabelText("源文字 第 1 行"), " draft");
+  expect(onDirty).toHaveBeenLastCalledWith("s1", "text");
+  view.unmount(); expect(onDirty).toHaveBeenLastCalledWith("s1", null);
+});

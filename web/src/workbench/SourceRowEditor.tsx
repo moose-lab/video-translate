@@ -10,6 +10,7 @@ export default function SourceRowEditor({projectId, csrf, source, row, index, wi
   const [draft, setDraft] = useState<Draft | null>(null), [baseWindow, setBaseWindow] = useState(windowDuration), [structure, setStructure] = useState<{source: SourceGuard; row: Segment; next?: Segment; kind: "split" | "merge"} | null>(null);
   const [cut, setCut] = useState(0), [first, setFirst] = useState(""), [second, setSecond] = useState(""), {busy, error, perform} = useAction();
   useEffect(() => {onDirty?.(row.id, structure ? "structure" : draft ? "text" : null);}, [draft, structure, row.id, onDirty]);
+  useEffect(() => () => {onDirty?.(row.id, null);}, [row.id, onDirty]);
   const values = draft ?? row, valid = values.text.trim() && values.text.length <= 10000 && Number.isSafeInteger(values.start_ms) && Number.isSafeInteger(values.end_ms) && 0 <= values.start_ms && values.start_ms < values.end_ms && values.end_ms <= (draft ? baseWindow : windowDuration);
   function edit(change: Partial<Pick<Draft, "text" | "start_ms" | "end_ms">>) {if (!row.revision) return; if (!draft) setBaseWindow(windowDuration); setDraft(previous => ({...(previous ?? {...source, revision: row.revision!, text: row.text, start_ms: row.start_ms, end_ms: row.end_ms}), ...change}));}
   async function save() {if (!draft || !valid) return; const result = await perform(signal => api(`${projectPath(projectId)}/segments/${encodeURIComponent(row.id)}`, {method: "PATCH", signal, body: JSON.stringify(draft)}, csrf)); if (result) {setDraft(null); onSaved();}}

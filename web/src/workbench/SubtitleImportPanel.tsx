@@ -8,13 +8,15 @@ import type {CueMapping, ImportFormat, ImportGuard, ImportReview} from "./import
 import {useAction} from "./useAction";
 type RequestBody = ImportGuard & {format: ImportFormat; content: string};
 type TargetMap = CueMapping & {protected: boolean; label: string};
-type Props = {projectId: string; csrf: string; guard: ImportGuard; tag?: string; roles: {id: string; name: string; archived?: boolean}[]; onSaved: () => void; onDirty?: (value: boolean) => void};
+type Props = {projectId: string; csrf: string; guard: ImportGuard; tag?: string; roles: {id: string; name: string; archived?: boolean}[]; onSaved: () => void; onDirty?: (value: boolean) => void; applyBlocked?: boolean; onBusy?: (value: boolean) => void};
 const cueError = (code: string) => ({INVALID_TIMING: "时间范围无效", OUTSIDE_WINDOW: "超出已选源片段", EMPTY_TEXT: "文字为空"}[code] ?? "字幕内容需要检查");
-export default function SubtitleImportPanel({projectId, csrf, guard, tag, roles, onSaved, onDirty}: Props) {
+export default function SubtitleImportPanel({projectId, csrf, guard, tag, roles, onSaved, onDirty, applyBlocked = false, onBusy}: Props) {
   const [draft, setDraft] = useState<RequestBody | null>(null), [review, setReview] = useState<{data: ImportReview; request: RequestBody; path: string} | null>(null), [mapping, setMapping] = useState<Record<string, TargetMap | CueMapping>>({}), [offset, setOffset] = useState(0), [notice, setNotice] = useState("");
   const [lookup, setLookup] = useState<{rows: Segment[]; total: number; offset: number}>({rows: [], total: 0, offset: 0}), [lookupOffset, setLookupOffset] = useState(0), [lookupError, setLookupError] = useState(""), [lookupLoading, setLookupLoading] = useState(false);
   const {busy, error, perform} = useAction(), values = draft ?? {...guard, format: "srt" as const, content: ""}, path = tag ? `${targetPath(projectId, tag)}/import` : `${projectPath(projectId)}/source/import`;
   useEffect(() => {onDirty?.(!!draft && !notice);}, [draft, notice, onDirty]);
+  useEffect(() => {onBusy?.(busy);}, [busy, onBusy]);
+  useEffect(() => () => {onBusy?.(false);}, [onBusy]);
   function edit(change: Partial<Pick<RequestBody, "format" | "content">>) {setDraft(previous => ({...(previous ?? {...guard, format: "srt", content: ""}), ...change})); setReview(null); setMapping({}); setNotice(""); setOffset(0);}
   async function preview() {
     const request = {...values};
@@ -32,7 +34,7 @@ export default function SubtitleImportPanel({projectId, csrf, guard, tag, roles,
   const mappedIds = review?.data.cues.flatMap(cue => mapping[cue.id]?.segment_id ? [mapping[cue.id].segment_id] : []) ?? [];
   const unique = !tag || new Set(mappedIds).size === mappedIds.length;
   async function apply() {
-    if (!review || !complete || !unique) return;
+    if (applyBlocked || !review || !complete || !unique) return;
     const bodyMapping = review.data.cues.map(cue => {const {protected: _protected, label: _label, ...value} = mapping[cue.id] as TargetMap; return value;});
     const result = await perform(signal => api<{count: number}>(`${review.path}/apply`, {method: "POST", signal, body: JSON.stringify({...review.request, digest: review.data.digest, mapping: bodyMapping, mode: tag ? "replace_current" : "new_transcript", force_locked: false})}, csrf));
     if (result) {setNotice(`手动导入已应用 ${result.count} 行；来源会记录为导入，仍需人工核对。`); setReview(null); onSaved();}
@@ -51,7 +53,7 @@ export default function SubtitleImportPanel({projectId, csrf, guard, tag, roles,
         {tag ? <><label>导入行 {offset + index + 1} 对应源行<select value={mapping[cue.id]?.segment_id ?? ""} disabled={busy || lookupLoading} onChange={event => targetChoice(cue.id, event.target.value)}><option value="">请选择源行（不会自动映射）</option>{mapping[cue.id]?.segment_id && !lookup.rows.some(row => row.id === mapping[cue.id].segment_id) && <option value={mapping[cue.id].segment_id!}>{(mapping[cue.id] as TargetMap).label}</option>}{lookup.rows.map((row, rowIndex) => <option key={row.id} value={row.id} disabled={!!row.translation?.locked || !!row.translation?.approved}>源第 {lookup.offset + rowIndex + 1} 行 · {row.text.slice(0, 50)}{row.translation?.locked ? " · 已锁定" : row.translation?.approved ? " · 已确认" : ""}</option>)}</select></label>{cue.proposed_matches.length > 0 && <p className="muted">预览建议源行：{cue.proposed_matches.map(match => match.source_number).join("、")}。请自行核对并选择。</p>}</> : <label>导入行 {offset + index + 1} 角色<select disabled={busy} value={mapping[cue.id]?.use_voice_label ? "voice-label" : mapping[cue.id]?.speaker_id ?? ""} onChange={event => setMapping(previous => ({...previous, [cue.id]: {cue_id: cue.id, segment_id: null, revision: 0, speaker_id: event.target.value && event.target.value !== "voice-label" ? event.target.value : null, use_voice_label: event.target.value === "voice-label"}}))}><option value="">未分配角色</option>{roles.filter(role => !role.archived).map(role => <option key={role.id} value={role.id}>{role.name}</option>)}{cue.voice_label && <option value="voice-label">按字幕标签创建角色：{cue.voice_label}</option>}</select></label>}
       </li>)}</ol>
       {review.data.cues.length > 50 && <nav className="actions pagination" aria-label="导入预览分页"><button className="secondary" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 50))}>上一页导入行</button><button className="secondary" disabled={offset + 50 >= review.data.cues.length} onClick={() => setOffset(offset + 50)}>下一页导入行</button></nav>}
-      {!unique && <p className="error">每条导入字幕必须映射到不同源行。</p>}<button className="secondary" disabled={busy || !complete || !unique} onClick={() => void apply()}>{tag ? "应用目标译文导入" : "应用新源字幕版本"}</button>
+      {!unique && <p className="error">每条导入字幕必须映射到不同源行。</p>}{applyBlocked && <p className="muted">请先保存或放弃源行文字与结构修改，再应用导入；当前导入内容与预览保留。</p>}<button className="secondary" disabled={applyBlocked || busy || !complete || !unique} onClick={() => void apply()}>{tag ? "应用目标译文导入" : "应用新源字幕版本"}</button>
     </div>}{notice && <p className="notice" role="status">{notice}</p>}{error && <p className="error" role="alert">{error}</p>}
   </div>;
 }
