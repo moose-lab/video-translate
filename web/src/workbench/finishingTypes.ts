@@ -1,10 +1,11 @@
+import type {CaptionOptions, CaptionProof, CaptionReceipt} from "./captionTypes";
 export type Rate = {numerator: number; denominator: number};
 export type Purpose = "dub" | "incomplete_preview" | "original_only";
 export const purposeName = (purpose: string) => ({dub: "正式配音", incomplete_preview: "未完成试听预览", original_only: "仅原声"}[purpose] ?? "待检查");
 export const rateValue = (value: Rate | null | undefined) => value && value.denominator > 0 ? value.numerator / value.denominator : null;
 export type DeliverySummary = {id: string; run_id: string; purpose: Purpose; status: string; current: boolean | null};
-export type Artifact = {format: string; track: string; asset_id: string; byte_size: number; sha256: string; content_type: string; download_url: string; metadata: {duration_ms?: number; [key: string]: unknown}};
-export type Delivery = DeliverySummary & {fit_plan_id: string; phase: string | null; manifest_valid: boolean; source_window: {start_ms: number; end_ms: number}; choices: {default_audio_track: string; captions: string}; artifacts: Artifact[]; error: {code?: string} | null};
+export type Artifact = {format: string; track: string; asset_id: string; byte_size: number; sha256: string; content_type: string; download_url: string; metadata: {duration_ms?: number; captions?: CaptionReceipt; [key: string]: unknown}};
+export type Delivery = DeliverySummary & {fit_plan_id: string; phase: string | null; manifest_valid: boolean; source_window: {start_ms: number; end_ms: number}; choices: {default_audio_track: string; captions: string; caption_options?: CaptionOptions}; caption_status?: CaptionProof | null; artifacts: Artifact[]; error: {code?: string; issue?: unknown; missing?: unknown} | null};
 export type FitSettings = {mode: "fixed" | "smart"; max_audio_speed: Rate; max_picture_factor: Rate; max_borrow_ms: number; max_output_duration_ms: number};
 export type SettingsResponse = {revision: number; settings: FitSettings};
 export type FitSummary = {id: string; run_id: string; purpose: Purpose; status: string; total: number; current: boolean | null};

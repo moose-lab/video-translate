@@ -48,6 +48,7 @@ it("starts only after explicit selection with pinned editor and no default autom
   expect(writes).toHaveLength(0);
   await user.click(screen.getByRole("button", {name: "启动所选流程"}));
   await waitFor(() => expect(writes[0]).toMatchObject({expected_editor_fingerprint: "editor-a", source_mode: "use_current", target_track_ids: ["track-zh"], delivery_track_ids: ["track-zh"], auto_advance: false}));
+  expect((writes[0] as {delivery_options: object}).delivery_options).not.toHaveProperty("caption_options");
   expect(window.location.hash).toContain("pipeline=flow-a");
 });
 it("reads every bounded track page before allowing scope, and makes unknown remote work explicit", async () => {
