@@ -25,3 +25,22 @@ it("marks historical outputs stale and never invents artifacts for unfinished de
   expect(screen.queryByLabelText("导出视频预览")).toBeNull();
   expect(screen.queryByRole("link", {name: /下载/})).toBeNull();
 });
+it("shows selected delivery loading during rehydration and renders the returned private artifact", async () => {
+  let finish!: (value: Response) => void;
+  vi.spyOn(globalThis, "fetch").mockImplementation(async input => String(input).includes("/deliveries?") ? ok({items: [{id: "delivery", purpose: "incomplete_preview", status: "succeeded"}], total: 1}) : new Promise<Response>(resolve => {finish = resolve;}));
+  render(<FinishingPanel projectId="p" csrf="csrf" refreshVersion={0} />);
+  expect(await screen.findByText("正在读取所选导出详情…")).toBeTruthy();
+  finish(ok(delivery));
+  expect(await screen.findByLabelText("导出视频预览")).toBeTruthy();
+});
+it("preserves a detail error when a later list response arrives and offers an explicit read retry", async () => {
+  window.history.replaceState(null, "", "/#/projects/p?delivery=delivery");
+  let finishList!: (value: Response) => void;
+  vi.spyOn(globalThis, "fetch").mockImplementation(async input => String(input).includes("/deliveries?") ? new Promise<Response>(resolve => {finishList = resolve;}) : ok({error: {code: "INTERNAL_ERROR"}}, 500));
+  render(<FinishingPanel projectId="p" csrf="csrf" refreshVersion={0} />);
+  await screen.findByText(/服务器暂时无法完成操作/);
+  finishList(ok({items: [{id: "delivery", purpose: "incomplete_preview", status: "succeeded"}], total: 1}));
+  await screen.findByRole("combobox", {name: "已提交的导出"});
+  expect(screen.getByText(/服务器暂时无法完成操作/)).toBeTruthy();
+  expect(screen.getByRole("button", {name: "重新读取导出详情"})).toBeTruthy();
+});
