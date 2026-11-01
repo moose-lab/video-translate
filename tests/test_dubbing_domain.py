@@ -324,6 +324,7 @@ def test_verified_unversioned_baseline_upgrade_preserves_fake_credentials(tmp_pa
             "fit_plan_commands",
             "fit_plan_lines",
             "fit_plan_results",
+            "delivery_commands",
             "voice_qc_commands",
             "voice_qc_lines",
             "voice_qc_results",

@@ -88,6 +88,27 @@ def _protected(db, project, run, operation, record):
     )
     if referenced and fresh:
         return True
+    if fresh and run.stage == "deliver" and operation.phase == "ready":
+        # Durable CPU phase checkpoints are unfinished operations, not prepared success.
+        # Keep only exact owned, current manifests; cancellation/staleness retires them.
+        from ..dubbing.delivery_execution import (
+            binding,
+            command_for,
+            publication_current,
+            validate_checkpoint,
+        )
+
+        try:
+            intent = command_for(db, project, run)
+            validate_checkpoint(operation.prepared_payload, binding(intent, run, operation))
+            if (
+                _manifest_contains(operation, record.id)
+                and publication_current(db, run)
+                and run.cancel_requested_at is None
+            ):
+                return True
+        except (ValueError, KeyError, TypeError, AttributeError):
+            pass
     if referenced:
         # Retiring stale artifact bytes does not discard known terminal FileData.
         # An explicit retry can redownload it without a new named model call.

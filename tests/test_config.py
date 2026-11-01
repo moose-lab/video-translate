@@ -133,6 +133,7 @@ def test_initial_migration_on_clean_database(tmp_path):
             "fit_plan_commands",
             "fit_plan_lines",
             "fit_plan_results",
+            "delivery_commands",
             "voice_qc_commands",
             "voice_qc_lines",
             "voice_qc_results",

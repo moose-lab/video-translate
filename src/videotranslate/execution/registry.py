@@ -153,3 +153,16 @@ STAGES["plan_fit"] = StageDefinition(
     command_only=True,
     scope_suffix=fit_execution.command_scope,
 )
+
+from ..dubbing import delivery_execution  # noqa: E402
+
+STAGES["deliver"] = StageDefinition(
+    "deliver",
+    delivery_execution.options,
+    delivery_execution.inputs,
+    delivery_execution.handler,
+    delivery_execution.publish,
+    delivery_execution.publication_current,
+    command_only=True,
+    scope_suffix=delivery_execution.command_scope,
+)

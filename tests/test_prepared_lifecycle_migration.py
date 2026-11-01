@@ -225,6 +225,7 @@ def test_populated_prepared_lifecycle_migration_roundtrip(tmp_path, backend):
                 "fit_plan_commands",
                 "fit_plan_lines",
                 "fit_plan_results",
+                "delivery_commands",
                 "voice_qc_commands",
                 "voice_qc_lines",
                 "voice_qc_results",

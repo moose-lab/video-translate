@@ -86,3 +86,67 @@ def get_plan(
 ):
     project = project_for(db, identity, project_id)
     return fit_plans.detail(db, project, owned(db, FitPlanCommand, project, plan_id), limit, offset)
+
+
+from ..dubbing import deliveries  # noqa: E402
+from ..dubbing.delivery_contracts import DeliveryCreate  # noqa: E402
+from ..models.delivery import DeliveryCommand  # noqa: E402
+
+
+@router.post("/deliveries", status_code=202)
+def post_delivery(
+    project_id: str,
+    body: DeliveryCreate,
+    identity: Identity = Depends(require_csrf),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id)
+    parent = owned(db, FitPlanCommand, project, body.fit_plan_id)
+    validated_capture = deliveries.valid_parent(db, project, parent)
+    db.commit()
+    db.expire_all()
+    project = project_for(db, identity, project_id, write=True)
+    delivery_id = deliveries.admit(db, project, body, identity.user.id, validated_capture)
+    db.commit()
+    db.expire_all()
+    project = project_for(db, identity, project_id)
+    return deliveries.detail(db, project, owned(db, DeliveryCommand, project, delivery_id))
+
+
+@router.get("/deliveries")
+def get_deliveries(
+    project_id: str,
+    limit: Limit = 100,
+    offset: Offset = 0,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
+):
+    return deliveries.summaries(db, project_for(db, identity, project_id), limit, offset)
+
+
+@router.get("/deliveries/{delivery_id}")
+def get_delivery(
+    project_id: str,
+    delivery_id: str,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id)
+    return deliveries.detail(db, project, owned(db, DeliveryCommand, project, delivery_id))
+
+
+@router.get("/deliveries/{delivery_id}/artifacts")
+def get_delivery_artifacts(
+    project_id: str,
+    delivery_id: str,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id)
+    detail = deliveries.detail(db, project, owned(db, DeliveryCommand, project, delivery_id))
+    return dict(
+        items=detail["artifacts"],
+        total=len(detail["artifacts"]),
+        current=detail["current"],
+        manifest_valid=detail["manifest_valid"],
+    )
