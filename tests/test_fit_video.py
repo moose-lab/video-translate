@@ -412,3 +412,156 @@ def test_odd_dimensions_preserved_with_explicit_right_bottom_padding(tmp_path):
     )
     assert (result.width, result.height) == (34, 36)
     assert json.loads(result.receipt_json)["odd_padding_right_bottom"] == [1, 1]
+
+
+@pytest.mark.parametrize(
+    "rotation,expected_ids",
+    [(0, [0, 1, 2, 3]), (90, [1, 3, 0, 2]), (180, [3, 2, 1, 0]), (270, [2, 0, 3, 1])],
+)
+def test_phone_display_rotation_preserves_decoded_orientation(tmp_path, rotation, expected_ids):
+    from videotranslate.media.fit_plan import build_plan
+
+    colors = [(220, 20, 20), (20, 220, 20), (20, 20, 220), (220, 220, 20)]
+    raw = tmp_path / "quadrants.rgb"
+    raw.write_bytes(
+        b"".join(bytes(colors[(y >= 16) * 2 + (x >= 32)]) for y in range(32) for x in range(64)) * 5
+    )
+    base = tmp_path / "base.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-y",
+            "-f",
+            "rawvideo",
+            "-pixel_format",
+            "rgb24",
+            "-video_size",
+            "64x32",
+            "-framerate",
+            "25",
+            "-i",
+            str(raw),
+            "-c:v",
+            "libx264",
+            "-crf",
+            "0",
+            "-pix_fmt",
+            "yuv444p",
+            str(base),
+        ],
+        check=True,
+        timeout=30,
+    )
+    source = tmp_path / "phone.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-y",
+            "-display_rotation:v:0",
+            str(rotation),
+            "-i",
+            str(base),
+            "-c",
+            "copy",
+            str(source),
+        ],
+        check=True,
+        timeout=30,
+    )
+    before = sha(source)
+    result = retime_video(
+        source,
+        tmp_path / "output.mp4",
+        source_sha256=before,
+        absolute_start_ms=0,
+        absolute_end_ms=200,
+        plan=build_plan(200, []),
+        frame_rate=F(25),
+        limits=LIMITS,
+        check=lambda: None,
+    )
+    width, height = (32, 64) if rotation in (90, 270) else (64, 32)
+    assert (result.width, result.height, result.frame_count) == (width, height, 5)
+    decoded = subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-xerror",
+            "-i",
+            str(result.path),
+            "-frames:v",
+            "1",
+            "-pix_fmt",
+            "rgb24",
+            "-f",
+            "rawvideo",
+            "-",
+        ],
+        check=True,
+        capture_output=True,
+        timeout=30,
+    ).stdout
+    assert len(decoded) == width * height * 3
+    actual = []
+    for x, y in (
+        (width // 4, height // 4),
+        (3 * width // 4, height // 4),
+        (width // 4, 3 * height // 4),
+        (3 * width // 4, 3 * height // 4),
+    ):
+        pixel = decoded[(y * width + x) * 3 : (y * width + x) * 3 + 3]
+        distances = [
+            sum((a - b) ** 2 for a, b in zip(pixel, color, strict=True)) for color in colors
+        ]
+        assert min(distances) < 144
+        actual.append(distances.index(min(distances)))
+    assert actual == expected_ids
+    receipt = json.loads(result.receipt_json)
+    assert receipt["display_rotation_degrees_ccw"] == rotation
+    assert receipt["display_orientation_policy"] == "bake-orthogonal-display-matrix-v1"
+    assert receipt["odd_padding_right_bottom"] == [0, 0]
+    assert sha(source) == before
+
+
+def test_arbitrary_display_matrix_fails_explicitly(tmp_path):
+    from videotranslate.execution.contracts import StageFailure
+    from videotranslate.media.fit_plan import build_plan
+
+    base = tmp_path / "base.mp4"
+    video(base)
+    source = tmp_path / "angled.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-y",
+            "-display_rotation:v:0",
+            "45",
+            "-i",
+            str(base),
+            "-c",
+            "copy",
+            str(source),
+        ],
+        check=True,
+        timeout=30,
+    )
+    with pytest.raises(StageFailure) as failure:
+        retime_video(
+            source,
+            tmp_path / "out.mp4",
+            source_sha256=sha(source),
+            absolute_start_ms=0,
+            absolute_end_ms=200,
+            plan=build_plan(200, []),
+            frame_rate=F(25),
+            limits=LIMITS,
+            check=lambda: None,
+        )
+    assert failure.value.code.value == "INVALID_MEDIA" and not (tmp_path / "out.mp4").exists()

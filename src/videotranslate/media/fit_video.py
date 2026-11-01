@@ -76,6 +76,49 @@ def _probe(path, budget, *, counted=False):
         raise invalid() from None
 
 
+def _display_rotation(stream):
+    """Support pure orthogonal display matrices; bake FFmpeg's CCW orientation.
+
+    libavutil/display.h defines the 16.16 linear/translation and 2.30
+    perspective entries. Reject scale/shear/reflection/perspective/translation
+    rather than pretending their display geometry is just coded dimensions.
+    """
+    matrices = [
+        item
+        for item in stream.get("side_data_list", [])
+        if item.get("side_data_type") == "Display Matrix"
+    ]
+    if not matrices:
+        if stream.get("tags", {}).get("rotate", "0") not in ("0", "0.0"):
+            raise invalid()
+        return 0
+    if len(matrices) != 1:
+        raise invalid()
+    raw = matrices[0].get("displaymatrix")
+    if type(raw) is not str or len(raw) > 512:
+        raise invalid()
+    rows = [line for line in raw.splitlines() if line.strip()]
+    if len(rows) != 3:
+        raise invalid()
+    values = []
+    for line in rows:
+        row = re.fullmatch(r"\s*[0-9a-fA-F]{8}:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s*", line)
+        if row is None:
+            raise invalid()
+        values.extend(int(value) for value in row.groups())
+    unit, perspective = 65536, 1073741824
+    canonical = {
+        (unit, 0, 0, 0, unit, 0, 0, 0, perspective): 0,
+        (0, -unit, 0, unit, 0, 0, 0, 0, perspective): 90,
+        (-unit, 0, 0, 0, -unit, 0, 0, 0, perspective): 180,
+        (0, unit, 0, -unit, 0, 0, 0, 0, perspective): 270,
+    }
+    rotation = canonical.get(tuple(values))
+    if rotation is None:
+        raise invalid()
+    return rotation
+
+
 def retime_video(
     source: Path,
     destination: Path,
@@ -117,6 +160,7 @@ def retime_video(
             origin, duration = timeline_bounds(info)
             stream = next(s for s in info["streams"] if s.get("codec_type") == "video")
             width, height = int(stream["width"]), int(stream["height"])
+            rotation = _display_rotation(stream)
             if (
                 absolute_end_ms > round(duration * 1000) + 1
                 or not 1 <= width <= 8192
@@ -126,6 +170,11 @@ def retime_video(
                 raise ValueError()
         except (ValueError, KeyError, TypeError, StopIteration, OverflowError):
             raise invalid() from None
+        display_width, display_height = (
+            (height, width) if rotation in (90, 270) else (width, height)
+        )
+        padded_width = display_width + display_width % 2
+        padded_height = display_height + display_height % 2
         timestamp = f"(PTS*TB*1000-{absolute_start_ms})"
         mapped = expression(plan, timestamp)
         rate = f"{frame_rate.numerator}/{frame_rate.denominator}"
@@ -199,8 +248,9 @@ def retime_video(
                 or measured_rate != frame_rate
                 or measured["codec_name"] != "h264"
                 or measured["pix_fmt"] != "yuv420p"
-                or int(measured["width"]) != width + (width % 2)
-                or int(measured["height"]) != height + (height % 2)
+                or int(measured["width"]) != padded_width
+                or int(measured["height"]) != padded_height
+                or _display_rotation(measured) != 0
                 or abs(seconds - Fraction(count, 1) / frame_rate) > Fraction(1, 1000000)
                 or not 0 < output.stat().st_size <= limits.max_output_bytes
             ):
@@ -234,7 +284,10 @@ def retime_video(
             "frame_arrival_rounding": "floor-after-map-1us-ticks-v1",
             "initial_picture": "clone-first-selected-to-zero",
             "tail_picture": "clone-last-through-ceiling-grid",
-            "odd_padding_right_bottom": [width % 2, height % 2],
+            "odd_padding_right_bottom": [display_width % 2, display_height % 2],
+            "display_orientation_policy": "bake-orthogonal-display-matrix-v1",
+            "display_rotation_degrees_ccw": rotation,
+            "coded_dimensions": [width, height],
             "source_sha256": source_sha256,
             "absolute_selection_ms": [absolute_start_ms, absolute_end_ms],
             "common_origin_seconds": origin,
@@ -247,8 +300,8 @@ def retime_video(
             round(seconds * 1000),
             "h264",
             "mov,mp4,m4a,3gp,3g2,mj2",
-            width + width % 2,
-            height + height % 2,
+            padded_width,
+            padded_height,
             frame_rate,
             count,
             receipt(facts),
