@@ -130,8 +130,7 @@ def warp(audio, destination, *, knots=None, ratio=None, limits, check):
         budget.run(
             [
                 sys.executable,
-                "-m",
-                "videotranslate.media.offline_warp_runner",
+                str(Path(__file__).with_name("offline_warp_runner.py")),
                 str(config),
                 str(raw.path),
                 str(output),

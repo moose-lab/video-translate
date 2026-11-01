@@ -53,3 +53,16 @@ def test_invalid_speed_infeasible_plan_and_window_mismatch(tmp_path):
         retime_audio(
             audio, infeasible, tmp_path / "infeasible.wav", limits=LIMITS, check=lambda: None
         )
+
+
+def test_native_warp_child_uses_frozen_module_file_without_pythonpath(tmp_path, monkeypatch):
+    """Hosted controllers may import an archive without installing it in the venv."""
+    audio, _ = marked(tmp_path / "natural.wav", seconds=1)
+    monkeypatch.delenv("PYTHONPATH", raising=False)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    monkeypatch.chdir(outside)
+    result = fit_voice(
+        audio, tmp_path / "fit.wav", speed=F(5, 4), limits=LIMITS, check=lambda: None
+    )
+    assert result.sample_count == 38400
