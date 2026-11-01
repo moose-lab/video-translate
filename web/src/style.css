@@ -439,3 +439,14 @@ textarea:focus-visible { outline: 3px solid #90bca9; outline-offset: 2px; }
 .table-scroll th, .table-scroll td { padding: .75rem; text-align: start; border-bottom: 1px solid #dfe9e1; white-space: nowrap; }
 @media (max-width: 800px) { .settings-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 500px) { .settings-fields { grid-template-columns: minmax(0, 1fr); } .fit-workspace .actions { flex-wrap: wrap; } }
+
+.role-list, .reference-library, .reference-source-rows { list-style: none; padding: 0; }
+.role-editor, .reference-source-row, .reference-library > li { border-top: 1px solid #dfe9e1; padding: 1rem 0; }
+.role-reference-panel h3 { margin: 1.5rem 0 1rem; }
+.role-reference-panel h4 { margin: .5rem 0; font-size: .95rem; }
+.role-reference-panel .actions { flex-wrap: wrap; }
+.role-reference-panel button { font-size: .8rem; }
+.reference-extract, .reference-binding { border: 1px solid #dfe9e1; padding: 1rem; margin-top: .75rem; border-radius: 6px; background: #f6f8f5; }
+.reference-library audio { display: block; width: 100%; margin: .75rem 0; }
+.role-reference-panel p { white-space: pre-wrap; }
+@media (max-width: 500px) { #roles-reference-title { max-width: 100%; } section:has(> .section-head > #roles-reference-title) > .section-head { flex-wrap: wrap; } }

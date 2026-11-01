@@ -1,0 +1,13 @@
+import {useState} from "react";
+import {api} from "../api/client";
+import {projectPath} from "../api/projects";
+import type {Speaker, ReferenceVersion} from "./referenceTypes";
+import type {SourceGuard} from "./targetTypes";
+import {useAction} from "./useAction";
+import ReferenceBindingEditor from "./ReferenceBindingEditor";
+export default function RoleEditor({projectId, csrf, role, source, references, refreshVersion, onChanged}: {projectId: string; csrf: string; role: Speaker; source: SourceGuard | null; references: ReferenceVersion[]; refreshVersion: number; onChanged: () => void}) {
+  const [draft, setDraft] = useState<{revision: number; name: string; description: string} | null>(null), [bindingOpen, setBindingOpen] = useState(false), {busy, error, perform} = useAction();
+  function edit(change: {name?: string; description?: string}) {setDraft(previous => ({...(previous ?? {revision: role.revision, name: role.name, description: role.description}), ...change}));}
+  async function save(archive = false) {const body = archive ? {revision: role.revision, archived: true} : draft; if (!body) return; const result = await perform(signal => api<Speaker>(`${projectPath(projectId)}/speakers/${encodeURIComponent(role.id)}`, {method: "PATCH", signal, body: JSON.stringify(body)}, csrf)); if (result) {setDraft(null); onChanged();}}
+  return <li className="role-editor"><h4><bdi dir="auto">{role.name}</bdi>{role.archived ? " · 已归档" : ""}</h4>{!role.archived && <><div className="settings-fields"><label>角色名称 {role.name}<input dir="auto" maxLength={100} disabled={busy} value={draft?.name ?? role.name} onChange={event => edit({name: event.target.value})} /></label><label>角色说明 {role.name}<input dir="auto" maxLength={1000} disabled={busy} value={draft?.description ?? role.description} onChange={event => edit({description: event.target.value})} /></label></div><div className="actions"><button className="secondary" disabled={busy || !draft?.name.trim()} onClick={() => void save()}>保存角色 {role.name}</button>{draft && <button className="link" disabled={busy} onClick={() => setDraft(null)}>放弃角色修改</button>}<button className="secondary" disabled={busy || !!draft} onClick={() => void save(true)}>归档角色 {role.name}</button><button className="link" aria-expanded={bindingOpen} onClick={() => setBindingOpen(!bindingOpen)}>角色默认参考音</button></div><p className="muted">仍被源台词使用的角色不能归档；请先重新分配相关台词。</p>{bindingOpen && source && <ReferenceBindingEditor projectId={projectId} csrf={csrf} source={source} kind="role" subjectId={role.id} subjectRevision={role.revision} references={references} refreshVersion={refreshVersion} onChanged={onChanged} />}</>}{error && <p className="error" role="alert">{error}</p>}</li>;
+}

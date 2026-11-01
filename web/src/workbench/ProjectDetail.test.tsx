@@ -143,3 +143,12 @@ it("pins a dirty source draft to its original project revision until explicitly 
   await waitFor(() => expect(writes).toHaveLength(2));
   expect(writes[1]).toMatchObject({revision: 8, source_asset_id: "asset", start_ms: 6000, end_ms: 30000});
 });
+it("opens manual role/reference editing explicitly without submitting media or provider work", async () => {
+  const user = userEvent.setup();
+  const fetch = fixture(path => path.includes("/speakers?") ? ok({items: [{id: "speaker", selection_id: "selection", name: "Role A", description: "", revision: 1, archived: false}], total: 1}) : path.includes("/references?") ? ok({items: [], total: 0}) : undefined);
+  open(); await screen.findByRole("heading", {name: "Source film"});
+  expect(fetch.mock.calls.some(([path]) => String(path).includes("/speakers?"))).toBe(false);
+  await user.click(screen.getByRole("button", {name: "编辑角色与参考音"}));
+  expect(await screen.findByLabelText("新角色名称")).toBeTruthy();
+  expect(fetch.mock.calls.filter(([, init]) => init?.method && init.method !== "GET")).toHaveLength(0);
+});
