@@ -5,6 +5,7 @@ file, check wall time during Python/native subprocess work, and reap on failure.
 """
 
 import hashlib
+import json
 import math
 import subprocess
 import sys
@@ -15,8 +16,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..execution.contracts import FailureCode, StageFailure
-from .audio import AUDIO_FORMATS, AudioFile, inspect, validate_audio
+from .audio import AUDIO_FORMATS, AudioFile, validate_audio
 from .finishing_types import FinishedAudio, RenderLimits, receipt
+from .timing import timeline_bounds
 
 RATE = 48000
 CHANNELS = 2
@@ -149,16 +151,19 @@ def write_block(out, values):
 
 
 def measure(path, budget):
-    size = path.stat().st_size
-    if not 0 < size <= budget.limits.max_output_bytes or size % FRAME_BYTES:
-        raise invalid()
-    frames, peak = 0, 0.0
-    for data in blocks(path, budget.check):
-        frames += len(data) // CHANNELS
-        peak = max(peak, max(abs(x) for x in data))
-        if frames > MAX_FRAMES:
-            raise limited()
-    return FloatAudio(path, frames, peak, digest(path, budget.check), size)
+    try:
+        size = path.stat().st_size
+        if not 0 < size <= budget.limits.max_output_bytes or size % FRAME_BYTES:
+            raise invalid()
+        frames, peak = 0, 0.0
+        for data in blocks(path, budget.check):
+            frames += len(data) // CHANNELS
+            peak = max(peak, max(abs(x) for x in data))
+            if frames > MAX_FRAMES:
+                raise limited()
+        return FloatAudio(path, frames, peak, digest(path, budget.check), size)
+    except OSError:
+        raise invalid() from None
 
 
 def _normalize(audio, destination, budget):
@@ -169,10 +174,34 @@ def _normalize(audio, destination, budget):
     # sample decoder rounding only for non-48k input, never infer actual length.
     estimate = (audio.duration_ms * RATE + 999) // 1000
     budget.preflight(estimate * FRAME_BYTES + 8192)
-    info = inspect(
-        audio.path, AUDIO_FORMATS, timeout=budget.limits.max_wall_seconds, check=budget.check
-    )
-    stream = info["streams"][0]
+    try:
+        info = json.loads(
+            budget.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-protocol_whitelist",
+                    "file,pipe",
+                    "-format_whitelist",
+                    AUDIO_FORMATS,
+                    "-show_format",
+                    "-show_streams",
+                    "-of",
+                    "json",
+                    str(audio.path),
+                ]
+            )
+        )
+        stream = info["streams"][0]
+        _, duration = timeline_bounds(info)
+        if (
+            round(duration * 1000) != audio.duration_ms
+            or int(stream["sample_rate"]) != audio.sample_rate
+        ):
+            raise ValueError()
+    except (ValueError, KeyError, IndexError, TypeError, OverflowError):
+        raise invalid() from None
     if (
         len(info["streams"]) != 1
         or stream.get("codec_type") != "audio"
@@ -219,7 +248,7 @@ def normalize(audio, destination, *, limits, check):
     with tempfile.TemporaryDirectory(prefix="vt-float-", dir=destination.parent) as d:
         budget = Budget(limits, check, d)
         result = _normalize(audio, Path(d) / "input.raw", budget)
-        result.path.replace(destination)
+        publish(result.path, destination)
         return FloatAudio(destination, result.frames, result.peak, result.sha256, result.byte_size)
 
 
@@ -310,5 +339,14 @@ def finish(raw, destination, budget, facts):
         receipt(facts),
     )
     budget.check()
-    wav.replace(destination)
+    publish(wav, destination)
     return result
+
+
+def publish(owned, destination):
+    """Exclusive same-filesystem publication; remove only the owned temp name."""
+    try:
+        destination.hardlink_to(owned)
+    except OSError:
+        raise invalid() from None
+    owned.unlink()

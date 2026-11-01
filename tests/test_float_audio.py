@@ -80,3 +80,68 @@ def test_corrupt_input_and_unsupported_channels_rejected(tmp_path):
     multi = float_wav(tmp_path / "multi.wav", 48, channels=3)
     with pytest.raises(StageFailure):
         normalize(multi, tmp_path / "multi.raw", limits=LIMITS, check=lambda: None)
+
+
+def test_corrupted_duration_proof_rejects_before_resampling(tmp_path):
+    audio = float_wav(tmp_path / "a.wav", 4800)
+    with pytest.raises(StageFailure):
+        normalize(
+            replace(audio, duration_ms=1), tmp_path / "bad.raw", limits=LIMITS, check=lambda: None
+        )
+
+
+def test_aggregate_temporary_deadline_and_exclusive_publication(tmp_path):
+    import time
+    from dataclasses import replace
+
+    from videotranslate.media.float_audio import Budget, publish
+
+    budget = Budget(replace(LIMITS, max_temporary_bytes=100), lambda: None, tmp_path)
+    (tmp_path / "first").write_bytes(b"x" * 60)
+    with pytest.raises(StageFailure):
+        budget.preflight(50)
+    budget.deadline = time.monotonic() - 1
+    with pytest.raises(StageFailure):
+        budget.check()
+    owned, other = tmp_path / "owned", tmp_path / "other"
+    owned.write_bytes(b"mine")
+    other.write_bytes(b"theirs")
+    with pytest.raises(StageFailure):
+        publish(owned, other)
+    assert other.read_bytes() == b"theirs" and owned.read_bytes() == b"mine"
+
+
+@pytest.mark.parametrize(
+    "field", ["max_output_bytes", "max_temporary_bytes", "max_wall_seconds", "max_video_frames"]
+)
+@pytest.mark.parametrize("value", [True, 1.1, "1", 0, -1, 10**100])
+def test_every_limit_field_uses_strict_bounded_integer(field, value):
+    from dataclasses import asdict
+
+    config = asdict(LIMITS)
+    config[field] = value
+    with pytest.raises(ValueError):
+        RenderLimits(**config)
+
+
+def test_real_supervised_process_timeout_is_killed_and_reaped(tmp_path, monkeypatch):
+    import subprocess
+    import sys
+    import time
+
+    from videotranslate.media.float_audio import Budget
+
+    original = subprocess.Popen
+    children = []
+
+    def capture(*args, **kwargs):
+        process = original(*args, **kwargs)
+        children.append(process)
+        return process
+
+    monkeypatch.setattr(subprocess, "Popen", capture)
+    budget = Budget(LIMITS, lambda: None, tmp_path)
+    budget.deadline = time.monotonic() + 0.03
+    with pytest.raises(StageFailure):
+        budget.run([sys.executable, "-c", "import time;time.sleep(3)"])
+    assert len(children) == 1 and children[0].poll() is not None
