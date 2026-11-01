@@ -183,3 +183,11 @@ STAGES["source_import"] = StageDefinition(
     source_import_execution.publication_current, command_only=True,
     scope_suffix=source_import_execution.command_scope,
 )
+
+from ..dubbing import waveforms, waveforms_execution  # noqa: E402
+
+STAGES["waveform_envelope"] = StageDefinition(
+    "waveform_envelope", waveforms.options, waveforms.inputs,
+    waveforms_execution.handler, waveforms_execution.publish, waveforms.publication_current,
+    command_only=True, scope_suffix=waveforms.command_scope,
+)

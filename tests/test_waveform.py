@@ -81,3 +81,24 @@ def test_full_bytes_hash_limits_and_cancel(tmp_path):
 
     with pytest.raises(CancellationRequested):
         envelope(path, expected_sha256=sha, check=stop)
+
+
+def test_truncated_pcm_unsupported_width_and_timeout_are_rejected(tmp_path):
+    from videotranslate.media.waveform import envelope
+
+    path = tmp_path / "bad.wav"
+    pcm(path, [1] * 8000)
+    data = path.read_bytes()[:-10]
+    path.write_bytes(data)
+    with pytest.raises(StageFailure):
+        envelope(path, expected_sha256=hashlib.sha256(data).hexdigest())
+    with wave.open(str(path), "wb") as out:
+        out.setnchannels(1)
+        out.setsampwidth(1)
+        out.setframerate(8000)
+        out.writeframes(b"\x80" * 8)
+    with pytest.raises(StageFailure):
+        envelope(path, expected_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+    sha = pcm(path, [1] * 8000)
+    with pytest.raises(StageFailure):
+        envelope(path, expected_sha256=sha, timeout=0)

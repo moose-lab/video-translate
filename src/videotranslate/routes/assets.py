@@ -242,6 +242,15 @@ def asset_content(
     )
     if asset is None:
         raise APIError(404, "NOT_FOUND", "Resource not found")
+    if asset.kind == "waveform" or asset.filename == "waveform.json":
+        from fastapi.responses import JSONResponse
+
+        from ..dubbing.waveforms_execution import content_for_asset
+
+        return JSONResponse(
+            content_for_asset(db, asset, request.app.state.storage),
+            headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
+        )
     # Copy the authorized immutable read facts before ending the SQL scope.
     # A browser can keep a range body open for minutes; it must not reserve a
     # pooled connection while storage opens or the receiver applies backpressure.

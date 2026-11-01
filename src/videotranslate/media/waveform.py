@@ -1,6 +1,5 @@
 """Bounded, block-streamed PCM envelope; sample frames are the only time grid."""
 
-import hashlib
 import math
 import sys
 import time
@@ -9,6 +8,7 @@ from array import array
 from pathlib import Path
 
 from ..execution.contracts import FailureCode, StageFailure
+from .float_audio import digest
 
 POLICY = "pcm-envelope-v1"
 MAX_BYTES = 512 * 1024 * 1024
@@ -51,12 +51,7 @@ def envelope(
     active()
     if not 0 < path.stat().st_size <= max_bytes:
         raise StageFailure(FailureCode.MEDIA_LIMIT)
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        while chunk := stream.read(1024 * 1024):
-            active()
-            digest.update(chunk)
-    if digest.hexdigest() != expected_sha256:
+    if digest(path, active) != expected_sha256:
         raise StageFailure(FailureCode.INVALID_MEDIA)
     try:
         with wave.open(str(path)) as source:

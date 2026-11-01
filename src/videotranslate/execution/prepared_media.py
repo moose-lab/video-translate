@@ -8,6 +8,7 @@ from .contracts import LeaseLost
 from .prepared import bounded, current_operation
 
 FORMATS = {
+    "json": "application/json",
     "mp4": "video/mp4",
     "mov": "video/quicktime",
     "mkv": "video/x-matroska",

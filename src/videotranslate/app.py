@@ -19,6 +19,7 @@ from .routes import (
     runs,
     source_imports,
     synthesis,
+    waveforms,
     workflow,
 )
 from .storage import make_storage
@@ -47,5 +48,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(references.router, prefix="/api")
     app.include_router(synthesis.router, prefix="/api")
     app.include_router(finishing.router, prefix="/api")
+    app.include_router(waveforms.router, prefix="/api")
     app.include_router(source_imports.router, prefix="/api")
     return app
