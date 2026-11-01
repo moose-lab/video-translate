@@ -1,0 +1,83 @@
+name: video-translate
+
+x-runtime: &runtime
+  image: ${VT_RUNTIME_IMAGE:-video-translate-runtime:local}
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.runtime
+    args:
+      VT_SOURCE_REVISION: ${VT_SOURCE_REVISION:-unrecorded}
+  env_file:
+    - ${VT_RUNTIME_ENV_FILE:-../.env.production}
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:rw,nosuid,nodev,size=3g,mode=1777
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 256
+
+services:
+  # PostgreSQL and private S3 are provisioned separately; credentials stay server-side.
+  migrate:
+    <<: *runtime
+    command: [alembic, upgrade, head]
+    restart: "no"
+    mem_limit: 1g
+
+  api:
+    <<: *runtime
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: [uvicorn, "videotranslate.app:create_app", --factory, --host, 0.0.0.0, --port, "8000", --no-proxy-headers]
+    restart: unless-stopped
+    mem_limit: 2g
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; from sqlalchemy import create_engine,text; from videotranslate.config import Settings; e=create_engine(Settings().database_url.get_secret_value(),hide_parameters=True); c=e.connect(); assert c.execute(text('SELECT 1')).scalar()==1; c.close(); e.dispose(); assert urlopen('http://127.0.0.1:8000/api/languages?limit=1',timeout=5).status==200"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  worker:
+    <<: *runtime
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: [python, -m, videotranslate.execution.worker]
+    restart: unless-stopped
+    mem_limit: 4g
+    cpus: 2
+    stop_grace_period: 45s
+
+  web:
+    image: ${VT_WEB_IMAGE:-video-translate-web:local}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        VT_SOURCE_REVISION: ${VT_SOURCE_REVISION:-unrecorded}
+    depends_on:
+      api:
+        condition: service_healthy
+    # Existing trusted TLS ingress forwards the public HTTPS origin to this loopback port.
+    ports:
+      - "127.0.0.1:${VT_WEB_PORT:-8080}:8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
