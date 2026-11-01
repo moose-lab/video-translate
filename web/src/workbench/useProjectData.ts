@@ -29,5 +29,5 @@ export function useProjectData(id: string, offset: number, runOffset: number) {
     api<SourceWorkflow>(`${projectPath(id)}/workflow/${encodeURIComponent(workflowId)}`, {signal: controller.signal}).then(value => {if (active) setWorkflow(value);}).catch(() => {});
     return () => {active = false; controller.abort();};
   }, [id, workflowId, version]);
-  return {project, timeline, runs, providers, error, updating, refresh, connection, eventSequence, workflow, setWorkflow: (value: SourceWorkflow) => {setWorkflowId(value.id); setWorkflow(value);}};
+  return {project, timeline, runs, providers, error, updating, refresh, refreshVersion: version, connection, eventSequence, workflow, setWorkflow: (value: SourceWorkflow) => {setWorkflowId(value.id); setWorkflow(value);}};
 }

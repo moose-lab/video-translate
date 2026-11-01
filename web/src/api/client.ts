@@ -11,6 +11,8 @@ const messages: Record<string, string> = {
   CONFIGURATION: "服务配置需要检查。", AUTHENTICATION: "服务认证需要检查。",
   UNSUPPORTED_LANGUAGE: "当前服务不支持所选语言，请检查服务配置。", TRANSIENT: "服务暂时不可用。",
   LEASE_EXPIRED: "任务执行已中断，请检查状态后重试。",
+  TRANSLATION_PROTECTED: "所选译文均已锁定或已确认，请保留现有译文或先手动调整保护状态。",
+  CONTEXT_LIMIT: "源文字超出当前完整语境处理范围，请调整片段或使用逐行模式。",
 };
 export function safeCode(value: unknown): string {return typeof value === "string" && Object.hasOwn(messages, value) ? value : "REQUEST_FAILED";}
 export function safeFailureMessage(value: unknown): string {return messages[safeCode(value)] ?? "操作未完成，请检查输入后重试。";}
