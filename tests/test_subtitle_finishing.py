@@ -109,7 +109,7 @@ def test_real_cjk_rtl_burn_in_keeps_frame_grid_and_literal_tags_at_bottom(tmp_pa
     assert info["streams"][0]["avg_frame_rate"] == "30/1"
 
 
-def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path):
+def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path, monkeypatch):
     from videotranslate.media.float_audio import Budget
     from videotranslate.media.subtitle_finishing import burn_in
     from videotranslate.media.subtitle_fonts import select_fonts
@@ -134,15 +134,24 @@ def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path)
         timeout=30,
     )
     budget = Budget(LIMITS, lambda: None, tmp_path)
-    mixed = select_fonts("HelloWorld 你好", profile="auto", budget=budget)
+    import videotranslate.media.subtitle_finishing as subtitles
+
+    text = "你好，世界 · Hello world\nمرحبا بالعالم 123 · שלום עולם"
+    mixed = select_fonts(text, profile="auto", budget=budget)
     cjk = select_fonts("你好", profile="auto", budget=budget)
+    original_ass_file = subtitles.ass_file
     pixels = []
-    for index, fonts in enumerate((mixed, cjk)):
+    for index in range(2):
+        if index:
+            def cjk_default(*args, **kwargs):
+                kwargs["family"] = cjk[0].family
+                return original_ass_file(*args, **kwargs)
+            monkeypatch.setattr(subtitles, "ass_file", cjk_default)
         result = burn_in(
             source,
-            [dict(id="a", start_ms=0, end_ms=1000, text="你好")],
+            [dict(id="a", start_ms=0, end_ms=1000, text=text)],
             tmp_path / f"glyph-{index}.mp4",
-            fonts=fonts,
+            fonts=mixed,
             width=640,
             height=360,
             font_size=72,
@@ -171,6 +180,9 @@ def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path)
                 timeout=30,
             ).stdout
         )
-    # Explicitly chosen CJK face is the independent reference. Different tofu
-    # boxes can themselves differ, so comparing two Han characters is too weak.
-    assert sum(abs(a - b) > 40 for a, b in zip(*pixels, strict=True)) < 20
+    # Measured glyph faces must win over the paragraph's default Latin/CJK
+    # family. This mixed paragraph reproduced missing CJK boxes; a CJK-only
+    # cue did not. Different tofu boxes can themselves differ, so comparing
+    # two Han characters is too weak.
+    difference = sum(abs(a - b) > 40 for a, b in zip(*pixels, strict=True))
+    assert difference < 20, difference
