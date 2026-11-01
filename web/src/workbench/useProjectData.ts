@@ -9,7 +9,7 @@ export function useProjectData(id: string, offset: number, runOffset: number) {
   const [updating, setUpdating] = useState(false), [version, setVersion] = useState(0), [connection, setConnection] = useState("正在连接"), [eventSequence, setEventSequence] = useState(0);
   const [workflowId, setWorkflowId] = useState<string | null>(null), [workflow, setWorkflow] = useState<SourceWorkflow | null>(null);
   const refresh = useCallback(() => setVersion(value => value + 1), []);
-  useEffect(() => subscribeProjectEvents(id, {onChange: refresh, onState: setConnection, onEvent: event => {setEventSequence(event.sequence); const workflow = event.facts?.workflow_id; if (typeof workflow === "string" && /^[A-Za-z0-9-]{1,36}$/.test(workflow)) setWorkflowId(workflow);}}), [id, refresh]);
+  useEffect(() => subscribeProjectEvents(id, {onChange: refresh, onState: setConnection, onEvent: event => {setEventSequence(event.sequence); const workflow = event.facts?.workflow_id; if (event.kind.startsWith("workflow.") && typeof workflow === "string" && /^[A-Za-z0-9-]{1,36}$/.test(workflow)) setWorkflowId(workflow);}}), [id, refresh]);
   useEffect(() => {
     let active = true; const controller = new AbortController(), options = {signal: controller.signal};
     setUpdating(true);

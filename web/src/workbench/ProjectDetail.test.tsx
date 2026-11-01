@@ -13,6 +13,8 @@ afterEach(() => {cleanup(); vi.restoreAllMocks(); window.history.replaceState(nu
 function fixture(extra?: (path: string, init?: RequestInit) => Response | Promise<Response> | undefined) {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const path = String(input); const override = extra?.(path, init); if (override) return override;
+    if (path === "/api/projects/p/pipeline/current") return ok(null);
+    if (path.includes("/pipeline?") || path.includes("/language-tracks?")) return ok({items: [], total: 0});
     if (path === "/api/projects/p") return ok(project);
     if (path.includes("/timeline")) return ok(timeline);
     if (path.includes("/runs?")) return ok({items: [probe], total: 1});
@@ -159,4 +161,12 @@ it("opens the manual source text and timing tools without applying edits or impo
   expect(await screen.findByLabelText("源文字 第 1 行")).toBeTruthy();
   expect(screen.getByLabelText("导入格式")).toBeTruthy();
   expect(fetch.mock.calls.filter(([, init]) => init?.method && init.method !== "GET")).toHaveLength(0);
+});
+
+it("opens the persistent full workflow panel as read-only until explicit configuration", async () => {
+  const fetch = fixture(); open();
+  expect(await screen.findByRole("heading", {name: "完整配音流程"})).toBeTruthy();
+  expect(await screen.findByText(/尚无保存的完整流程/)).toBeTruthy();
+  expect(fetch.mock.calls.some(([path]) => String(path).endsWith("/pipeline/current"))).toBe(true);
+  expect(fetch.mock.calls.every(([, init]) => !init?.method)).toBe(true);
 });

@@ -16,6 +16,7 @@ export default function FitWorkspace({projectId, csrf, refreshVersion, targetLan
   const [selected, setSelected] = useState(() => {const value = new URLSearchParams(window.location.hash.split("?")[1]).get("fit"); return value && /^[A-Za-z0-9-]{1,36}$/.test(value) ? value : "";}), [plan, setPlan] = useState<FitDetail | null>(null);
   const [tags, setTags] = useState<string[]>(targetLanguages.includes("zh") ? ["zh"] : targetLanguages.slice(0, 1)), [purpose, setPurpose] = useState<"dub" | "incomplete_preview">("incomplete_preview"), [capture, setCapture] = useState<(FitCapture & {purpose: "dub" | "incomplete_preview"}) | null>(null), [settingsDirty, setSettingsDirty] = useState(false);
   const {busy, error, perform} = useAction(), path = projectPath(projectId), source = sourceGuard(sourceTimeline), revision = refreshVersion + version;
+  useEffect(() => {const changed = () => {const value = new URLSearchParams(window.location.hash.split("?")[1]).get("fit"); if (value && /^[A-Za-z0-9-]{1,36}$/.test(value) && value !== selected) {setSelected(value); setPlan(null);}}; window.addEventListener("hashchange", changed); return () => window.removeEventListener("hashchange", changed);}, [selected]);
   function reload() {setVersion(value => value + 1);}
   useEffect(() => {
     let active = true; const controller = new AbortController();

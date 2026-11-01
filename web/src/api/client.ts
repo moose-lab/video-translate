@@ -20,6 +20,9 @@ const messages: Record<string, string> = {
   FIT_AUDIO_NOT_READY: "正式配音要求每行都有可用且已接受的自然音频，请先完成听审或选择未完成试听预览。",
   FIT_TRACK_INCOMPLETE: "拟合需包含当前源字幕的全部行，请重新读取输入。", FIT_SNAPSHOT_LIMIT: "拟合输入超出大小限制，请减少目标语言。",
   DELIVERY_INPUT_CHANGED: "拟合方案或媒体已变化，请重新核对当前方案后再导出。", INVALID_AUDIO_TRACK: "请选择包含在此导出中的默认音轨。",
+  PIPELINE_ROW_LIMIT: "流程最多支持 1000 行源字幕，请缩小源片段。", PIPELINE_CELL_LIMIT: "流程最多支持 1000 个目标台词，请减少语言或源行。",
+  TRANSCRIPT_REQUIRED: "当前源字幕尚未就绪，请先编辑、导入或完成源分析。", SOURCE_IMPORT_REQUIRED: "此入口需要当前手动导入的源字幕。", PIPELINE_STOPPED: "流程已停止，请先明确恢复。",
+  TARGET_ARCHIVED: "流程中的目标语言已归档，请调整语言范围。", TARGET_LOCKED_REVIEW_REQUIRED: "请先在译文编辑区核对并确认锁定的译文。", SOURCE_ROWS_REQUIRED: "当前源字幕尚无有效台词。", NATURAL_AUDIO_STALE: "已选配音过期，请在对应台词区核对后替换。",
   CONTEXT_LIMIT: "源文字超出当前完整语境处理范围，请调整片段或使用逐行模式。",
 };
 export function safeCode(value: unknown): string {return typeof value === "string" && Object.hasOwn(messages, value) ? value : "REQUEST_FAILED";}

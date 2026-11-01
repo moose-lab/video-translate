@@ -462,3 +462,11 @@ textarea:focus-visible { outline: 3px solid #90bca9; outline-offset: 2px; }
 .glossary-row button { margin-bottom: 1rem; }
 .target-text-tools > button { padding-left: 0; }
 @media (max-width: 600px) { .glossary-row { grid-template-columns: minmax(0, 1fr); gap: 0; } .glossary-row button { justify-self: start; } .panel > .section-head { flex-wrap: wrap; } }
+.pipeline-panel { margin-block: 1rem; }
+.pipeline-form, .pipeline-confirm { border: 1px solid #dfe9e1; padding: 1rem; border-radius: .5rem; margin-block: 1rem; }
+.pipeline-scope-row { display: flex; flex-wrap: wrap; gap: .5rem 2rem; padding-block: .35rem; }
+.pipeline-targets { padding-left: 1.3rem; }
+.pipeline-targets li { padding-block: .25rem .75rem; }
+.pipeline-panel small { overflow-wrap: anywhere; }
+.pipeline-panel details { margin-block: 1rem; }
+@media (max-width: 480px) { .pipeline-form, .pipeline-confirm { padding: .65rem; } .pipeline-scope-row { display: block; } }

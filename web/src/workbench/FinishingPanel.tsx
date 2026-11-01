@@ -10,6 +10,7 @@ export default function FinishingPanel({projectId, csrf, refreshVersion, targetL
   const [deliveries, setDeliveries] = useState<Page<DeliverySummary>>({items: [], total: 0}), [offset, setOffset] = useState(0), [selected, setSelected] = useState(() => savedId("delivery"));
   const [delivery, setDelivery] = useState<Delivery | null>(null), [listError, setListError] = useState(""), [detailError, setDetailError] = useState(""), [detailLoading, setDetailLoading] = useState(false);
   const [version, setVersion] = useState(0), revision = refreshVersion + version, path = projectPath(projectId);
+  useEffect(() => {const changed = () => {const id = savedId("delivery"); if (id && id !== selected) {setSelected(id); setDelivery(null);}}; window.addEventListener("hashchange", changed); return () => window.removeEventListener("hashchange", changed);}, [selected]);
   useEffect(() => {
     let active = true; const controller = new AbortController();
     api<Page<DeliverySummary>>(`${path}/deliveries?limit=50&offset=${offset}`, {signal: controller.signal}).then(page => {if (active) {setDeliveries(page); setSelected(previous => previous || page.items[0]?.id || ""); setListError("");}}).catch(error => {if (active) setListError(error instanceof ApiError ? error.message : "导出列表加载失败，请刷新重试。");});

@@ -44,3 +44,12 @@ it("preserves a detail error when a later list response arrives and offers an ex
   expect(screen.getByText(/服务器暂时无法完成操作/)).toBeTruthy();
   expect(screen.getByRole("button", {name: "重新读取导出详情"})).toBeTruthy();
 });
+it("opens a linked workflow delivery after an in-page hash navigation", async () => {
+  const {fireEvent} = await import("@testing-library/react");
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async input => String(input).includes("/deliveries?") ? ok({items: [], total: 0}) : ok({...delivery, id: "linked"}));
+  render(<FinishingPanel projectId="p" csrf="csrf" refreshVersion={0} />);
+  await screen.findByText("尚无导出任务。");
+  window.history.replaceState(null, "", "/#/projects/p?pipeline=flow-a&delivery=linked"); fireEvent(window, new HashChangeEvent("hashchange"));
+  expect(await screen.findByLabelText("导出视频预览")).toBeTruthy();
+  expect(fetch.mock.calls.some(([path]) => String(path).endsWith("/deliveries/linked"))).toBe(true);
+});

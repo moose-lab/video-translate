@@ -11,6 +11,7 @@ const ok = (value: unknown, status = 200) => new Response(JSON.stringify(value),
 afterEach(() => {cleanup(); vi.restoreAllMocks(); window.history.replaceState(null, "", "/");});
 const props = {project, sourceTimeline: data, csrf: "csrf", refreshVersion: 0, runs: [], refresh: vi.fn()};
 it("reads actual target rows and changes language without submitting cloud commands", async () => {
+  window.history.replaceState(null, "", "/#/projects/p?pipeline=flow-a&delivery=delivery");
   const user = userEvent.setup();
   const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async input => ok(String(input).includes("/synthesis?") ? emptyAudio : String(input).includes("target_language=ja") ? {...data, segments: [{...data.segments[0], translation: null}]} : data));
   render(<TargetPanel {...props} />);
@@ -19,6 +20,8 @@ it("reads actual target rows and changes language without submitting cloud comma
   await user.click(screen.getByRole("tab", {name: /日语/}));
   await waitFor(() => expect(fetch.mock.calls.some(([path]) => String(path).includes("target_language=ja"))).toBe(true));
   expect(fetch.mock.calls.every(([, init]) => !init?.method)).toBe(true);
+  expect(window.location.hash).toContain("pipeline=flow-a");
+  expect(window.location.hash).toContain("delivery=delivery");
 });
 it("preserves edited text and original source/row guards after live changes, then approves only a saved row", async () => {
   const user = userEvent.setup(); let current = data;
