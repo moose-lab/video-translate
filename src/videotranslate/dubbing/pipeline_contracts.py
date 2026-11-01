@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import Field, model_validator
 
 from .contracts import ID, Fingerprint, Revision, Strict
+from .delivery_contracts import CaptionOptions
 from .fit_contracts import Rate
 
 
@@ -15,6 +16,7 @@ class DeliveryOptions(Strict):
     include_original_comparison: bool = True
     default_audio_track: Annotated[str | None, Field(max_length=40)] = None
     captions: Literal["sidecar", "none"] = "sidecar"
+    caption_options: CaptionOptions | None = None
 
 
 class Scope(Strict):

@@ -197,7 +197,15 @@ def admit(db, project, body, actor, validated_capture, *, admission_only=False):
     snapshot = capture(db, project, parent)
     if fingerprint(snapshot) != fingerprint(validated_capture):
         blocked()
-    snapshot["choices"] = body.model_dump()
+    if (
+        body.caption_options
+        and body.caption_options.target_track is not None
+        and body.caption_options.target_track not in tags
+    ):
+        raise APIError(
+            422, "INVALID_CAPTION_TRACK", "Choose a current included target caption track"
+        )
+    snapshot["choices"] = body.model_dump(exclude_none=True)
     if fit_plans.json_size(snapshot) > 8 * 1024 * 1024:
         raise APIError(
             422, "DELIVERY_SNAPSHOT_LIMIT", "Delivery capture exceeds the bounded snapshot size"

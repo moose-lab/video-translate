@@ -194,7 +194,9 @@ def start(db, project, body, actor):
         purpose=body.purpose,
         target_track_ids=body.target_track_ids,
         delivery_track_ids=body.delivery_track_ids,
-        delivery_options=body.delivery_options.model_dump(),
+        delivery_options=body.delivery_options.model_dump(
+            exclude={"caption_options"} if body.delivery_options.caption_options is None else set()
+        ),
     )
     db.add(workflow)
     db.flush()

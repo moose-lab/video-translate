@@ -604,7 +604,9 @@ def finish_branch(db, project, workflow, rows, result):
         purpose=workflow.purpose,
         **choices,
     )
-    dispatch = fingerprint(dict(kind="delivery", fit_id=parent.id, body=delivery.model_dump()))
+    dispatch = fingerprint(
+        dict(kind="delivery", fit_id=parent.id, body=delivery.model_dump(exclude_none=True))
+    )
     link = command_link(
         db,
         project,
