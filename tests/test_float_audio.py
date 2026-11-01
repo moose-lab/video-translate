@@ -145,3 +145,87 @@ def test_real_supervised_process_timeout_is_killed_and_reaped(tmp_path, monkeypa
     with pytest.raises(StageFailure):
         budget.run([sys.executable, "-c", "import time;time.sleep(3)"])
     assert len(children) == 1 and children[0].poll() is not None
+
+
+@pytest.mark.parametrize("temporary_limit,accepted", [(13000, False), (2 * 1024**2, True)])
+def test_aggregate_includes_legacy_validator_real_padded_stdout(
+    tmp_path, monkeypatch, temporary_limit, accepted
+):
+    """Fault boundary: real ffprobe JSON gains legal whitespace, media stays real."""
+    import os
+    import sys
+    import tempfile
+    from fractions import Fraction
+
+    from videotranslate.media import audio as legacy
+    from videotranslate.media.fit_audio import fit_voice
+    from videotranslate.media.float_audio import Budget
+
+    source = float_wav(tmp_path / "input.wav", 480)
+    original_run, original_temp, original_check = (
+        legacy.run_process,
+        tempfile.TemporaryFile,
+        Budget.check,
+    )
+    handles, observations = [], []
+
+    def tracked_temp(*args, **kwargs):
+        handle = original_temp(*args, **kwargs)
+        handles.append(handle)
+        return handle
+
+    def padded_run(args, **kwargs):
+        if args[0] == "ffprobe":
+            code = (
+                "import subprocess,sys; p=subprocess.run(sys.argv[1:],stdout=subprocess.PIPE);"
+                "sys.stdout.buffer.write(b' '*12000+p.stdout);sys.exit(p.returncode)"
+            )
+            args = [sys.executable, "-c", code, *args]
+        return original_run(args, **kwargs)
+
+    def observed_check(self):
+        original_check(self)
+        inside = sum(p.stat().st_size for p in self.directory.iterdir() if p.is_file())
+        outside = sum(os.fstat(h.fileno()).st_size for h in handles if not h.closed)
+        observations.append((inside, outside))
+
+    monkeypatch.setattr(legacy, "run_process", padded_run)
+    monkeypatch.setattr(tempfile, "TemporaryFile", tracked_temp)
+    monkeypatch.setattr(Budget, "check", observed_check)
+    limits = RenderLimits(100000, temporary_limit, 30, 100)
+    destination = tmp_path / "result.wav"
+    if accepted:
+        result = fit_voice(
+            source, destination, speed=Fraction(1), limits=limits, check=lambda: None
+        )
+        assert result.sample_count == 480
+        assert max(outside for _, outside in observations) > 12000
+    else:
+        with pytest.raises(StageFailure) as failure:
+            fit_voice(source, destination, speed=Fraction(1), limits=limits, check=lambda: None)
+        assert failure.value.code.value == "MEDIA_LIMIT"
+        assert not destination.exists()
+    assert max((sum(pair) for pair in observations), default=0) <= temporary_limit
+    assert not list(tmp_path.glob("vt-warp-*"))
+
+
+def test_owned_progress_rename_between_inspection_and_accounting_is_safe(tmp_path, monkeypatch):
+    """Labelled filesystem-race boundary: a real owned file disappears after stat."""
+    from pathlib import Path
+
+    from videotranslate.media.float_audio import Budget
+
+    pending = tmp_path / "phase.next"
+    pending.write_bytes(b"bounded progress")
+    original = Path.stat
+
+    def completed_rename(path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        if path == pending:
+            pending.unlink()
+        return result
+
+    monkeypatch.setattr(Path, "stat", completed_rename)
+    budget = Budget(LIMITS, lambda: None, tmp_path)
+    budget.check()
+    budget.preflight(100)

@@ -8,11 +8,13 @@ import ctypes as C
 import ctypes.util
 import json
 import math
+import os
 import sys
 from array import array
 from pathlib import Path
 
 BLOCK = 4096
+PROCESS_BLOCK = 512
 RATE = 48000
 
 
@@ -112,10 +114,9 @@ def run(config, raw, output, receipt_path, phase):
                     written += n
 
             for mode in ("study", "process"):
-                phase.write_text(mode)
                 with raw.open("rb") as source:
                     position = 0
-                    while chunk := source.read(BLOCK * 8):
+                    while chunk := source.read((BLOCK if mode == "study" else PROCESS_BLOCK) * 8):
                         values = array("f")
                         values.frombytes(chunk)
                         if sys.byteorder != "little":
@@ -132,6 +133,23 @@ def run(config, raw, output, receipt_path, phase):
                         )
                         if mode == "process":
                             retrieve()
+                        if position == count or position % BLOCK == 0:
+                            # Report only returned native work, never mere pass entry.
+                            # Atomic replacement keeps the parent's reads complete.
+                            progress = json.dumps(
+                                {
+                                    "phase": mode,
+                                    "completed_frames": position,
+                                    "input_frames": count,
+                                    "pid": os.getpid(),
+                                },
+                                separators=(",", ":"),
+                            )
+                            if len(progress) > 256:
+                                raise ValueError("INVALID_MEDIA")
+                            pending = phase.with_suffix(".next")
+                            pending.write_text(progress)
+                            pending.replace(phase)
                     if position != count:
                         raise ValueError("INVALID_MEDIA")
             if retrieve() != -1 or written != expected:

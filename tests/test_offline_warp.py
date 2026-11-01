@@ -142,18 +142,50 @@ def test_naive_dynamic_tempo_fails_same_tail_position_criterion(tmp_path):
 
 
 @pytest.mark.parametrize("phase", ["study", "process"])
-def test_cancel_during_native_pass_kills_reaps_and_cleans(tmp_path, phase):
+def test_cancel_during_native_pass_kills_reaps_and_cleans(tmp_path, phase, monkeypatch):
+    import os
+    import subprocess
+
     from media_fixtures import float_wav
 
     audio = float_wav(
         tmp_path / "long.wav", 48000 * 10, sample=lambda i, c: 0.3 * math.sin(i * 0.08)
     )
-    seen = []
+    seen, children, waited = [], [], []
+    original_popen = subprocess.Popen
+
+    def captured_popen(args, **kwargs):
+        child = original_popen(args, **kwargs)
+        if "videotranslate.media.offline_warp_runner" in args:
+            children.append(child)
+            actual_wait = child.wait
+
+            def wait(*args, **kwargs):
+                result = actual_wait(*args, **kwargs)
+                waited.append(child.pid)
+                return result
+
+            monkeypatch.setattr(child, "wait", wait)
+        return child
+
+    monkeypatch.setattr(subprocess, "Popen", captured_popen)
 
     def check():
-        for p in tmp_path.glob("vt-warp-*/phase"):
-            if p.read_text() == phase:
-                seen.append(phase)
+        for path in tmp_path.glob("vt-warp-*/phase"):
+            raw = path.read_text()
+            progress = (
+                json.loads(raw) if raw.startswith("{") else {"phase": raw, "completed_frames": 0}
+            )
+            if progress["phase"] == phase:
+                assert progress["completed_frames"] > 0, (
+                    "phase-entry text does not prove completed native work"
+                )
+                if progress["completed_frames"] == progress["input_frames"]:
+                    continue
+                assert 0 < progress["completed_frames"] < progress["input_frames"] == 480000
+                child = children[-1]
+                assert progress["pid"] == child.pid and child.poll() is None
+                seen.append(progress)
                 raise RuntimeError("cancel-native")
 
     with pytest.raises(RuntimeError, match="cancel-native"):
@@ -164,7 +196,11 @@ def test_cancel_during_native_pass_kills_reaps_and_cleans(tmp_path, phase):
             limits=LIMITS,
             check=check,
         )
-    assert seen and sorted(p.name for p in tmp_path.iterdir()) == ["long.wav"]
+    assert seen and len(children) == 1 and children[0].pid in waited
+    assert children[0].poll() is not None
+    with pytest.raises(ChildProcessError):
+        os.waitpid(children[0].pid, os.WNOHANG)
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["long.wav"]
 
 
 def test_silence_invalid_coordinates_and_output_budget(tmp_path):
@@ -323,3 +359,99 @@ def test_successful_native_exit_with_missing_output_is_bounded_fault(tmp_path, m
     with pytest.raises(StageFailure):
         warp(audio, tmp_path / "out.wav", ratio=F(2), limits=LIMITS, check=lambda: None)
     assert not (tmp_path / "out.wav").exists()
+
+
+@pytest.mark.parametrize("fault", ["partial-frame", "short-count", "nonfinite"])
+def test_valid_native_receipt_reaches_invalid_output_measurement(tmp_path, monkeypatch, fault):
+    """Labelled output-boundary faults; the report itself is valid for this exact request."""
+    from pathlib import Path
+
+    from media_fixtures import float_wav
+
+    from videotranslate.execution.contracts import StageFailure
+    from videotranslate.media import offline_warp
+    from videotranslate.media.float_audio import Budget
+
+    audio = float_wav(tmp_path / "a.wav", 4800)
+    original_run, original_measure = Budget.run, offline_warp.measure
+    measured = []
+
+    def fake(self, args, **kwargs):
+        if "videotranslate.media.offline_warp_runner" in args:
+            Path(args[6]).write_text(
+                json.dumps(
+                    dict(engine=3, pitch_scale=1, input_frames=4800, output_frames=9600, peak=0)
+                )
+            )
+            if fault == "partial-frame":
+                payload = b"1234567"
+            elif fault == "short-count":
+                payload = b"\0" * (9599 * 8)
+            else:
+                payload = array("f", [float("nan"), 0]).tobytes() + b"\0" * (9599 * 8)
+            Path(args[5]).write_bytes(payload)
+            return b""
+        return original_run(self, args, **kwargs)
+
+    def observed_measure(path, budget):
+        measured.append(path.name)
+        return original_measure(path, budget)
+
+    monkeypatch.setattr(Budget, "run", fake)
+    monkeypatch.setattr(offline_warp, "measure", observed_measure)
+    with pytest.raises(StageFailure) as failure:
+        warp(audio, tmp_path / "out.wav", ratio=F(2), limits=LIMITS, check=lambda: None)
+    assert failure.value.code.value == "INVALID_MEDIA"
+    assert measured == ["warped.raw"]
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["a.wav"]
+
+
+@pytest.mark.parametrize("fault,exit_code", [("missing-library", 1), ("native-process-exit", 37)])
+def test_actual_isolated_native_capability_and_nonzero_fault_cleanup(
+    tmp_path, monkeypatch, fault, exit_code
+):
+    """Labelled fault injection in a real isolated child, with real probe/decode/hash."""
+    import subprocess
+    import sys
+
+    from media_fixtures import float_wav
+
+    from videotranslate.execution.contracts import StageFailure
+    from videotranslate.media.float_audio import Budget
+
+    audio = float_wav(tmp_path / "a.wav", 4800)
+    original_run, original_popen = Budget.run, subprocess.Popen
+    children = []
+
+    def capture(args, **kwargs):
+        child = original_popen(args, **kwargs)
+        if args[0] == sys.executable and args[1] == "-c":
+            children.append(child)
+        return child
+
+    def injected_run(self, args, **kwargs):
+        if "videotranslate.media.offline_warp_runner" in args:
+            script = "import os\nfrom videotranslate.media import offline_warp_runner as runner\n"
+            if fault == "missing-library":
+                script += (
+                    "def unavailable(*args,**kwargs):\n raise OSError('injected missing library')\n"
+                    "runner.C.CDLL=unavailable\n"
+                )
+            else:
+                script += (
+                    "original=runner.library\n"
+                    "def fatal_library():\n lib=original()\n"
+                    " lib.rubberband_process=lambda *args:os._exit(37)\n return lib\n"
+                    "runner.library=fatal_library\n"
+                )
+            script += "runner.main()\n"
+            args = [sys.executable, "-c", script, *args[3:]]
+        return original_run(self, args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "Popen", capture)
+    monkeypatch.setattr(Budget, "run", injected_run)
+    with pytest.raises(StageFailure) as failure:
+        warp(audio, tmp_path / "out.wav", ratio=F(2), limits=LIMITS, check=lambda: None)
+    assert failure.value.code.value == "INVALID_MEDIA"
+    assert len(children) == 1 and children[0].poll() == exit_code
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["a.wav"]

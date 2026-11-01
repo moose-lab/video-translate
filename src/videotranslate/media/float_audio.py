@@ -7,11 +7,13 @@ file, check wall time during Python/native subprocess work, and reap on failure.
 import hashlib
 import json
 import math
+import stat
 import subprocess
 import sys
 import tempfile
 import time
 from array import array
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -41,14 +43,24 @@ class Budget:
             raise ValueError("INVALID_RENDER_LIMITS")
         self.limits, self.callback, self.directory = limits, check, Path(directory)
         self.deadline = time.monotonic() + limits.max_wall_seconds
+        self.reserved_bytes = 0
+
+    def used_bytes(self):
+        total = self.reserved_bytes
+        for path in self.directory.iterdir():
+            try:
+                item = path.stat()
+            except FileNotFoundError:
+                # The native helper atomically replaces its bounded progress.
+                # One stat avoids a check/stat race; a removed name owns no bytes.
+                continue
+            if stat.S_ISREG(item.st_mode):
+                total += item.st_size
+        return total
 
     def check(self):
         self.callback()
-        if time.monotonic() > self.deadline:
-            raise limited()
-        if sum(p.stat().st_size for p in self.directory.iterdir() if p.is_file()) > (
-            self.limits.max_temporary_bytes
-        ):
+        if time.monotonic() > self.deadline or self.used_bytes() > self.limits.max_temporary_bytes:
             raise limited()
 
     def preflight(self, size, *, output=True):
@@ -57,9 +69,18 @@ class Budget:
             raise limited()
         if output and size > self.limits.max_output_bytes:
             raise limited()
-        used = sum(p.stat().st_size for p in self.directory.iterdir() if p.is_file())
-        if used + size > self.limits.max_temporary_bytes:
+        if self.used_bytes() + size > self.limits.max_temporary_bytes:
             raise limited()
+
+    @contextmanager
+    def reserve(self, size):
+        """Account bounded allocations owned by reused helpers outside our directory."""
+        self.preflight(size, output=False)
+        self.reserved_bytes += size
+        try:
+            yield
+        finally:
+            self.reserved_bytes -= size
 
     def run(self, args, *, output=None):
         # Temporary stdout is counted too; no pipe deadlock or unbounded communicate().
@@ -284,13 +305,17 @@ def finish(raw, destination, budget, facts):
         ],
         output=wav,
     )
-    validated = validate_audio(
-        wav,
-        max_bytes=budget.limits.max_output_bytes,
-        max_duration=57600,
-        timeout=budget.limits.max_wall_seconds,
-        check=budget.check,
-    )
+    # Legacy inspect/decode supervise one TemporaryFile stdout at a time, capped
+    # at 1 MiB. Reserve its full bound, including while callbacks check our files.
+    # Keep legacy defaults and its public validation contract unchanged.
+    with budget.reserve(1024 * 1024):
+        validated = validate_audio(
+            wav,
+            max_bytes=budget.limits.max_output_bytes,
+            max_duration=57600,
+            timeout=budget.limits.max_wall_seconds,
+            check=budget.check,
+        )
     decoded = budget.directory / "verified.raw"
     budget.preflight(measured.byte_size)
     budget.run(

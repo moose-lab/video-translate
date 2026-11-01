@@ -114,6 +114,13 @@ def warp(audio, destination, *, knots=None, ratio=None, limits, check):
             return finish(
                 raw.path, destination, budget, {**facts, "engine": "identity", "pitch_scale": 1}
             )
+        facts.update(
+            {
+                "native_policy": "r3-standard-process-512-v1",
+                "study_block_frames": 4096,
+                "process_block_frames": 512,
+            }
+        )
         budget.preflight(expected_output * 8)
         config, report = directory / "controls.json", directory / "receipt.json"
         config.write_text(
