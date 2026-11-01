@@ -82,13 +82,15 @@ class Budget:
         finally:
             self.reserved_bytes -= size
 
-    def run(self, args, *, output=None):
+    def run(self, args, *, output=None, capture_diagnostics=False):
         # Temporary stdout is counted too; no pipe deadlock or unbounded communicate().
         log = self.directory / "process.stdout"
         self.check()
         with log.open("wb") as out:
             try:
-                p = subprocess.Popen(args, stdout=out, stderr=subprocess.DEVNULL)
+                p = subprocess.Popen(
+                    args, stdout=out, stderr=out if capture_diagnostics else subprocess.DEVNULL
+                )
             except OSError:
                 raise StageFailure(FailureCode.CONFIGURATION) from None
             try:

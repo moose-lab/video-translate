@@ -159,7 +159,7 @@ def validate_entry(entry, fields):
         if entry["format"] == "wav"
         else VIDEO
         if entry["format"] == "mp4" and entry["kind"] == "delivery_picture"
-        else BURNED
+        else BURNED | ({"layout_policy", "layout_capability"} if "layout_policy" in data else set())
         if entry["kind"] == "delivery_burned_picture"
         else EXPORT | ({"captions"} if "captions" in data else set())
         if entry["format"] == "mp4"
@@ -310,6 +310,17 @@ def validate_checkpoint(payload, expected):
             or data.get("fonts")
             != [{k: f[k] for k in ("family", "face", "sha256")} for f in proof["fonts"]]
             or data.get("policy") != "libass_literal_font_coverage_v1"
+            or (
+                "layout_policy" in options
+                and (
+                    data.get("layout_policy") != options["layout_policy"]
+                    or data.get("layout_capability") != "libass_wrap_unicode_initialized_v1"
+                )
+            )
+            or (
+                "layout_policy" not in options
+                and data.get("layout_policy") not in {None, "legacy_wrap_v1"}
+            )
         ):
             raise ValueError("Invalid burned picture proof")
     for entry in exported:
@@ -359,6 +370,9 @@ def validate_checkpoint(payload, expected):
                     burned_picture_sha256=burned[0]["metadata"]["sha256"],
                     ass_sha256=burned[0]["metadata"]["ass_sha256"],
                 )
+                if "layout_policy" in options:
+                    receipt["layout_policy"] = options["layout_policy"]
+                    receipt["layout_capability"] = "libass_wrap_unicode_initialized_v1"
                 if captions != receipt:
                     raise ValueError("Invalid burned export caption receipt")
             elif captions is not None:

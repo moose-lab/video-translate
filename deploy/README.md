@@ -139,3 +139,5 @@ neither performs backups nor claims that rollback has been exercised.
   the configured proxy stayed separate; a sixth attempt from one client was
   limited; changing spoofed headers from an untrusted peer did not change its
   identity or bypass the limiter. This is not a live Nginx/TLS test.
+
+Caption requests capture `unicode_wrap_v2`. Burn-in initializes the exact libass graph on one frame and rejects the unsupported Unicode-wrap warning before the full render. The image build executes the same check; a filter-help option alone is insufficient. ASS downloads contain literal text and measured font family receipts, but their wrapping and font availability depend on the receiving renderer; the server-verified burned MP4 preserves the measured appearance.

@@ -198,6 +198,7 @@ def export(
             height=picture["metadata"]["height"],
             budget=budget,
             font_size=options["font_size"],
+            wrap_unicode=options.get("layout_policy") == "unicode_wrap_v2",
         )
         burned.facts["caption_proof_sha256"] = fingerprint(proof)
         outputs.append(store_file(burned, "delivery_burned_picture", "mp4"))
@@ -214,6 +215,9 @@ def export(
             burned_picture_sha256=burned.facts["sha256"],
             ass_sha256=burned.facts["ass_sha256"],
         )
+        if "layout_policy" in options:
+            caption_receipt["layout_policy"] = options["layout_policy"]
+            caption_receipt["layout_capability"] = burned.facts["layout_capability"]
     movie = mux(
         picture_path,
         audios,

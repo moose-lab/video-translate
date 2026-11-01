@@ -242,3 +242,55 @@ def test_caption_export_retry_preserves_render_mix_and_font_checkpoint(
         for phase in ("render", "mix"):
             assert operation.prepared_payload["phases"][phase] == prior["phases"][phase]
     assert len(provider.posts) == 1
+
+
+def test_unicode_layout_version_creates_fresh_delivery_and_keeps_historical_assets(
+    synthesis_project, monkeypatch, tmp_path
+):
+    from videotranslate.dubbing.delivery_contracts import DeliveryCreate
+
+    fixture = synthesis_project
+    c, h, *_ = fixture
+    plan, provider = caption_plan(
+        fixture, monkeypatch, tmp_path, "你好世界欢迎使用字幕自动换行" * 4
+    )
+    requested = caption_request(plan)
+    requested["caption_options"]["font_size"] = 36
+    current_dump = DeliveryCreate.model_dump
+
+    def historical_capture(self, *args, **kwargs):
+        captured = current_dump(self, *args, **kwargs)
+        captured["caption_options"].pop("layout_policy", None)
+        return captured
+
+    # Recreate the pre-fix admitted command's exact snapshot shape; no legacy
+    # media or signature is rewritten when a new request uses corrected layout.
+    with monkeypatch.context() as legacy:
+        legacy.setattr(DeliveryCreate, "model_dump", historical_capture)
+        response = c.post(base(fixture) + "/deliveries", headers=h, json=requested)
+    assert response.status_code == 202, response.text
+    old_id = response.json()["id"]
+    drain(c)
+    old = c.get(base(fixture) + "/deliveries/" + old_id).json()
+    assert old["status"] == "succeeded" and old["manifest_valid"], old
+    old_movie = next(a for a in old["artifacts"] if (a["format"], a["track"]) == ("mp4", "all"))
+    old_bytes = c.get(old_movie["download_url"]).content
+    assert "layout_policy" not in old["choices"]["caption_options"]
+    response = c.post(base(fixture) + "/deliveries", headers=h, json=requested)
+    assert response.status_code == 202 and response.json()["id"] != old_id, response.text
+    new_id = response.json()["id"]
+    drain(c)
+    fresh = c.get(base(fixture) + "/deliveries/" + new_id).json()
+    assert fresh["status"] == "succeeded" and fresh["manifest_valid"], fresh
+    movie = next(a for a in fresh["artifacts"] if (a["format"], a["track"]) == ("mp4", "all"))
+    assert fresh["choices"]["caption_options"]["layout_policy"] == "unicode_wrap_v2"
+    assert movie["metadata"]["captions"]["layout_policy"] == "unicode_wrap_v2"
+    assert movie["asset_id"] != old_movie["asset_id"]
+    assert c.get(old_movie["download_url"]).content == old_bytes
+    historical = c.get(base(fixture) + "/deliveries/" + old_id).json()
+    assert (
+        historical["current"]
+        and historical["manifest_valid"]
+        and historical["artifacts"] == old["artifacts"]
+    )
+    assert len(provider.posts) == 1

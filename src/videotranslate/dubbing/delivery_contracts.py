@@ -20,6 +20,7 @@ class CaptionOptions(Strict):
     font_profile: Literal["auto", "sans", "cjk", "arabic", "hebrew"] = "auto"
     font_size: Annotated[int, Field(ge=12, le=96)] = 42
     style: Literal["outlined"] = "outlined"
+    layout_policy: Literal["unicode_wrap_v2"] = "unicode_wrap_v2"
 
     @model_validator(mode="after")
     def selected(self):

@@ -34,6 +34,7 @@ def test_optional_caption_options_and_old_choices():
         font_profile="auto",
         font_size=42,
         style="outlined",
+        layout_policy="unicode_wrap_v2",
     )
     body = DeliveryCreate.model_validate(request(caption_options=values))
     assert body.caption_options.model_dump() == values
@@ -93,3 +94,15 @@ def test_pipeline_without_caption_options_keeps_legacy_signature(translation_pro
     assert (
         c.post(prefix + "/pipeline", headers=h, json=payload).json()["id"] == response.json()["id"]
     )
+
+
+def test_new_caption_requests_capture_unicode_layout_version_without_changing_legacy_absence():
+    assert "caption_options" not in DeliveryCreate.model_validate(request()).model_dump(
+        exclude_none=True
+    )
+    value = DeliveryCreate.model_validate(request(caption_options=dict(formats=["ass"])))
+    assert (
+        value.model_dump(exclude_none=True)["caption_options"]["layout_policy"] == "unicode_wrap_v2"
+    )
+    with pytest.raises(ValidationError):
+        DeliveryCreate.model_validate(request(caption_options=dict(layout_policy="legacy_clipped")))

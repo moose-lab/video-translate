@@ -133,9 +133,11 @@ def ass_file(cues, destination, *, width, height, family, font_size=42, fonts=No
     return ExportedFile(destination, facts)
 
 
-def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size=42):
+def burn_in(
+    video, cues, destination, *, fonts, width, height, budget, font_size=42, wrap_unicode=True
+):
     destination = Path(destination)
-    if destination.exists() or not fonts:
+    if destination.exists() or not fonts or type(wrap_unicode) is not bool:
         raise invalid()
     source = json.loads(
         budget.run(
@@ -200,6 +202,45 @@ def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size
                 + "'"
             )
 
+        filter_text = (
+            "subtitles=filename="
+            + quote(subtitle.path)
+            + ":fontsdir="
+            + quote(fontsdir)
+            + ":wrap_unicode="
+            + ("1" if wrap_unicode else "0")
+        )
+        if wrap_unicode:
+            # An accepted FFmpeg option does not prove libass has libunibreak.
+            # Actually initialize this exact graph; keep diagnostics bounded and
+            # inspect only the known unsupported-feature warning, never expose it.
+            diagnostics = budget.run(
+                [
+                    "ffmpeg",
+                    "-nostdin",
+                    "-v",
+                    "warning",
+                    "-xerror",
+                    "-i",
+                    str(video),
+                    "-map",
+                    "0:v:0",
+                    "-an",
+                    "-vf",
+                    filter_text,
+                    "-frames:v",
+                    "1",
+                    "-f",
+                    "null",
+                    "-",
+                ],
+                capture_diagnostics=True,
+            )
+            if b"libass wasn't built with ASS_FEATURE_WRAP_UNICODE support" in diagnostics:
+                from ..execution.contracts import FailureCode, StageFailure
+
+                raise StageFailure(FailureCode.CONFIGURATION, review=True)
+
         budget.run(
             [
                 "ffmpeg",
@@ -215,7 +256,7 @@ def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size
                 "-sn",
                 "-dn",
                 "-vf",
-                "subtitles=filename=" + quote(subtitle.path) + ":fontsdir=" + quote(fontsdir),
+                filter_text,
                 "-c:v",
                 "libx264",
                 "-preset",
@@ -292,5 +333,9 @@ def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size
                 cue_count=len(cues),
                 ass_sha256=subtitle.metadata()["sha256"],
                 policy="libass_literal_font_coverage_v1",
+                layout_policy="unicode_wrap_v2" if wrap_unicode else "legacy_wrap_v1",
+                layout_capability="libass_wrap_unicode_initialized_v1"
+                if wrap_unicode
+                else "legacy_not_requested",
             ),
         )
