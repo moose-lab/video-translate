@@ -1,0 +1,11 @@
+export type AudioTrack = {audio_ordinal: number; stream_index: number; codec: string; language: string | null; channels: number; sample_rate: number; duration_ms?: number; probe_run_id?: string};
+export type ProbeFacts = {duration_ms: number; video?: {codec?: string; width?: number; height?: number}; audio: AudioTrack[]};
+export type SourceSelection = {id: string; revision: number; source_asset_id: string; start_ms: number; end_ms: number; stale: boolean; track: AudioTrack};
+export type Segment = {id: string; text: string; start_ms: number; end_ms: number; absolute_start_ms: number; absolute_end_ms: number; speaker_id: string | null; original_speaker_label: string | null};
+export type Timeline = {editor_fingerprint: string; project_revision: number; source: SourceSelection | null; transcript: {id: string; stale: boolean; provenance: string; detected_language?: string} | null; segments: Segment[]; total: number; cast: {id: string; name: string; archived: boolean}[]; cast_total: number};
+export type Run = {id: string; stage: string; status: string; is_stale: boolean; attempt_count: number; result?: ProbeFacts | null; safe_error?: {code?: string; retryable?: boolean} | null; remote_state?: string; remote_id?: string | null; target_language?: string | null};
+export type SourceWorkflow = {id: string; action: string; status: string; stage: string | null; next_action: string | null; auto_advance: boolean; run_ids: string[]};
+export type ProviderRequirements = {credentials: Record<string, {configured: boolean}>; providers: Record<string, {adapter?: string; credential_ref?: string | null}>};
+export const stageName = (value: string) => ({probe: "媒体信息", extract: "提取音轨", separate: "背景分离", transcribe: "识别与角色", translate: "翻译", synthesize: "合成", voice_qc: "语音质检"}[value] ?? "处理任务");
+export const statusName = (value: string) => ({created: "待上传", uploaded: "已上传", queued: "排队中", running: "处理中", retry_wait: "等待重试", succeeded: "已完成", failed: "失败", needs_review: "需要审核", stale: "已过期", cancelled: "已取消", cancelling: "正在取消", paused: "已暂停", review: "等待审核", source_and_cast_review: "源字幕与角色待审核"}[value] ?? "等待检查");
+export const seconds = (ms: number) => (ms / 1000).toFixed(3);
