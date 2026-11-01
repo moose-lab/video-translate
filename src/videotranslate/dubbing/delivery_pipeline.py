@@ -168,7 +168,9 @@ def mix_tracks(snapshot, plan, root, limits, check, load_asset, store_file, rest
     return outputs
 
 
-def export(snapshot, plan, root, budget, store_file, restore, render, mixed):
+def export(
+    snapshot, plan, root, budget, store_file, restore, render, mixed, *, caption_context=None
+):
     from ..media.delivery_captions import sidecars
     from ..media.delivery_export import mp3, mux
 
@@ -178,6 +180,40 @@ def export(snapshot, plan, root, budget, store_file, restore, render, mixed):
     picture_path = restore(picture)
     audios = [(entry["track"], restore(entry)) for entry in mixed]
     duration = picture["metadata"]["duration_ms"]
+    outputs = []
+    caption_receipt = None
+    options = choices.get("caption_options")
+    if options and options["burn_in"]:
+        from ..execution.inputs import fingerprint
+        from ..media.subtitle_finishing import burn_in
+        from .delivery_subtitles import burn_cues
+
+        grouped, fonts, proof = caption_context
+        burned = burn_in(
+            picture_path,
+            burn_cues(grouped, options),
+            root / "burned.mp4",
+            fonts=fonts,
+            width=picture["metadata"]["width"],
+            height=picture["metadata"]["height"],
+            budget=budget,
+            font_size=options["font_size"],
+        )
+        burned.facts["caption_proof_sha256"] = fingerprint(proof)
+        outputs.append(store_file(burned, "delivery_burned_picture", "mp4"))
+        picture_path = burned.path
+        caption_receipt = dict(
+            mode="burn_in",
+            track=options["track"],
+            target_track=options.get("target_track"),
+            font_size=options["font_size"],
+            style=options["style"],
+            fonts=proof["fonts"],
+            cue_manifest_sha256=proof["cue_manifest_sha256"],
+            font_proof_sha256=fingerprint(proof),
+            burned_picture_sha256=burned.facts["sha256"],
+            ass_sha256=burned.facts["ass_sha256"],
+        )
     movie = mux(
         picture_path,
         audios,
@@ -188,8 +224,10 @@ def export(snapshot, plan, root, budget, store_file, restore, render, mixed):
         video_metadata=picture["metadata"],
         original_language=snapshot["source_language"],
     )
+    if caption_receipt:
+        movie.facts["captions"] = caption_receipt
     movie_entry = store_file(movie, "delivery_movie", "mp4")
-    outputs = [movie_entry]
+    outputs.append(movie_entry)
     artifacts = [
         dict(
             object_id=movie_entry["object_id"],
@@ -224,16 +262,54 @@ def export(snapshot, plan, root, budget, store_file, restore, render, mixed):
                 video_metadata=picture["metadata"],
                 original_language=snapshot["source_language"],
             )
+            if caption_receipt:
+                separate.facts["captions"] = caption_receipt
             exported = store_file(separate, "delivery_target_" + str(index), "mp4")
             outputs.append(exported)
             artifacts.append(
                 dict(object_id=exported["object_id"], format="mp4", track=entry["track"])
             )
-    if choices["captions"] == "sidecar":
+    if options or choices["captions"] == "sidecar":
         for index, (track, format, media) in enumerate(
-            sidecars(plan, snapshot["cues"], tracks, root)
+            sidecars(
+                plan,
+                snapshot["cues"],
+                tracks,
+                root,
+                formats=[v for v in options["formats"] if v != "ass"]
+                if options
+                else ("srt", "vtt"),
+            )
         ):
             entry = store_file(media, "delivery_caption_" + str(index), format)
             outputs.append(entry)
             artifacts.append(dict(object_id=entry["object_id"], format=format, track=track))
+    if options and "ass" in options["formats"]:
+        from ..execution.inputs import fingerprint
+        from ..media.subtitle_finishing import ass_file
+
+        grouped, fonts, proof = caption_context
+        for index, (track, rows) in enumerate(grouped.items()):
+            caption = ass_file(
+                rows,
+                root / f"captions-{index}.ass",
+                width=picture["metadata"]["width"],
+                height=picture["metadata"]["height"],
+                family=fonts[0].family,
+                font_size=options["font_size"],
+                fonts=fonts,
+            )
+            caption.facts.update(
+                cue_policy="target_actual_declared_speech_source_mapped_cue_v1",
+                clock="selection_relative_shared_map",
+                cue_ids=[row["id"] for row in rows],
+                cue_manifest_sha256=fingerprint(rows),
+                first_cue_ms=min((r["start_ms"] for r in rows), default=None),
+                last_cue_ms=max((r["end_ms"] for r in rows), default=None),
+                fonts=proof["fonts"],
+                font_proof_sha256=fingerprint(proof),
+            )
+            entry = store_file(caption, "delivery_ass_" + str(index), "ass")
+            outputs.append(entry)
+            artifacts.append(dict(object_id=entry["object_id"], format="ass", track=track))
     return outputs, artifacts

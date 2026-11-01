@@ -16,7 +16,7 @@ def timestamp(value, separator):
     return f"{hours:02}:{minutes:02}:{seconds:02}{separator}{millis:03}"
 
 
-def sidecars(plan, cues, tracks, directory):
+def mapped_cues(plan, cues, tracks):
     placements = {(p.track_key, p.segment_key): p for p in plan.placements}
     source = {}
     grouped = {t["tag"]: [] for t in tracks}
@@ -39,8 +39,8 @@ def sidecars(plan, cues, tracks, directory):
                 )
             )
     grouped["source"] = list(source.values())
-    results = []
-    for index, (tag, rows) in enumerate(grouped.items()):
+    result = {}
+    for tag, rows in grouped.items():
         rows.sort(key=lambda r: (r["start"], r["id"]))
         normalized = []
         for row in rows:
@@ -49,15 +49,21 @@ def sidecars(plan, cues, tracks, directory):
                 row["text"], str
             ):
                 raise ValueError("Invalid caption bounds")
-            text = html.escape(
-                re.sub(r"[\x00-\x08\x0b-\x1f\x7f]", "", row["text"]).strip(), quote=False
-            )
+            text = re.sub(r"[\x00-\x08\x0b-\x1f\x7f]", "", row["text"]).strip()
             text = re.sub(r"\n\s*\n", "\n", text)
             if not text:
                 raise ValueError("Empty included caption")
             normalized.append(dict(id=row["id"], start_ms=start, end_ms=end, text=text))
+        result[tag] = normalized
+    return result
+
+
+def sidecars(plan, cues, tracks, directory, formats=("srt", "vtt")):
+    results = []
+    for index, (tag, rows) in enumerate(mapped_cues(plan, cues, tracks).items()):
+        normalized = [dict(row, text=html.escape(row["text"], quote=False)) for row in rows]
         # Empty preview targets are explicit empty VTT/SRT artifacts, never filled from history.
-        for format in ("srt", "vtt"):
+        for format in formats:
             separator = "," if format == "srt" else "."
             chunks = ["WEBVTT\n"] if format == "vtt" else []
             for number, row in enumerate(normalized, 1):

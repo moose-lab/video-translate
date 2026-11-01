@@ -178,7 +178,14 @@ def start(db, project, body, actor):
         if transcript.provenance != "import":
             raise APIError(409, "SOURCE_IMPORT_REQUIRED", "Choose an imported current transcript")
     ensure_scope(db, project, body.target_track_ids, body.delivery_track_ids)
-    signature = fingerprint(body.model_dump() | {"selection_id": selection.id})
+    signature = fingerprint(
+        body.model_dump(
+            exclude={"delivery_options": {"caption_options"}}
+            if body.delivery_options.caption_options is None
+            else {}
+        )
+        | {"selection_id": selection.id}
+    )
     prior = db.scalar(
         scope(PipelineWorkflow, project).where(PipelineWorkflow.signature == signature)
     )

@@ -13,6 +13,7 @@ FORMATS = {
     "mp3": "audio/mpeg",
     "srt": "application/x-subrip",
     "vtt": "text/vtt",
+    "ass": "text/x-ssa",
 }
 
 

@@ -82,7 +82,7 @@ def binding(intent, run, operation):
         or operation.request_payload != {"command_id": intent.id, "signature": intent.signature}
     ):
         raise ValueError("Invalid delivery operation origin")
-    return dict(
+    value = dict(
         command_id=intent.id,
         project_id=run.project_id,
         workspace_id=run.workspace_id,
@@ -101,6 +101,10 @@ def binding(intent, run, operation):
         captions=intent.snapshot["choices"]["captions"],
         default_track=intent.snapshot["choices"]["default_audio_track"],
     )
+
+    if intent.snapshot["choices"].get("caption_options") is not None:
+        value["caption_options"] = intent.snapshot["choices"]["caption_options"]
+    return value
 
 
 def checkpoint(context, operation_id, expected, payload):
@@ -124,6 +128,7 @@ def checkpoint(context, operation_id, expected, payload):
                 or fingerprint(prior.get("binding")) != fingerprint(expected)
                 or type(prior.get("phases")) is not dict
                 or type(prior.get("objects")) is not list
+                or prior.get("caption_proof") != payload.get("caption_proof")
                 or any(
                     fingerprint(payload["phases"].get(name)) != fingerprint(value)
                     for name, value in prior["phases"].items()
@@ -180,6 +185,9 @@ def handler(context):
         phase = current.phase
     if payload is not None:
         validate_checkpoint(payload, expected)
+        from .delivery_subtitles import validate_capture
+
+        validate_capture(payload, snapshot, plan)
     else:
         payload = dict(binding=expected, phase="render", phases={}, objects=[], artifacts=[])
     limits = RenderLimits(**snapshot["limits"])
@@ -282,6 +290,23 @@ def handler(context):
                 local[object_id] = path
             return local[object_id]
 
+        # Fontconfig/cmap/hash work runs before render and outside SQL. A retry
+        # must reproduce the captured exact faces and glyph/cue proofs.
+        from . import delivery_subtitles
+
+        caption_context = None
+        if delivery_subtitles.needed(snapshot["choices"]):
+            caption_context = delivery_subtitles.preflight(snapshot, plan, budget)
+            proof = caption_context[2]
+            if "caption_proof" in payload:
+                if payload["caption_proof"] != proof:
+                    raise delivery_subtitles.CaptionFailure(
+                        delivery_subtitles.FontCoverageError("FONT_PROOF_CHANGED")
+                    )
+            else:
+                payload["caption_proof"] = proof
+                payload["phase"] = "caption_preflight"
+                checkpoint(context, operation.id, expected, payload)
         if phase == "prepared":
             for entry in [e for p in payload["phases"].values() for e in p["outputs"]]:
                 restore(entry)
@@ -307,13 +332,29 @@ def handler(context):
         mixed = payload["phases"]["mix"]["outputs"]
         if "export" not in payload["phases"]:
             outputs, artifacts = delivery_pipeline.export(
-                snapshot, plan, root, budget, store_file, restore, render, mixed
+                snapshot,
+                plan,
+                root,
+                budget,
+                store_file,
+                restore,
+                render,
+                mixed,
+                caption_context=caption_context,
             )
             payload["phases"]["export"] = dict(outputs=outputs, fingerprint=fingerprint(outputs))
             payload["phase"] = "export"
             payload["artifacts"] = artifacts
+            delivery_subtitles.validate_capture(payload, snapshot, plan)
             checkpoint(context, operation.id, expected, payload)
         verify_inputs()
+        if (
+            caption_context
+            and delivery_subtitles.preflight(snapshot, plan, budget)[2] != payload["caption_proof"]
+        ):
+            raise delivery_subtitles.CaptionFailure(
+                delivery_subtitles.FontCoverageError("FONT_PROOF_CHANGED")
+            )
         context.check_active()
         with context.session_factory() as db:
             run = db.get(StageRun, context.run_id)

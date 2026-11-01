@@ -80,7 +80,7 @@ def ass_file(cues, destination, *, width, height, family, font_size=42, fonts=No
         raise invalid()
     if family not in {value for names in FAMILIES.values() for value in names}:
         raise invalid()
-    if type(font_size) is not int or not 12 <= font_size <= 96 or not 0 < len(cues) <= 1000:
+    if type(font_size) is not int or not 12 <= font_size <= 96 or not 0 <= len(cues) <= 1000:
         raise invalid()
     size, margin = max(12, round(font_size * height / 720)), max(8, round(height * 0.04))
     header = (

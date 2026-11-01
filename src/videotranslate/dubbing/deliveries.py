@@ -284,6 +284,19 @@ def detail(db, project, command):
             expected = binding(command, run, operation)
             db.commit()  # full manifest validation never extends a read transaction
             validate_checkpoint(payload, expected)
+            if command.snapshot["choices"].get("caption_options"):
+                from .delivery_subtitles import validate_capture
+                from .fit_snapshot import validate_stored
+
+                validate_capture(
+                    payload,
+                    command.snapshot,
+                    validate_stored(
+                        command.snapshot["plan"],
+                        command.snapshot["parent_snapshot"],
+                        command.snapshot["rows"],
+                    ),
+                )
         except (APIError, ValueError, KeyError, TypeError, AttributeError):
             manifest_valid = False
             current_value = False
@@ -313,6 +326,7 @@ def detail(db, project, command):
                             "mp3": "audio/mpeg",
                             "srt": "application/x-subrip",
                             "vtt": "text/vtt",
+                            "ass": "text/x-ssa",
                         }[expected["format"]],
                     )
                 ):
@@ -361,7 +375,10 @@ def detail(db, project, command):
             start_ms=command.snapshot["parent_snapshot"]["start_ms"],
             end_ms=command.snapshot["parent_snapshot"]["end_ms"],
         ),
-        limitations=["Hard subtitles are not implemented"],
+        caption_status=payload.get("caption_proof")
+        if type(payload) is dict and manifest_valid
+        else None,
+        limitations=[],
     )
 
 
