@@ -260,6 +260,8 @@ def test_cancellation_and_corrupted_private_artifact_are_explicit(dubbing_projec
         ("byte_size", 1),
         ("kind", "source_video"),
         ("content_type", "video/mp4"),
+        ("record.kind", "working_audio"),
+        ("record.format", "wav"),
     ],
 )
 def test_published_asset_must_match_exact_owned_prepared_manifest(dubbing_project, field, value):
@@ -275,9 +277,21 @@ def test_published_asset_must_match_exact_owned_prepared_manifest(dubbing_projec
     result = c.get(endpoint(f) + "/" + admitted["id"]).json()
     saved_url = result["artifact"]["url"]
     with c.app.state.session_factory.begin() as db:
-        db.execute(
-            update(Asset).where(Asset.id == result["artifact"]["asset_id"]).values({field: value})
-        )
+        if field.startswith("record."):
+            from videotranslate.models.analysis import PreparedObject
+
+            record = db.scalar(
+                select(PreparedObject).where(
+                    PreparedObject.asset_id == result["artifact"]["asset_id"]
+                )
+            )
+            record.metadata_json = record.metadata_json | {field.split(".")[1]: value}
+        else:
+            db.execute(
+                update(Asset)
+                .where(Asset.id == result["artifact"]["asset_id"])
+                .values({field: value})
+            )
     rejected = c.get(endpoint(f) + "/" + admitted["id"]).json()
     assert rejected["waveform"] is None and rejected["artifact"] is None
     direct = c.get(saved_url)

@@ -204,6 +204,8 @@ def artifact_record(db, project, run):
             },
         )
         or record.metadata_json.get("content_type") != "application/json"
+        or record.metadata_json.get("kind") != "waveform"
+        or record.metadata_json.get("format") != "json"
     ):
         return None
     return record
