@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {api} from "../api/client";
 import type {AudioLine} from "./audioTypes";
 import type {Segment, Run} from "./types";
@@ -8,10 +8,12 @@ import {useAction} from "./useAction";
 import {AudioAssessment} from "./AudioAssessment";
 import AudioHistoryPanel from "./AudioHistoryPanel";
 import VoiceQCDetails from "./VoiceQCDetails";
+import WaveformPanel from "./WaveformPanel";
 export type LineAudioProps = {projectId: string; tag: string; row: Segment; index: number; source: SourceGuard; line: AudioLine; csrf: string; refresh: () => void; dirty: boolean; runs: Run[]};
 type Choices = {key: string; translation: boolean; reference: boolean; replace: boolean; regenerate: boolean};
 const warningName = (value: string) => ({short: "参考音较短", long: "参考音较长", overlap: "含重叠说话", silence: "含较多静音"}[value] ?? "参考音需要检查");
 export default function LineAudioPanel({projectId, tag, row, index, source, line, csrf, refresh, dirty, runs}: LineAudioProps) {
+  const audio = useRef<HTMLAudioElement>(null);
   const [open, setOpen] = useState(false), [history, setHistory] = useState(false), [qcDetails, setQCDetails] = useState(false), [playbackError, setPlaybackError] = useState(false);
   const [choices, setChoices] = useState<Choices | null>(null), [listened, setListened] = useState(""), [reviewed, setReviewed] = useState(""), [notice, setNotice] = useState("");
   const {busy, error, perform} = useAction(), selected = line.selected, translation = row.translation, reference = line.reference_review;
@@ -53,7 +55,8 @@ export default function LineAudioPanel({projectId, tag, row, index, source, line
       <label className="check-label"><input type="checkbox" checked={choice.regenerate} disabled={busy} onChange={event => change("regenerate", event.target.checked)} />重新生成，不复用历史自然音频</label>
       <button className="secondary" disabled={busy || !canGenerate} onClick={() => void generate()}>生成第 {index} 行配音</button>
       {(uncertain || outstanding) && <p className="error">此行已有待处理或结果未知的配音任务，请先在任务区核查并恢复。</p>}
-      {selected && <div className="selected-audio"><AudioAssessment output={selected} /><audio key={selected.id} controls preload="none" aria-label={`第 ${index} 行自然配音`} src={`/api/assets/${encodeURIComponent(selected.audio_asset_id)}/content`} onEnded={() => setListened(reviewKey)} onLoadedData={() => setPlaybackError(false)} onError={() => setPlaybackError(true)} />{playbackError && <p className="error" role="alert">当前浏览器无法播放此音频，或会话已失效。请检查文件与连接后重试。</p>}
+      {selected && <div className="selected-audio"><AudioAssessment output={selected} /><audio ref={audio} key={selected.id} controls preload="none" aria-label={`第 ${index} 行自然配音`} src={`/api/assets/${encodeURIComponent(selected.audio_asset_id)}/content`} onEnded={() => setListened(reviewKey)} onLoadedData={() => setPlaybackError(false)} onError={() => setPlaybackError(true)} />{playbackError && <p className="error" role="alert">当前浏览器无法播放此音频，或会话已失效。请检查文件与连接后重试。</p>}
+        <WaveformPanel key={selected.id} projectId={projectId} source={source} csrf={csrf} outputId={selected.id} dirty={dirty || selected.stale} onSeek={milliseconds => {if (audio.current) audio.current.currentTime = milliseconds / 1000;}} />
         <div className="actions"><button className="secondary" disabled={busy || !valid || selected.stale || uncertain || ["queued", "running", "retry_wait"].includes(selected.qc.status)} onClick={() => void qc()}>检查第 {index} 行语音</button>{selected.qc.request_id && <button className="link" onClick={() => setQCDetails(!qcDetails)} aria-expanded={qcDetails}>查看识别对照</button>}</div>
         {qcDetails && selected.qc.request_id && <VoiceQCDetails projectId={projectId} tag={tag} requestId={selected.qc.request_id} segmentId={row.id} evidenceKey={JSON.stringify([selected.qc.status, selected.qc_evidence_fingerprint])} />}
         <p className="muted">完整播放此版本后，再确认听审。质检文字匹配不代表声音自然或角色一致。</p>

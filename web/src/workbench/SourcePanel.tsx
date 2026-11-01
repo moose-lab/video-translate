@@ -4,15 +4,17 @@ import {projectPath, type Project} from "../api/projects";
 import type {ProbeFacts, ProviderRequirements, Run, SourceSelection, SourceWorkflow, Timeline} from "./types";
 import {seconds, stageName, statusName} from "./types";
 import {useAction} from "./useAction";
+import SourceMediaTools from "./SourceMediaTools";
+import WaveformPanel from "./WaveformPanel";
 
-type Props = {project: Project; timeline: Timeline; runs: Run[]; csrf: string; refresh: () => void; providers: ProviderRequirements | null; workflow: SourceWorkflow | null; onWorkflow: (value: SourceWorkflow) => void};
-export default function SourcePanel({project, timeline, runs, csrf, refresh, providers, workflow, onWorkflow}: Props) {
+type Props = {project: Project; timeline: Timeline; runs: Run[]; csrf: string; refresh: () => void; providers: ProviderRequirements | null; workflow: SourceWorkflow | null; onWorkflow: (value: SourceWorkflow) => void; refreshVersion?: number};
+export default function SourcePanel({project, timeline, runs, csrf, refresh, providers, workflow, onWorkflow, refreshVersion = 0}: Props) {
   const path = projectPath(project.id), selection = timeline.source;
   const editableSelection = selection?.source_asset_id === project.source_asset_id ? selection : null;
   const [file, setFile] = useState<File | null>(null), [uploading, setUploading] = useState(false), [playbackError, setPlaybackError] = useState(false), [savedProbe, setSavedProbe] = useState<Run | null>(null);
   const [start, setStart] = useState(String(editableSelection?.start_ms ?? 0)), [end, setEnd] = useState(String(editableSelection?.end_ms ?? "")), [ordinal, setOrdinal] = useState(String(editableSelection?.track.audio_ordinal ?? 0)), [dirty, setDirty] = useState(false);
   const draftBase = useRef({revision: project.revision, sourceAssetId: project.source_asset_id});
-  const {busy, error, perform} = useAction(), fileInput = useRef<HTMLInputElement>(null);
+  const {busy, error, perform} = useAction(), fileInput = useRef<HTMLInputElement>(null), video = useRef<HTMLVideoElement>(null);
   const probe = runs.find(run => run.stage === "probe" && run.status === "succeeded" && !run.is_stale) ?? savedProbe;
   const facts = probe?.result as ProbeFacts | null | undefined;
   const duration = facts?.duration_ms ?? editableSelection?.track.duration_ms;
@@ -50,12 +52,14 @@ export default function SourcePanel({project, timeline, runs, csrf, refresh, pro
   }
   return <section className="panel" aria-labelledby="source-title">
     <div className="section-head"><h2 id="source-title">原片与源片段</h2>{selection && <span className="status">{selection.stale ? "选择已过期" : "已选择源片段"}</span>}</div>
-    {project.source_asset_id && <><video key={project.source_asset_id} aria-label="原片播放器" controls preload="metadata" src={`/api/assets/${encodeURIComponent(project.source_asset_id)}/content`} onError={() => setPlaybackError(true)} /><p className="muted">播放器播放上传原片；源分析使用下方选择的音轨与时间范围。</p></>}
+    {project.source_asset_id && <><video ref={video} key={project.source_asset_id} aria-label="原片播放器" controls preload="metadata" src={`/api/assets/${encodeURIComponent(project.source_asset_id)}/content`} onError={() => setPlaybackError(true)} /><p className="muted">播放器播放上传原片；源分析使用下方选择的音轨与时间范围。</p></>}
     {playbackError && <p className="error" role="alert">浏览器无法播放此文件或当前会话已失效。请尝试 H.264/AAC 编码 MP4，或重新上传兼容视频。</p>}
     <form onSubmit={e => void upload(e)}><label>选择原片文件<input ref={fileInput} type="file" accept=".mp4,.m4v,.mov,.webm,.mkv,.avi" disabled={busy} onChange={e => setFile(e.target.files?.[0] ?? null)} /></label>
       {file && <p className="muted">{file.name} · {file.size.toLocaleString()} 字节{project.source_asset_id ? " · 上传将替换当前原片并使旧选择失效" : ""}</p>}
       <button disabled={!file || busy}>{uploading ? "正在上传，请稍候…" : "上传原片"}</button>{uploading && <p role="status">正在传输文件，尚无可用字节进度。</p>}
     </form>
+    <SourceMediaTools projectId={project.id} revision={project.revision} csrf={csrf} dirty={dirty || busy} refreshVersion={refreshVersion} refresh={refresh} />
+    {selection && <WaveformPanel projectId={project.id} source={{selection_revision: selection.revision, transcript_revision: timeline.transcript?.id ?? null}} csrf={csrf} dirty={dirty || selection.stale} refreshVersion={refreshVersion} onSeek={milliseconds => {if (video.current) video.current.currentTime = milliseconds / 1000;}} />}
     {project.source_asset_id && <div className="probe-info"><button className="secondary" disabled={busy || runs.some(run => run.stage === "probe" && ["queued", "running", "retry_wait"].includes(run.status))} onClick={() => void perform(signal => api<Run>(`${path}/runs`, {method: "POST", signal, body: JSON.stringify({stage: "probe"})}, csrf)).then(result => {if (result) refresh();})}>读取媒体信息</button>
       {duration !== undefined && <p className="muted">原片时长 {seconds(duration)} 秒{facts?.video?.codec ? ` · 视频 ${facts.video.codec}` : ""}{facts?.video?.width ? ` · ${facts.video.width} × ${facts.video.height}` : ""}</p>}
     </div>}
