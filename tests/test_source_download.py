@@ -251,7 +251,16 @@ def test_actual_tls_download_uses_explicit_test_public_dns_map(tmp_path, tiny_mp
             pass
 
         def do_GET(self):
+            if self.path.startswith("/source?"):
+                self.send_response(302)
+                self.send_header(
+                    "Location", "https://media.fixture/final?signature=REDIRECT_PRIVATE"
+                )
+                self.send_header("Set-Cookie", "COOKIE_PRIVATE=synthetic-only")
+                self.end_headers()
+                return
             self.send_response(200)
+            self.send_header("Set-Cookie", "COOKIE_PRIVATE=synthetic-only")
             self.send_header("Content-Length", str(len(tiny_mp4)))
             self.end_headers()
             self.wfile.write(tiny_mp4)
@@ -285,7 +294,22 @@ def test_actual_tls_download_uses_explicit_test_public_dns_map(tmp_path, tiny_mp
             check_active=lambda: None,
         )
         assert output.getvalue() == tiny_mp4 and result["byte_size"] == len(tiny_mp4)
-        assert "VERY_PRIVATE" not in caplog.text
+        for marker in ["VERY_PRIVATE", "REDIRECT_PRIVATE", "COOKIE_PRIVATE"]:
+            assert marker not in caplog.text
+            for record in caplog.records:
+                assert marker not in record.getMessage()
+                assert marker not in repr(record.msg) + repr(record.args)
+        # Source requests must not change native logging for another thread.
+        import logging
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            pool.submit(
+                logging.getLogger("httpcore.http11").debug,
+                "unrelated diagnostics %s",
+                "UNRELATED_POLICY_TOKEN",
+            ).result()
+        assert caplog.records[-1].args == ("UNRELATED_POLICY_TOKEN",)
     finally:
         client.close()
         server.shutdown()

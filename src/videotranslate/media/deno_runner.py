@@ -16,6 +16,13 @@ import time
 MAX_SCRIPT = 16 * 1024 * 1024
 MAX_OUTPUT = 1024 * 1024
 ERROR = "JavaScript runtime unavailable"
+# The initial module graph contains only this fixed bootstrap. Supplied code is
+# runtime data: Deno must not pre-resolve its literal file imports with the
+# implicit entry-module read privilege (which --deny-read does not constrain).
+BOOTSTRAP = """const code = await new Response(Deno.stdin.readable).text();
+const AsyncFunction = Object.getPrototypeOf(async function() {}).constructor;
+await new AsyncFunction(code)();
+"""
 
 
 def run_script(code, *, timeout=30):
@@ -45,9 +52,11 @@ def run_script(code, *, timeout=30):
         "--deny-ffi",
         "--deny-sys",
         "--v8-flags=--max-old-space-size=128",
-        "-",
     ]
     with tempfile.TemporaryDirectory(prefix="videotranslate-js-") as directory:
+        bootstrap = os.path.join(directory, "bootstrap.js")
+        with open(bootstrap, "w", encoding="utf-8") as entry:
+            entry.write(BOOTSTRAP)
         env = {
             "PATH": os.environ.get("PATH", ""),
             "HOME": directory,
@@ -63,7 +72,7 @@ def run_script(code, *, timeout=30):
             source.write(encoded)
             source.seek(0)
             process = subprocess.Popen(
-                args, stdin=source, stdout=out, stderr=err, env=env, cwd=directory
+                [*args, bootstrap], stdin=source, stdout=out, stderr=err, env=env, cwd=directory
             )
             try:
                 deadline = time.monotonic() + min(timeout, 30)

@@ -137,6 +137,19 @@ def youtube_host(url):
         raise ImportRejected()
 
 
+def private_transport_trace(name, info):
+    """Redact native trace results before httpcore constructs a LogRecord.
+
+    Trace completion/failure info is a fresh dictionary, separate from the
+    actual response. Leave start kwargs untouched: httpcore also uses those
+    kwargs to open the connection. This callback belongs only to this request;
+    unrelated concurrent transport diagnostics keep their existing policy.
+    """
+    if name.endswith((".complete", ".failed")):
+        info.clear()
+        info["details"] = "private source transport"
+
+
 class PublicVideoHTTP(SafeHTTP):
     def __init__(self, *, resolver=None, transport=None, proxy_url=None, use_doh=False):
         if resolver is None and use_doh:
@@ -203,7 +216,10 @@ class PublicVideoHTTP(SafeHTTP):
                 url,
                 headers=headers,
                 content=data,
-                extensions={"timeout": dict(connect=5.0, read=5.0, write=5.0, pool=5.0)},
+                extensions={
+                    "timeout": dict(connect=5.0, read=5.0, write=5.0, pool=5.0),
+                    "trace": private_transport_trace,
+                },
             )
             try:
                 with closing(self.client._transport.handle_request(request)) as response:

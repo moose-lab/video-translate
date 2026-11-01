@@ -69,3 +69,46 @@ def test_pinned_runtime_wrapper_is_packaged_and_executable():
 
     path = Path(deno_runner.__file__)
     assert path.is_file() and os.access(path, os.X_OK)
+
+
+@pytest.mark.parametrize("kind", ["static", "literal_dynamic", "computed_dynamic"])
+def test_module_loader_cannot_read_synthetic_json_sentinel(monkeypatch, tmp_path, kind):
+    import json
+
+    runner = runtime(monkeypatch)
+    fixture = tmp_path / "synthetic-only.json"
+    fixture.write_text(json.dumps({"marker": "SYNTHETIC_ONLY_REVIEW_TOKEN"}))
+    target = json.dumps(fixture.as_uri())
+    if kind == "static":
+        code = f'import x from {target} with {{type:"json"}}; console.log(x.marker);'
+    elif kind == "literal_dynamic":
+        code = f'const x = await import({target}, {{with:{{type:"json"}}}}); console.log(x.default.marker);'
+    else:
+        code = f'const target = {target}; const x = await import(target, {{with:{{type:"json"}}}}); console.log(x.default.marker);'
+    with pytest.raises(ValueError, match="JavaScript runtime unavailable"):
+        runner.run_script(code)
+
+
+def test_trusted_bootstrap_preserves_await_and_official_ejs_challenge_execution(monkeypatch):
+    import json
+
+    import yt_dlp_ejs.yt.solver as solver
+
+    runner = runtime(monkeypatch)
+    # Same pinned lib/core composition and preprocessed Function path used by EJS.
+    request = {
+        "type": "preprocessed",
+        "preprocessed_player": '_result.sig = s => s.split("").reverse().join(""); _result.n = s => s + "!";',
+        "requests": [{"type": "sig", "challenges": ["abc"]}, {"type": "n", "challenges": ["xyz"]}],
+    }
+    code = (
+        solver.lib()
+        + "\nObject.assign(globalThis, lib);\n"
+        + solver.core()
+        + "\nawait Promise.resolve(); console.log(JSON.stringify(jsc("
+        + json.dumps(request)
+        + ")));"
+    )
+    result = json.loads(runner.run_script(code))
+    assert result["type"] == "result"
+    assert [row["data"] for row in result["responses"]] == [{"abc": "cba"}, {"xyz": "xyz!"}]
