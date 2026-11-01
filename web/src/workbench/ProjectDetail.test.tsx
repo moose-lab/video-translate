@@ -113,3 +113,33 @@ it("does not reuse the previous asset selection as fresh-file probe facts", asyn
   expect(screen.queryByLabelText("开始时间（毫秒）")).toBeNull();
   expect(screen.queryByRole("button", {name: "分析所选源片段"})).toBeNull();
 });
+it("pins a dirty source draft to its original project revision until explicitly discarded", async () => {
+  const user = userEvent.setup(); let changed = false;
+  const writes: Record<string, unknown>[] = [];
+  const replacement = {...selection, id: "selection-b", revision: 3, start_ms: 6000, end_ms: 30000};
+  fixture((path, init) => {
+    if (path === "/api/projects/p") return ok({...project, revision: changed ? 8 : 7});
+    if (path.includes("/timeline")) return ok({...timeline, project_revision: changed ? 8 : 7, source: changed ? replacement : selection});
+    if (path === "/api/projects/p/source-selection") {
+      const body = JSON.parse(String(init?.body)); writes.push(body);
+      return body.revision === 7 ? ok({error: {code: "REVISION_CONFLICT", message: "Resource changed; reload and try again", retryable: true}}, 409) : ok(replacement);
+    }
+  });
+  open(); await screen.findByText("Source line 8");
+  const start = screen.getByLabelText("开始时间（毫秒）") as HTMLInputElement;
+  await user.clear(start); await user.type(start, "2500");
+  changed = true;
+  await user.click(screen.getByRole("button", {name: "刷新状态"}));
+  await screen.findByText(/服务器已选：6.000–30.000/);
+  expect(start.value).toBe("2500");
+  await user.click(screen.getByRole("button", {name: "保存源片段"}));
+  await waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]).toMatchObject({revision: 7, source_asset_id: "asset", start_ms: 2500, end_ms: 20000});
+  expect(await screen.findByText(/REVISION_CONFLICT/)).toBeTruthy();
+  expect(start.value).toBe("2500");
+  await user.click(screen.getByRole("button", {name: "放弃范围修改"}));
+  await waitFor(() => expect(start.value).toBe("6000"));
+  await user.click(screen.getByRole("button", {name: "保存源片段"}));
+  await waitFor(() => expect(writes).toHaveLength(2));
+  expect(writes[1]).toMatchObject({revision: 8, source_asset_id: "asset", start_ms: 6000, end_ms: 30000});
+});

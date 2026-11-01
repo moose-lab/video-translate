@@ -11,6 +11,7 @@ export default function SourcePanel({project, timeline, runs, csrf, refresh, pro
   const editableSelection = selection?.source_asset_id === project.source_asset_id ? selection : null;
   const [file, setFile] = useState<File | null>(null), [uploading, setUploading] = useState(false), [playbackError, setPlaybackError] = useState(false), [savedProbe, setSavedProbe] = useState<Run | null>(null);
   const [start, setStart] = useState(String(editableSelection?.start_ms ?? 0)), [end, setEnd] = useState(String(editableSelection?.end_ms ?? "")), [ordinal, setOrdinal] = useState(String(editableSelection?.track.audio_ordinal ?? 0)), [dirty, setDirty] = useState(false);
+  const draftBase = useRef({revision: project.revision, sourceAssetId: project.source_asset_id});
   const {busy, error, perform} = useAction(), fileInput = useRef<HTMLInputElement>(null);
   const probe = runs.find(run => run.stage === "probe" && run.status === "succeeded" && !run.is_stale) ?? savedProbe;
   const facts = probe?.result as ProbeFacts | null | undefined;
@@ -25,8 +26,9 @@ export default function SourcePanel({project, timeline, runs, csrf, refresh, pro
   }, [editableSelection?.track.probe_run_id, runs]);
   useEffect(() => {
     if (dirty) return;
+    draftBase.current = {revision: project.revision, sourceAssetId: project.source_asset_id};
     setStart(String(editableSelection?.start_ms ?? 0)); setEnd(duration === undefined ? "" : String(editableSelection?.end_ms ?? duration)); setOrdinal(String(editableSelection?.track.audio_ordinal ?? audio[0]?.audio_ordinal ?? 0));
-  }, [editableSelection?.id, duration, dirty]);
+  }, [editableSelection?.id, duration, dirty, project.revision, project.source_asset_id]);
   const from = Number(start), to = Number(end), audioOrdinal = Number(ordinal);
   const valid = duration !== undefined && start !== "" && end !== "" && Number.isSafeInteger(from) && Number.isSafeInteger(to) && from >= 0 && from < to && to <= duration && audio.some(track => track.audio_ordinal === audioOrdinal);
   async function upload(event: FormEvent) {
@@ -39,7 +41,7 @@ export default function SourcePanel({project, timeline, runs, csrf, refresh, pro
   }
   async function save(event: FormEvent) {
     event.preventDefault(); if (!valid) return;
-    const result = await perform(signal => api<SourceSelection>(`${path}/source-selection`, {method: "PUT", signal, body: JSON.stringify({revision: project.revision, source_asset_id: project.source_asset_id, audio_ordinal: audioOrdinal, start_ms: from, end_ms: to})}, csrf));
+    const result = await perform(signal => api<SourceSelection>(`${path}/source-selection`, {method: "PUT", signal, body: JSON.stringify({revision: draftBase.current.revision, source_asset_id: draftBase.current.sourceAssetId, audio_ordinal: audioOrdinal, start_ms: from, end_ms: to})}, csrf));
     if (result) {setDirty(false); refresh();}
   }
   async function analyse() {
