@@ -91,7 +91,14 @@ def resolve_video(http, url, *, deadline, check_active, max_duration):
             and f.get("acodec") not in (None, "none")
         ]
         if progressive:
-            selected = max(progressive, key=lambda f: (f.get("height") or 0, f.get("tbr") or 0))
+            selected = max(
+                progressive,
+                key=lambda f: (
+                    f.get("language_preference") or -1,
+                    f.get("height") or 0,
+                    f.get("tbr") or 0,
+                ),
+            )
             youtube_host(selected["url"])
             return DownloadSpec(selected["url"])
         # Adaptive imports use only direct MP4/H.264-or-AV1 + M4A/AAC files.
@@ -115,7 +122,12 @@ def resolve_video(http, url, *, deadline, check_active, max_duration):
         if not video or not audio:
             raise ImportRejected()
         selected_video = max(video, key=lambda f: (f["height"], f.get("tbr") or 0))
-        selected_audio = max(audio, key=lambda f: f.get("abr") or f.get("tbr") or 0)
+        # The official extractor ranks original/default audio above auto-dubs.
+        # Bitrate alone can silently replace the source language with a dub.
+        selected_audio = max(
+            audio,
+            key=lambda f: (f.get("language_preference") or -1, f.get("abr") or f.get("tbr") or 0),
+        )
         youtube_host(selected_video["url"])
         youtube_host(selected_audio["url"])
         return DownloadSpec(selected_video["url"], selected_audio["url"])

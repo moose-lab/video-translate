@@ -293,3 +293,46 @@ def test_pair_probe_cannot_extend_the_original_import_deadline(
         assert done["source_asset_id"] is None
     finally:
         worker.engine.dispose()
+
+
+@pytest.mark.parametrize("progressive", [False, True])
+def test_extractor_prefers_original_audio_over_higher_bitrate_dub(monkeypatch, progressive):
+    from videotranslate.media.youtube_source import resolve_video
+
+    video = {"ext": "mp4", "protocol": "https", "vcodec": "avc1.64001f", "height": 720}
+    original = dict(
+        video if progressive else {"ext": "m4a", "protocol": "https", "vcodec": "none"},
+        acodec="mp4a.40.2",
+        abr=64,
+        language_preference=10,
+        url="https://r1.googlevideo.com/original?signature=SYNTHETIC",
+    )
+    dubbed = dict(
+        original,
+        abr=256,
+        height=1080,
+        language_preference=-1,
+        url="https://r1.googlevideo.com/dubbed?signature=SYNTHETIC",
+    )
+    formats = [original, dubbed]
+    if not progressive:
+        formats.append(dict(video, acodec="none", url="https://r1.googlevideo.com/video"))
+    monkeypatch.setattr(
+        YoutubeIE,
+        "_real_extract",
+        lambda *_: {
+            "id": "abcdefghijk",
+            "duration": 1,
+            "formats": formats,
+        },
+    )
+    result = resolve_video(
+        SimpleNamespace(),
+        "https://www.youtube.com/watch?v=abcdefghijk",
+        deadline=time.monotonic() + 10,
+        check_active=lambda: None,
+        max_duration=10,
+    )
+    assert (result.video_url if progressive else result.audio_url).startswith(
+        "https://r1.googlevideo.com/original?"
+    )
