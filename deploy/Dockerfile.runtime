@@ -12,9 +12,14 @@ FROM python:3.12-slim-trixie AS runtime
 ARG VT_SOURCE_REVISION=unrecorded
 LABEL org.opencontainers.image.revision=$VT_SOURCE_REVISION
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates ffmpeg librubberband3 \
+    && apt-get install -y --no-install-recommends ca-certificates ffmpeg librubberband3 fontconfig fonts-noto-core fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/* \
     && dpkg-query -W -f '${Version}\n' librubberband3 | grep -E '^4\.0\.0([+~.-]|$)'
+# Build-time font tooling / libass availability for the forthcoming subtitle slice.
+RUN command -v fc-match && command -v fc-query \
+    && fc-match -f '%{family}\n' 'Noto Sans' | grep -F 'Noto Sans' \
+    && fc-match -f '%{family}\n' 'Noto Sans CJK SC' | grep -F 'Noto Sans CJK' \
+    && ffmpeg -hide_banner -filters 2>/dev/null | grep -E '(^|[[:space:]])subtitles[[:space:]]'
 ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY --from=build /opt/venv /opt/venv
 WORKDIR /app

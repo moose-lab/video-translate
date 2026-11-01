@@ -6,6 +6,9 @@ prerequisites. These files do not provision them or deploy to a cloud account.
 
 The runtime installs the project from `uv.lock` as a non-editable wheel. Python
 3.12, FFmpeg, H.264/AAC/MP3 codecs and Rubber Band 4.0.0/R3 are build checks. The
+runtime also includes Fontconfig, Noto Core/CJK fonts and a libass subtitles-filter
+build assertion for the forthcoming burn-in slice. This does not claim that
+burn-in or per-script rendering has been implemented or accepted. The
 native runner uses its installed absolute script path; no `PYTHONPATH=src` is
 needed. The Web build uses its frozen pnpm lock and contains no server secrets.
 
