@@ -4,11 +4,12 @@ import hashlib
 import json
 import shutil
 import tempfile
+import unicodedata
 from pathlib import Path
 
 from .delivery_export import ExportedFile
 from .float_audio import digest, invalid
-from .subtitle_fonts import FAMILIES
+from .subtitle_fonts import FAMILIES, FontCoverageError
 
 
 def ass_time(ms, *, end=False):
@@ -36,7 +37,38 @@ def literal(text):
     )
 
 
-def ass_file(cues, destination, *, width, height, family, font_size=42):
+def literal_font_runs(text, fonts):
+    """Do not rely on libass choosing a working fallback from fontsdir.
+
+    Font providers can choose a missing-glyph box even when a loaded secondary
+    font has the character. Server-authored, fixed-family runs choose the exact
+    family whose measured charset contains each visible character.
+    """
+    result, active = [], None
+    allowed = {value for names in FAMILIES.values() for value in names}
+    for char in text.replace("\r\n", "\n").replace("\r", "\n"):
+        point = ord(char)
+        invisible = (
+            char.isspace()
+            or unicodedata.category(char) in {"Cf", "Cc"}
+            or 0xFE00 <= point <= 0xFE0F
+            or 0xE0100 <= point <= 0xE01EF
+        )
+        font = (
+            (active or fonts[0])
+            if invisible
+            else next((font for font in fonts if point in font.covered), None)
+        )
+        if font is None or font.family not in allowed:
+            raise FontCoverageError("FONT_GLYPHS_MISSING", [f"U+{point:04X}"])
+        if font != active:
+            result.append("{\\fn" + font.family + "}")
+            active = font
+        result.append(literal(char))
+    return "".join(result)
+
+
+def ass_file(cues, destination, *, width, height, family, font_size=42, fonts=None):
     destination = Path(destination)
     if (
         destination.exists()
@@ -72,8 +104,9 @@ def ass_file(cues, destination, *, width, height, family, font_size=42):
         ):
             raise invalid()
         seen.add(cue["id"])
+        text = literal_font_runs(cue["text"], fonts) if fonts else literal(cue["text"])
         lines.append(
-            f"Dialogue: 0,{ass_time(cue['start_ms'])},{ass_time(cue['end_ms'], end=True)},Default,,0,0,0,,{literal(cue['text'])}\n"
+            f"Dialogue: 0,{ass_time(cue['start_ms'])},{ass_time(cue['end_ms'], end=True)},Default,,0,0,0,,{text}\n"
         )
     data = (header + "".join(lines)).encode("utf-8")
     if len(data) > 2 * 1024 * 1024:
@@ -140,6 +173,7 @@ def burn_in(video, cues, destination, *, fonts, width, height, budget, font_size
             height=height,
             family=fonts[0].family,
             font_size=font_size,
+            fonts=fonts,
         )
 
         # Paths come only from a server-owned tempfile and are escaped for the

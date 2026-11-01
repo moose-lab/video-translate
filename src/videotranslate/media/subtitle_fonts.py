@@ -1,6 +1,7 @@
 """Bounded fontconfig discovery from fixed families, with real cmap coverage."""
 
 import unicodedata
+from bisect import bisect_right
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -66,11 +67,21 @@ def inspect_font(family, wanted, budget):
         if len(bounds) not in {1, 2}:
             raise FontCoverageError("FONT_UNAVAILABLE")
         left, right = int(bounds[0], 16), int(bounds[-1], 16)
-        if not 0 <= left <= right <= 0x10FFFF or len(intervals) >= 10000:
+        if (
+            not 0 <= left <= right <= 0x10FFFF
+            or len(intervals) >= 10000
+            or (intervals and left <= intervals[-1][1])
+        ):
             raise FontCoverageError("FONT_UNAVAILABLE")
         intervals.append((left, right))
-    covered = frozenset(point for point in wanted if any(a <= point <= b for a, b in intervals))
-    return SubtitleFont(path, family, face, digest(path, budget.check), covered)
+    starts, covered = [pair[0] for pair in intervals], set()
+    for count, point in enumerate(wanted):
+        if count % 256 == 0:
+            budget.check()
+        index = bisect_right(starts, point) - 1
+        if index >= 0 and point <= intervals[index][1]:
+            covered.add(point)
+    return SubtitleFont(path, family, face, digest(path, budget.check), frozenset(covered))
 
 
 def select_fonts(text, *, profile="auto", budget):

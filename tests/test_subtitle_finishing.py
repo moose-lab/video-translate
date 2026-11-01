@@ -107,3 +107,70 @@ def test_real_cjk_rtl_burn_in_keeps_frame_grid_and_literal_tags_at_bottom(tmp_pa
         ).stdout
     )
     assert info["streams"][0]["avg_frame_rate"] == "30/1"
+
+
+def test_mixed_fonts_match_measured_cjk_face_instead_of_fallback_boxes(tmp_path):
+    from videotranslate.media.float_audio import Budget
+    from videotranslate.media.subtitle_finishing import burn_in
+    from videotranslate.media.subtitle_fonts import select_fonts
+
+    source = tmp_path / "base.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=black:s=640x360:r=30:d=1",
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            str(source),
+        ],
+        check=True,
+        timeout=30,
+    )
+    budget = Budget(LIMITS, lambda: None, tmp_path)
+    mixed = select_fonts("HelloWorld 你好", profile="auto", budget=budget)
+    cjk = select_fonts("你好", profile="auto", budget=budget)
+    pixels = []
+    for index, fonts in enumerate((mixed, cjk)):
+        result = burn_in(
+            source,
+            [dict(id="a", start_ms=0, end_ms=1000, text="你好")],
+            tmp_path / f"glyph-{index}.mp4",
+            fonts=fonts,
+            width=640,
+            height=360,
+            font_size=72,
+            budget=budget,
+        )
+        pixels.append(
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-v",
+                    "error",
+                    "-ss",
+                    "0.5",
+                    "-i",
+                    str(result.path),
+                    "-frames:v",
+                    "1",
+                    "-pix_fmt",
+                    "gray",
+                    "-f",
+                    "rawvideo",
+                    "-",
+                ],
+                capture_output=True,
+                check=True,
+                timeout=30,
+            ).stdout
+        )
+    # Explicitly chosen CJK face is the independent reference. Different tofu
+    # boxes can themselves differ, so comparing two Han characters is too weak.
+    assert sum(abs(a - b) > 40 for a, b in zip(*pixels, strict=True)) < 20
