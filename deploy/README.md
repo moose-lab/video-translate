@@ -42,8 +42,38 @@ Never put provider or storage credentials in Web build variables.
 The public origin must be the exact HTTPS origin of the Web app, with no path.
 Your TLS ingress forwards it to `127.0.0.1:8080`. Direct HTTP on that local port is
 only useful for preflight; production authentication uses secure cookies. The
-API deliberately starts with `--no-proxy-headers`; changing that trust boundary
-requires an explicitly configured trusted ingress.
+API trusts rewritten proxy headers only from the fixed Web address on a
+separate internal network. The standalone runtime image still trusts no proxy.
+
+Set the required `VT_TRUSTED_EDGE_CIDR` to the actual TLS-edge socket peer seen by
+Web **after Docker port forwarding**, not a claimed HTTP header. For a host TLS
+proxy this may be the edge bridge gateway rather than `127.0.0.1`; verify it in
+network inspection and the Web log's `edge_peer` field. Use an exact `/32` or
+`/128` where possible. Never configure `0.0.0.0/0`, `::/0` or an untrusted LAN.
+The three `VT_PROXY_*` values instead define the private Web→API network; they
+must remain consistent and must not conflict with existing networks.
+
+The TLS edge must **overwrite**, not append or preserve, inbound forwarded
+identity. For an Internet-facing Nginx TLS edge the relevant forwarding is:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host video.example.com;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto https;
+}
+```
+
+This assumes that edge's socket peer is the client. If another proxy precedes
+it, first establish that edge's own validated real-client contract with only
+that proxy's exact trusted peers. Do not pass an arbitrary browser-supplied
+address. Web applies real-IP handling only to the configured edge peer and then
+replaces X-Forwarded-For/X-Real-IP with its validated `$remote_addr`; untrusted
+peers' spoofed headers are ignored. It forwards that one address to API over the
+private network. Uvicorn trusts only Web's configured address, with no `*`
+trust. This separation keeps the persistent per-client login throttle from
+becoming one global proxy bucket or accepting a spoofed public identity.
 
 ## Build and start
 
@@ -97,9 +127,15 @@ neither performs backups nor claims that rollback has been exercised.
   temporary virtualenv; from `/tmp`, the installed runner loaded the actual R3
   engine and all 647 catalog records without a project `PYTHONPATH`.
 - Ruby/Psych parsed Compose and checked four separate services, read-only roots,
-  no server env on Web and no directly published API port. The example was
+  only non-secret edge configuration on Web and no directly published API port. The example was
   accepted by the current production `Settings` using disposable fixture secret
   values; this made no database, S3 or provider calls.
 - `docker compose config`, Dockerfile image builds, Nginx/Linux codec checks,
   actual PG/S3 connectivity and HTTPS ingress remain unverified on this machine.
-  The image's codec and R3 assertions run at build time when Docker is available.
+  The image's codec/R3 and Nginx real-IP/envsubst assertions run at build time
+  when Docker is available.
+- The proxy-trust fix was checked with the actual Uvicorn proxy middleware and
+  persistent login reservation in an isolated database: distinct clients from
+  the configured proxy stayed separate; a sixth attempt from one client was
+  limited; changing spoofed headers from an untrusted peer did not change its
+  identity or bypass the limiter. This is not a live Nginx/TLS test.

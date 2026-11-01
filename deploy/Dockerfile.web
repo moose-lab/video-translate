@@ -10,6 +10,8 @@ RUN pnpm build
 FROM nginxinc/nginx-unprivileged:1.28-alpine AS runtime
 ARG VT_SOURCE_REVISION=unrecorded
 LABEL org.opencontainers.image.revision=$VT_SOURCE_REVISION
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+RUN nginx -V 2>&1 | grep -F -- --with-http_realip_module \
+    && command -v envsubst
+COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /build/dist /usr/share/nginx/html
 EXPOSE 8080

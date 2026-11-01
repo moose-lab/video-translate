@@ -16,6 +16,7 @@ x-runtime: &runtime
   cap_drop: [ALL]
   security_opt: ["no-new-privileges:true"]
   pids_limit: 256
+  networks: [runtime]
 
 services:
   # PostgreSQL and private S3 are provisioned separately; credentials stay server-side.
@@ -30,7 +31,12 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    command: [uvicorn, "videotranslate.app:create_app", --factory, --host, 0.0.0.0, --port, "8000", --no-proxy-headers]
+    # Accept rewritten client identity only from Web's exact internal proxy address.
+    command: [uvicorn, "videotranslate.app:create_app", --factory, --host, 0.0.0.0, --port, "8000", --proxy-headers, --forwarded-allow-ips, "${VT_PROXY_WEB_IP:-172.30.10.3}"]
+    networks:
+      runtime: {}
+      proxy:
+        ipv4_address: ${VT_PROXY_API_IP:-172.30.10.2}
     restart: unless-stopped
     mem_limit: 2g
     healthcheck:
@@ -65,6 +71,13 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    environment:
+      VT_TRUSTED_EDGE_CIDR: ${VT_TRUSTED_EDGE_CIDR:?Set the actual trusted TLS edge socket CIDR}
+      NGINX_ENVSUBST_FILTER: "^VT_TRUSTED_EDGE_CIDR$"
+    networks:
+      edge: {}
+      proxy:
+        ipv4_address: ${VT_PROXY_WEB_IP:-172.30.10.3}
     # Existing trusted TLS ingress forwards the public HTTPS origin to this loopback port.
     ports:
       - "127.0.0.1:${VT_WEB_PORT:-8080}:8080"
@@ -72,6 +85,8 @@ services:
     read_only: true
     tmpfs:
       - /tmp:rw,nosuid,nodev,size=64m,mode=1777
+      # The unprivileged image renders only the non-secret edge CIDR into this tmpfs.
+      - /etc/nginx/conf.d:rw,nosuid,nodev,size=1m,mode=1777
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 128
@@ -81,3 +96,13 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+# Only Web and API join proxy; fixed addresses bind Uvicorn trust to its actual peer.
+networks:
+  runtime: {}
+  edge: {}
+  proxy:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${VT_PROXY_SUBNET:-172.30.10.0/29}
