@@ -53,3 +53,18 @@ Raw experiment records are `tempo-dynamic-probe.json`, `rubberband-cli-probe.jso
 8. Retain the existing Worker/Operations/PreparedObject lifecycle for eventual owned outputs. The prototype creates no alternate lifecycle or production route. Independent SPEC and QUALITY gates apply before later media orchestration consumes these primitives.
 
 The remaining finishing, workbench, live EN→ZH/JA and multirole acceptance, workflow continuation, URL ingestion and deployment deliverables remain in the master plan. This investigation closes none of those product gates.
+
+## Composition counterexample and process granularity (2026-11-01)
+
+The required6B2A composition test exposed another real failure after its first full backend pass. A four-second stereo source with two short dialogue intervals and100ms borrowing has an exact4600ms common output map. The R3 standard-window engine produced exactly220800 frames, but the1000Hz marker expected at3.45–3.59s appeared at3.53–3.67s. The last1200Hz marker also began80ms late. Exact total length had again concealed local timing drift.
+
+The controller inspected the pinned official [R3 `updateRatioFromMap` and `process` implementation](https://github.com/breakfastquay/rubberband/blob/1d95888bec3ae0a17c0c4af791810d5a63f6bc35/src/finer/R3Stretcher.cpp#L413) through Agent Reach's GitHub route. The map-ratio update runs at the start of each process call. A4096-frame input call spans85.333ms at48kHz; delayed ratio changes at those boundaries are consistent with the observed failure. This source-level inference suggested a smaller process-call size, while retaining the standard multi-resolution engine and the exact control map.
+
+| Measured configuration on the same source/map |1000Hz interval|1200Hz interval|Frames|
+| --- | --- | --- | ---: |
+|R3 standard,4096-frame process calls|3.53–3.67s|start4.53s; end4.59s|220800|
+|R3 standard,512-frame process calls|3.44–3.59s|4.44–4.59s|220800|
+
+Corrected candidate`34896f9` explicitly reports`native_policy=r3-standard-process-512-v1`: study/retrieve blocks remain4096, process input blocks are512 (10.667ms). All seven composition markers measured within20ms of the exact map; the fixed acceptance threshold remains60ms. No short-window quality tradeoff, engine fallback, map rewrite, added silence or tail cut was used. Both actual WAVs, decoded PCM and numerical receipts are retained privately in`var/task6b2a/composition-counterexample/`. The original and corrected golden/dense receipts are separate, preserving the earlier failure history.
+
+The corrected80-test affected run passed; its separate full backend and the same SPEC re-review were still running when this note was added. This is measured synthetic CPU timing evidence, not real cloned-speech listening acceptance, finished exports or final gate approval.
