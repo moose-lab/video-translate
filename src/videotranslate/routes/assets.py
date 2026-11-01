@@ -243,12 +243,13 @@ def asset_content(
     if asset is None:
         raise APIError(404, "NOT_FOUND", "Resource not found")
     if asset.kind == "waveform" or asset.filename == "waveform.json":
-        from fastapi.responses import JSONResponse
+        from fastapi.responses import Response
 
         from ..dubbing.waveforms_execution import content_for_asset
 
-        return JSONResponse(
+        return Response(
             content_for_asset(db, asset, request.app.state.storage),
+            media_type="application/json",
             headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
         )
     # Copy the authorized immutable read facts before ending the SQL scope.

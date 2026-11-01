@@ -48,7 +48,7 @@ def validate_payload(value, options):
     return artifact
 
 
-def read_artifact(storage, asset, options):
+def read_artifact(storage, asset, options, *, exact_bytes=False):
     """Server-side validation of owned private JSON; callers release SQL first."""
     if not 0 < asset.byte_size <= MAX_JSON_BYTES:
         raise ValueError("Invalid waveform size")
@@ -60,7 +60,8 @@ def read_artifact(storage, asset, options):
         or len(raw) > MAX_JSON_BYTES
     ):
         raise ValueError("Waveform bytes differ")
-    return validate_payload(json.loads(raw), options)
+    value = validate_payload(json.loads(raw), options)
+    return raw if exact_bytes else value
 
 
 def content_for_asset(db, asset, storage):
@@ -88,7 +89,7 @@ def content_for_asset(db, asset, storage):
             options = dict(run.options)
             db.rollback()
             try:
-                return read_artifact(storage, proof, options)
+                return read_artifact(storage, proof, options, exact_bytes=True)
             except (ValueError, TypeError, KeyError, AttributeError, OSError):
                 pass
     raise APIError(409, "WAVEFORM_ARTIFACT_INVALID", "Waveform artifact is unavailable")

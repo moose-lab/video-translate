@@ -1,6 +1,8 @@
 """Owned worker waveform admission, cache, and read-only preview contracts."""
 # ruff: noqa: F811
 
+import hashlib
+
 import pytest
 from dubbing_helpers import guard, selected
 from sqlalchemy import event, select
@@ -40,7 +42,15 @@ def test_source_requires_preparation_then_actual_durable_waveform(dubbing_projec
     assert result["waveform"]["sample_count"] == 96000
     assert result["waveform"]["channels"] == 2
     assert any(b["rms"] > 0 for b in result["waveform"]["bins"])
-    assert c.get(result["artifact"]["url"]).status_code == 200
+    download = c.get(result["artifact"]["url"])
+    assert download.status_code == 200
+    asset = next(
+        item
+        for item in c.get(f"/api/projects/{p['id']}/assets").json()["items"]
+        if item["id"] == result["artifact"]["asset_id"]
+    )
+    assert len(download.content) == asset["byte_size"]
+    assert hashlib.sha256(download.content).hexdigest() == asset["sha256"]
     assert c.post(endpoint(dubbing_project), headers=h, json=body).json()["id"] == pending["id"]
     assert c.post(endpoint(dubbing_project), json=body).status_code == 403
     assert (
