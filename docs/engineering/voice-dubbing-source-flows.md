@@ -1,6 +1,6 @@
 # Video Translate 配音、角色与翻译源码流程
 
-核对版本：源代码 `32e9dc2`。本文把已经实现的后端路径与源码对应起来。主任务仍包括实际媒体处理、完整工作台与真实样片验收。6B1 已通过规格和质量复核，6B2A 正在实现实际媒体处理；开发预览的版本另见激活记录。下方虚线表示后续媒体实现，不能作为已有输出证明。
+核对版本：实际媒体交付 `b60212a`，独立子进程启动修正 `cd15ecb`，工作台拟合/导出 `ac63089`。本文对应已经实现的源码路径；完整跨阶段自动推进和其余产品义务另列。指定素材前59.51秒已经过真实云端英转中、混音和私有视频导出，结果仍是待人工听审的预览；日语实测按用户要求暂缓。
 
 ## 上传、识别、翻译到配音
 
@@ -20,13 +20,13 @@ flowchart TD
   N --> V[验证实际音频、时长、哈希与来源]
   V --> Q[独立 ASR 检查与人工试听记录]
   Q --> F[捕获当前输入并计算公共拟合计划]
-  F -.-> M[待实现：实际变速、背景替换与混音]
-  M -.-> X[待实现：字幕、预览、封装与导出]
+  F --> M[实际画面适配、每目标背景替换与浮点混音]
+  M --> X[字幕、预览、多音轨封装与私有导出]
 ```
 
 实际边界：`WorkflowIntent` 目前串联提取、分离和识别，停在原文/角色检查；翻译、合成、QC、拟合各自有持久化命令。完整跨阶段自动推进仍要接入这些命令。用户选择的自动推进开关不能代替尚未实现的后续编排。
 
-源码入口：[`analysis.py`](../../src/videotranslate/dubbing/analysis.py)、[`workflow.py`](../../src/videotranslate/dubbing/workflow.py)、[`translation_workflow.py`](../../src/videotranslate/dubbing/translation_workflow.py)、[`remote_synthesis.py`](../../src/videotranslate/dubbing/remote_synthesis.py)、[`remote_voice_qc.py`](../../src/videotranslate/dubbing/remote_voice_qc.py)、[`fit_execution.py`](../../src/videotranslate/dubbing/fit_execution.py)。原片/角色/译文/音频各有自己的修订和来源记录。
+源码入口：[`analysis.py`](../../src/videotranslate/dubbing/analysis.py)、[`workflow.py`](../../src/videotranslate/dubbing/workflow.py)、[`translation_workflow.py`](../../src/videotranslate/dubbing/translation_workflow.py)、[`remote_synthesis.py`](../../src/videotranslate/dubbing/remote_synthesis.py)、[`remote_voice_qc.py`](../../src/videotranslate/dubbing/remote_voice_qc.py)、[`fit_execution.py`](../../src/videotranslate/dubbing/fit_execution.py)、[`delivery_execution.py`](../../src/videotranslate/dubbing/delivery_execution.py)。原片/角色/译文/音频各有自己的修订和来源记录。
 
 ## 多角色：每句到底用哪份声音
 
@@ -99,4 +99,29 @@ flowchart LR
 
 现有 Worker 保存租约、尝试、事件和检查点。已知远端句柄可继续查询；不确定的已提交请求保留原记录，按明确确认约定处理重试。准备成功后的发布失败可以复用经过严格来源校验的结果。当前输入改变会使旧结果成为历史，不覆盖操作者的新修订。事件保留安全 ID、计数、状态与实际测量；服务令牌、原始请求头、存储路径和签名链接不进入公开事件。
 
-公共拟合计划已经有独立命令和 CPU JSON 计算，但实际视频变速、每目标背景掩码、浮点混音/保护、字幕和多音轨导出仍属后续实现。以上源码图还需在最终媒体与跨阶段编排接入后更新；完整范围见[剩余产品义务](remaining-product-obligations.md)。
+## 从拟合计划到实际导出
+
+```mermaid
+flowchart TD
+  F[当前且可行的不可变 FitPlan] --> C[捕获用途、音轨、增益、帧率与字幕选择]
+  C --> R[CPU render 阶段]
+  R --> V[FFmpeg 共享映射重定时画面]
+  R --> A[Rubber Band R3 保持音高处理原声与配音]
+  V --> RC[验证样本、帧、哈希并保存 render 检查点]
+  A --> RC
+  RC --> B[按各目标实际包含行替换对白区背景]
+  B --> M[共享映射与明确增益浮点叠加]
+  M --> MC[峰值保护与 mix 检查点]
+  MC --> X[MP4 多音轨、WAV、MP3、SRT、VTT]
+  X --> XC[完整解码与 export 检查点]
+  XC --> P[当前性复核与原子发布自有文件]
+  P --> D[认证私有预览与下载]
+  XC --> RETRY[失败重试复用已完成 render 和 mix]
+  RETRY --> X
+```
+
+[`deliveries.py`](../../src/videotranslate/dubbing/deliveries.py) 把导出绑定到确切的父计划及用途，重新检查来源、时间映射和选定人声。普通成片要求已就绪音频；明确的未完成预览允许当前有效人声，并保留预览标签。列表中的普通 `render_eligible` 字段不能用来禁止这类明确预览。
+
+[`delivery_pipeline.py`](../../src/videotranslate/dubbing/delivery_pipeline.py) 负责实际媒体阶段，[`delivery_checkpoint.py`](../../src/videotranslate/dubbing/delivery_checkpoint.py) 校验持久化阶段输出。原声对照也使用共享时间映射；不会把它标成未经变速的原片。导出重试不调用模型。当前字幕是独立SRT/VTT，烧录字幕和字体渲染仍待实现。
+
+真实英转中预览的10个私有下载通过字节数与SHA256检查，中文播放版通过完整音视频解码。Smart计划保持8段自然配音语速，画面由59.51秒延长为76.810秒；自动识别检查和人工听审仍是不同验收状态。完整剩余范围见[剩余产品义务](remaining-product-obligations.md)。
