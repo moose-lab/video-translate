@@ -1,7 +1,7 @@
 """Typed remote contracts; capability declarations are not inference proof."""
 
-from dataclasses import dataclass, field
-from typing import Any, Literal
+from dataclasses import dataclass
+from typing import Literal
 
 AdapterId = Literal[
     "hf_router",
@@ -31,13 +31,6 @@ class ProviderCapabilities:
     declared: bool = True
     max_duration_seconds: int | None = None
     controls: tuple[str, ...] = ()
-
-
-@dataclass(frozen=True)
-class RemoteResult:
-    status: Literal["pending", "succeeded", "failed", "uncertain"]
-    payload: dict[str, Any] = field(default_factory=dict)
-    remote_id: str | None = None
 
 
 class ProviderError(ValueError):

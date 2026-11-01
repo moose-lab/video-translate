@@ -1,6 +1,16 @@
 import pytest
 
 
+def clone_inputs(*, text="hi", model="OmniVoice"):
+    return {
+        "config": {"model": model, "space_id": "k2-fsa/OmniVoice"},
+        "text": text,
+        "target": "ja",
+        "reference_text": "hi",
+        "controls": {},
+    }
+
+
 def test_omnivoice_uses_exact_model_name_and_requires_real_audio_and_status():
     from videotranslate.providers.omnivoice import clone_arguments, normalize_result
 
@@ -87,11 +97,9 @@ def test_omnivoice_selects_exact_current_space_enum_not_assumed_casing():
         model_name_from_enum("ja", ["English"])
 
 
-def test_remote_result_does_not_invent_a_pollable_id():
-    from videotranslate.providers.contracts import ProviderCapabilities, RemoteResult
+def test_capability_declarations_do_not_claim_inference_verification():
+    from videotranslate.providers.contracts import ProviderCapabilities
 
-    result = RemoteResult(status="succeeded", payload={"text": "ok"})
-    assert result.remote_id is None
     capability = ProviderCapabilities(
         language_support="unknown", resumable=False, cancel_supported=False
     )
@@ -323,7 +331,7 @@ def test_gradio_output_download_uses_provider_file_route_and_bounded_temp(tmp_pa
 def test_hf_translation_sends_explicit_ids_and_validates_reply():
     import json
 
-    from videotranslate.providers.chat import translate
+    from videotranslate.providers.chat import structured_chat
 
     class Http:
         def post_json(self, url, body, **kwargs):
@@ -332,7 +340,7 @@ def test_hf_translation_sends_explicit_ids_and_validates_reply():
             assert body["model"] == "test/model"
             request = json.loads(body["messages"][1]["content"])
             assert request["target_language"] == "zh-Hant"
-            assert request["segments"] == [{"id": "s1", "text": "hello"}]
+            assert request["quoted_data"]["segments"] == [{"id": "s1", "text": "hello"}]
             return json.dumps(
                 {
                     "choices": [
@@ -350,17 +358,17 @@ def test_hf_translation_sends_explicit_ids_and_validates_reply():
                 }
             ).encode()
 
-    assert translate(
+    assert structured_chat(
         Http(),
         model="test/model",
         token="hf_fake",
         target="zh-Hant",
         segments=[{"id": "s1", "text": "hello"}],
-    ) == {"s1": "你好"}
+    ) == {"segments": {"s1": "你好"}, "target_language": "zh-Hant", "metadata": {}}
 
 
 def test_hf_credential_cannot_be_sent_to_custom_translation_host():
-    from videotranslate.providers.chat import translate
+    from videotranslate.providers.chat import structured_chat
 
     class Http:
         allowed_hosts = {"custom.example"}
@@ -369,7 +377,7 @@ def test_hf_credential_cannot_be_sent_to_custom_translation_host():
             raise AssertionError("must not send")
 
     with pytest.raises(ValueError):
-        translate(
+        structured_chat(
             Http(),
             model="m",
             token="hf_fake",
@@ -462,7 +470,7 @@ def test_resolve_space_uses_validated_official_metadata_host():
     class Http:
         def get(self, url, **kwargs):
             assert url == "https://huggingface.co/api/spaces/k2-fsa/OmniVoice"
-            return b'{"host":"https://k2-fsa-omnivoice.hf.space"}'
+            return b'{"host":"https://k2-fsa-omnivoice.hf.space","sha":"recorded-revision"}'
 
     assert resolve_space(Http(), "k2-fsa/OmniVoice") == "https://k2-fsa-omnivoice.hf.space"
 
@@ -515,17 +523,17 @@ def test_omnivoice_rejects_url_and_local_file_reference():
             clone_arguments("hello", "en", {"path": path}, "ref")
 
 
-def test_omnivoice_submits_real_event_id_with_space_schema_and_uploaded_reference():
+def test_omnivoice_prepares_then_submits_real_event_id_with_uploaded_reference():
     import json
 
-    from videotranslate.providers.omnivoice import submit_clone
+    from videotranslate.providers.omnivoice import prepare_clone
 
     class Http:
         allowed_hosts = set()
 
         def get(self, url, **kwargs):
             if "/api/spaces/" in url:
-                return b'{"host":"https://k2-fsa-omnivoice.hf.space"}'
+                return b'{"host":"https://k2-fsa-omnivoice.hf.space","sha":"recorded-revision"}'
             names = [
                 "text",
                 "lang",
@@ -562,29 +570,27 @@ def test_omnivoice_submits_real_event_id_with_space_schema_and_uploaded_referenc
             assert body["data"][2]["path"] == "/tmp/provider/ref.wav"
             return b'{"event_id":"real-remote-id"}'
 
-    result = submit_clone(
-        Http(),
-        text="hi",
-        language="ja",
-        reference_audio=b"fake-audio",
-        filename="ref.wav",
-        reference_text="hi",
-    )
-    assert result.remote_id == "real-remote-id"
-    assert result.status == "pending"
+    from videotranslate.providers.gradio import GradioClient
+
+    http = Http()
+    prepared = prepare_clone(http, inputs=clone_inputs(), reference_audio=b"fake-audio")
+    assert prepared["metadata_revision"] == "recorded-revision"
+    assert GradioClient(http, prepared["host"], prepared["prefix"]).submit(
+        prepared["api_name"], prepared["args"]
+    ) == "real-remote-id"
 
 
 def test_omnivoice_does_not_upload_when_text_or_controls_invalid():
     import json
 
-    from videotranslate.providers.omnivoice import submit_clone
+    from videotranslate.providers.omnivoice import prepare_clone
 
     class Http:
         allowed_hosts = set()
 
         def get(self, url, **kwargs):
             if "/api/spaces/" in url:
-                return b'{"host":"https://k2-fsa-omnivoice.hf.space"}'
+                return b'{"host":"https://k2-fsa-omnivoice.hf.space","sha":"recorded-revision"}'
             names = [
                 "text",
                 "lang",
@@ -616,126 +622,7 @@ def test_omnivoice_does_not_upload_when_text_or_controls_invalid():
             raise AssertionError("must not upload invalid request")
 
     with pytest.raises(ValueError):
-        submit_clone(
-            Http(),
-            text="",
-            language="ja",
-            reference_audio=b"x",
-            filename="ref.wav",
-            reference_text="",
-        )
-
-
-def test_omnivoice_poll_validates_status_before_copying_audio(tmp_path):
-    import json
-
-    from videotranslate.providers.contracts import RemoteResult
-    from videotranslate.providers.omnivoice import poll_clone
-
-    class Http:
-        allowed_hosts = set()
-
-        def get_sse(self, url, **kwargs):
-            return (
-                "event: complete\ndata: "
-                + json.dumps([{"path": "/tmp/audio.wav"}, "Done."])
-                + "\n\n"
-            ).encode()
-
-        def download(self, url, **kwargs):
-            p = tmp_path / "audio"
-            p.write_bytes(b"audio")
-            return p
-
-    handle = RemoteResult(
-        status="pending",
-        remote_id="job",
-        payload={"host": "https://test.hf.space", "prefix": "/gradio_api"},
-    )
-    result = poll_clone(Http(), handle)
-    assert result.status == "succeeded" and result.remote_id == "job"
-    assert result.payload["local_audio_path"] == str(tmp_path / "audio")
-
-
-def test_demucs_submits_and_polls_two_real_stems(tmp_path):
-    import json
-
-    from videotranslate.providers.demucs import poll_separation, submit_separation
-
-    class Http:
-        allowed_hosts = set()
-
-        def get(self, url, **kwargs):
-            if "/api/spaces/" in url:
-                return b'{"host":"https://kajise-demucs-v4-ft-2s.hf.space"}'
-            if "/gradio_api/" in url:
-                raise ValueError("not found")
-            return b'{"named_endpoints":{"/predict":{"parameters":[{"parameter_name":"audio"}],"returns":[{"component":"Audio","label":"Vocals"},{"component":"Audio","label":"Instrumental"}]}}}'
-
-        def upload(self, url, **kwargs):
-            return ["/tmp/source.wav"]
-
-        def post_json(self, url, body, **kwargs):
-            assert url.endswith("/call/predict")
-            return b'{"event_id":"demucs-1"}'
-
-        def get_sse(self, url, **kwargs):
-            return (
-                "event: complete\ndata: "
-                + json.dumps([{"path": "/tmp/vocals.wav"}, {"path": "/tmp/instrumental.wav"}])
-                + "\n\n"
-            ).encode()
-
-        def download(self, url, **kwargs):
-            p = tmp_path / ("vocals" if "vocals" in url else "instrumental")
-            p.write_bytes(b"audio")
-            return p
-
-    http = Http()
-    handle = submit_separation(http, audio=b"fake-audio", filename="source.wav")
-    assert handle.remote_id == "demucs-1"
-    result = poll_separation(http, handle)
-    assert result.status == "succeeded"
-    assert result.payload["vocals_path"] != result.payload["instrumental_path"]
-
-
-def test_demucs_cleans_first_temp_if_second_download_fails(tmp_path):
-    import json
-
-    from videotranslate.providers.contracts import RemoteResult
-    from videotranslate.providers.demucs import poll_separation
-
-    first = tmp_path / "vocals"
-    calls = 0
-
-    class Http:
-        allowed_hosts = set()
-
-        def get_sse(self, *args, **kwargs):
-            return (
-                "event: complete\ndata: "
-                + json.dumps([{"path": "/tmp/a.wav"}, {"path": "/tmp/b.wav"}])
-                + "\n\n"
-            ).encode()
-
-        def download(self, *args, **kwargs):
-            nonlocal calls
-            calls += 1
-            if calls == 1:
-                first.write_bytes(b"audio")
-                return first
-            raise ValueError("download failure")
-
-    with pytest.raises(ValueError):
-        poll_separation(
-            Http(),
-            RemoteResult(
-                status="pending",
-                remote_id="job",
-                payload={"host": "https://test.hf.space", "prefix": ""},
-            ),
-        )
-    assert not first.exists()
+        prepare_clone(Http(), inputs=clone_inputs(text=""), reference_audio=b"x")
 
 
 def test_gradio_malformed_submission_is_safely_rejected():
@@ -828,7 +715,7 @@ def test_nvidia_can_use_admin_proxy_and_doh_without_changing_sni(monkeypatch):
 def test_custom_translation_may_use_explicitly_uncredentialed_host():
     import json
 
-    from videotranslate.providers.chat import translate
+    from videotranslate.providers.chat import structured_chat
 
     class Http:
         allowed_hosts = {"custom.example"}
@@ -852,15 +739,15 @@ def test_custom_translation_may_use_explicitly_uncredentialed_host():
                 }
             ).encode()
 
-    assert translate(
+    assert structured_chat(
         Http(),
         model="custom-model",
         token=None,
         target="en",
         segments=[{"id": "a", "text": "x"}],
         endpoint="https://custom.example/v1",
-        credential_kind="translation",
-    ) == {"a": "hello"}
+        credential_kind=None,
+    ) == {"segments": {"a": "hello"}, "target_language": "en", "metadata": {}}
 
 
 def test_hf_asr_model_identifier_rejects_traversal():
@@ -919,25 +806,17 @@ def test_nvidia_distinguishes_unsent_from_uncertain_stream_failure():
 
 
 def test_unsupported_preset_model_is_rejected_before_any_remote_requests():
-    from videotranslate.providers.demucs import submit_separation
-    from videotranslate.providers.omnivoice import submit_clone
+    from videotranslate.providers.demucs import prepare_separation
+    from videotranslate.providers.omnivoice import prepare_clone
 
     class Http:
         def get(self, *args, **kwargs):
             raise AssertionError("must not contact service")
 
     with pytest.raises(ValueError):
-        submit_clone(
-            Http(),
-            text="x",
-            language="en",
-            reference_audio=b"fake",
-            filename="x.wav",
-            reference_text="x",
-            model="different",
-        )
+        prepare_clone(Http(), inputs=clone_inputs(model="different"), reference_audio=b"fake")
     with pytest.raises(ValueError):
-        submit_separation(Http(), audio=b"fake", filename="x.wav", model="different")
+        prepare_separation(Http(), audio=b"fake", model="different")
 
 
 def test_nvidia_unsent_connection_failure_has_network_code(monkeypatch):

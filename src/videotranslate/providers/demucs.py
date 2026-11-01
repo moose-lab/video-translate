@@ -1,4 +1,4 @@
-"""Explicit remote Demucs contracts; legacy operations retain two-stem defaults."""
+"""Explicit remote Demucs preparation and result contracts."""
 
 from dataclasses import dataclass
 
@@ -87,47 +87,4 @@ def submit_prepared(http, prepared):
         [prepared.reference, prepared.model]
         if prepared.adapter == "demucs_multistem"
         else [prepared.reference],
-    )
-
-
-def submit_separation(
-    http,
-    *,
-    audio,
-    filename,
-    space_id="kajise/Demucs_v4-FT_2s",
-    model=ADAPTERS["demucs"].fixed_model,
-):
-    from .contracts import RemoteResult
-
-    prepared = prepare_separation(http, audio=audio, space_id=space_id, model=model)
-    event_id = submit_prepared(http, prepared)
-    return RemoteResult(
-        status="pending",
-        remote_id=event_id,
-        payload={"host": prepared.host, "prefix": prepared.prefix},
-    )
-
-
-def poll_separation(http, handle):
-    from .contracts import RemoteResult
-    from .gradio import GradioClient
-
-    if not handle.remote_id or handle.status != "pending":
-        raise ValueError("A pending provider event ID is required")
-    client = GradioClient(http, handle.payload["host"], handle.payload["prefix"])
-    payload = client.poll("predict", handle.remote_id)
-    if payload is None:
-        return handle
-    stems = normalize_stems(payload)
-    vocals = client.download(stems["vocals"])
-    try:
-        instrumental = client.download(stems["instrumental"])
-    except Exception:
-        vocals.unlink(missing_ok=True)
-        raise
-    return RemoteResult(
-        status="succeeded",
-        remote_id=handle.remote_id,
-        payload={"vocals_path": str(vocals), "instrumental_path": str(instrumental)},
     )

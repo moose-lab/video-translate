@@ -23,7 +23,7 @@ from videotranslate.execution.worker import Worker
 from videotranslate.models.analysis import PrivateOperation
 from videotranslate.models.core import utcnow
 from videotranslate.models.execution import StageRun
-from videotranslate.providers.chat import structured_chat, translate
+from videotranslate.providers.chat import structured_chat
 from videotranslate.providers.contracts import ProviderError
 from videotranslate.providers.network import SafeHTTP
 
@@ -116,27 +116,6 @@ def test_invalid_private_profile_rejected_before_resolver_or_network(profile):
         with pytest.raises(ValueError, match="Invalid provider timeout profile"):
             http.post_json(URL, {}, _timeout_profile=profile)
         assert seen == []
-    finally:
-        http.close()
-
-
-def test_legacy_translation_keeps_body_result_and_default_policy():
-    seen = []
-
-    def record(request):
-        seen.append(request)
-        return httpx.Response(200, json=envelope())
-
-    http = SafeHTTP(transport=httpx.MockTransport(record), resolver=lambda _: ["1.1.1.1"])
-    try:
-        assert translate(
-            http, model="m", token="t", target="ja", segments=[{"id": "a", "text": "A"}]
-        ) == {"a": "訳文"}
-        assert seen[0].extensions["timeout"] == DEFAULT_TIMEOUT
-        assert json.loads(json.loads(seen[0].content)["messages"][1]["content"]) == {
-            "target_language": "ja",
-            "segments": [{"id": "a", "text": "A"}],
-        }
     finally:
         http.close()
 
