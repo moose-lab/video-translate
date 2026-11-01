@@ -3,7 +3,7 @@ import {api, ApiError} from "../api/client";
 import {targetPath} from "./targetTypes";
 import {statusName} from "./types";
 type QCLine = {id: string; segment_id: string; status: string; current: boolean; next_action: string; recognition: {segments: {text: string}[]} | null};
-export default function VoiceQCDetails({projectId, tag, requestId, segmentId}: {projectId: string; tag: string; requestId: string; segmentId: string}) {
+export default function VoiceQCDetails({projectId, tag, requestId, segmentId, evidenceKey}: {projectId: string; tag: string; requestId: string; segmentId: string; evidenceKey: string}) {
   const [line, setLine] = useState<QCLine | null>(null), [error, setError] = useState(""), [loaded, setLoaded] = useState(false);
   useEffect(() => {
     let active = true; const controller = new AbortController(); setLine(null); setError(""); setLoaded(false);
@@ -20,6 +20,6 @@ export default function VoiceQCDetails({projectId, tag, requestId, segmentId}: {
       finally {if (active) setLoaded(true);}
     }
     void read(); return () => {active = false; controller.abort();};
-  }, [projectId, tag, requestId, segmentId]);
+  }, [projectId, tag, requestId, segmentId, evidenceKey]);
   return <div>{error ? <p className="error" role="alert">{error}</p> : line ? <><p className="muted">识别任务：{statusName(line.status)}{line.current ? "" : " · 结果已过期"}{line.next_action === "acknowledge_uncertain_submission" ? " · 远程提交结果未知，请在任务区核查" : ""}</p><p dir="auto">{line.recognition?.segments.map(row => row.text).join("") || "尚无识别文字。"}</p></> : <p role="status">{loaded ? "当前任务未找到此行识别结果，请刷新状态或查看任务区。" : "正在读取当前质检详情…"}</p>}</div>;
 }

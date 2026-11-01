@@ -90,3 +90,33 @@ it("shows a bounded empty QC detail result instead of an endless loading state",
   await user.click(screen.getByRole("button", {name: "查看识别对照"}));
   expect(await screen.findByText(/当前任务未找到此行识别结果/)).toBeTruthy();
 });
+it("adopts its own successful history selection response before the next selection", async () => {
+  const user = userEvent.setup(); const revisions: number[] = [];
+  const outputs = [{...output, id: "b"}, {...output, id: "c"}];
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {
+    if (init?.method) {
+      const body = JSON.parse(String(init.body)); revisions.push(body.revision);
+      return ok({selection_revision: revisions.length + 3, selected_output_id: body.output_id, total: 2, outputs});
+    }
+    return ok({selection_revision: 3, selected_output_id: "out", total: 2, outputs});
+  });
+  render(<LineAudioPanel {...props} />);
+  await user.click(screen.getByRole("button", {name: /配音与试听 第 1 行/}));
+  await user.click(screen.getByRole("button", {name: "查看第 1 行音频历史"}));
+  await user.click(await screen.findByRole("button", {name: "选用历史音频 1"}));
+  await waitFor(() => expect((screen.getByRole("button", {name: "选用历史音频 1"}) as HTMLButtonElement).disabled).toBe(true));
+  await user.click(screen.getByRole("button", {name: "选用历史音频 2"}));
+  await waitFor(() => expect(revisions).toEqual([3, 4]));
+});
+it("refreshes an open recognition detail when the same QC request completes", async () => {
+  const user = userEvent.setup(); let complete = false;
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async () => ok({id: "qc", total: 1, lines: [{id: "qc-line", segment_id: "s1", status: complete ? "succeeded" : "running", current: true, next_action: "listen_and_review", recognition: complete ? {segments: [{text: "识别完成的文字"}]} : null}]}));
+  const view = render(<LineAudioPanel {...props} line={{...line, selected: {...output, qc: {...output.qc, status: "running", request_id: "qc"}}}} />);
+  await user.click(screen.getByRole("button", {name: /配音与试听 第 1 行/}));
+  await user.click(screen.getByRole("button", {name: "查看识别对照"}));
+  await screen.findByText("尚无识别文字。");
+  complete = true;
+  view.rerender(<LineAudioPanel {...props} line={{...line, selected: {...output, qc_evidence_fingerprint: "new-qc", qc: {...output.qc, status: "succeeded", request_id: "qc"}}}} />);
+  expect(await screen.findByText("识别完成的文字")).toBeTruthy();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
