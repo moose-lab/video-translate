@@ -1,8 +1,9 @@
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 
+beforeEach(() => { window.history.replaceState(null, "", "/#/services"); });
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();

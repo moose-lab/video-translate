@@ -281,10 +281,11 @@ export default function ServiceSetup({
   return (
     <>
       <header>
-        <span className="brand">◼ VIDEO TRANSLATE</span>
+        <a className="brand" href="#/projects">◼ VIDEO TRANSLATE</a>
+        <nav aria-label="工作空间导航"><a href="#/projects">项目</a><a href="#/services" aria-current="page">服务配置</a>
         <button className="link" onClick={logout}>
           退出登录
-        </button>
+        </button></nav>
       </header>
       <main className="workspace">
         <aside>

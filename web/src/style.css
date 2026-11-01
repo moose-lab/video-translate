@@ -353,3 +353,20 @@ select {
 a {
   color: #285d49;
 }
+
+/* Workbench uses the existing flat green workspace palette. */
+header nav { display: flex; align-items: center; gap: 1rem; }
+header a { text-decoration: none; }
+header a[aria-current="page"] { font-weight: 700; text-decoration: underline; text-underline-offset: .35rem; }
+.workbench h1 { margin: 1rem 0; overflow-wrap: anywhere; }
+.workbench { max-width: 1200px; }
+.panel { background: white; border: 1px solid #dfe9e1; border-radius: 8px; padding: 1.25rem; margin: 1.25rem 0; min-width: 0; }
+.panel details { margin: 1rem 0; }
+summary { cursor: pointer; }
+.project-list { padding: 0; margin: 1.5rem 0; list-style: none; border-top: 1px solid #dfe9e1; }
+.project-list li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid #dfe9e1; min-width: 0; }
+.project-list a { font-weight: 700; font-size: 1.1rem; overflow-wrap: anywhere; }
+.project-list p { margin: .5rem 0 0; overflow-wrap: anywhere; }
+.language-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.empty { padding: 2rem 0; color: #66776d; }
+@media (max-width: 700px) { header { height: auto; min-height: 72px; flex-wrap: wrap; gap: .5rem; padding: 1rem; } header nav { flex-wrap: wrap; gap: .75rem; } .brand { font-size: .7rem; } .page-head > button { margin: .5rem 0; } .actions { flex-wrap: wrap; } }
