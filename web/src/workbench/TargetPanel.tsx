@@ -19,8 +19,8 @@ export default function TargetPanel({project, sourceTimeline, csrf, refreshVersi
   const data = useTargetData(project.id, tag, offset, refreshVersion + version, location.command), {timeline} = data;
   const [modeDraft, setModeDraft] = useState<LanguageTrack["mode"] | null>(null), modeBase = useRef<number | null>(null), {busy, error, perform} = useAction();
   const track = timeline?.language_tracks?.find(track => track.tag === tag && !track.archived), mode = modeDraft ?? track?.mode ?? "Fast";
-  useEffect(() => {const changed = () => {setLocation(route()); setOffset(0); setToolsDirty(false); setModeDraft(null); modeBase.current = null;}; window.addEventListener("hashchange", changed); return () => window.removeEventListener("hashchange", changed);}, []);
-  function navigate(target: string, command?: string) {const params = new URLSearchParams({target}); if (command) params.set("command", command); window.location.hash = `/projects/${encodeURIComponent(project.id)}?${params}`; setLocation({tag: target, command: command ?? null});}
+  useEffect(() => {const changed = () => {const next = route(); if (toolsDirty && next.tag !== tag) {const params = new URLSearchParams({target: tag}); if (location.command) params.set("command", location.command); window.history.replaceState(null, "", `#/projects/${encodeURIComponent(project.id)}?${params}`); return;} setLocation(next); setOffset(0); if (next.tag !== tag) setToolsDirty(false); setModeDraft(null); modeBase.current = null;}; window.addEventListener("hashchange", changed); return () => window.removeEventListener("hashchange", changed);}, [toolsDirty, location, tag, project.id]);
+  function navigate(target: string, command?: string) {if (toolsDirty) return; const params = new URLSearchParams({target}); if (command) params.set("command", command); window.location.hash = `/projects/${encodeURIComponent(project.id)}?${params}`; setLocation({tag: target, command: command ?? null});}
   function reload() {setVersion(value => value + 1); refresh();}
   const guard = timeline ? sourceGuard(timeline) : null;
   const {audio, error: audioError} = useTargetAudio(project.id, tag, offset, refreshVersion + version, !!guard && !!track?.materialized);
@@ -38,7 +38,7 @@ export default function TargetPanel({project, sourceTimeline, csrf, refreshVersi
     if (result) {navigate(tag, result.id); reload();}
   }
   return <section className="panel target-panel" aria-labelledby="target-title"><h2 id="target-title">翻译工作台</h2>
-    <div className="target-tabs" role="tablist" aria-label="目标语言">{tags.map(target => <button role="tab" aria-selected={target === tag} key={target} className={target === tag ? "" : "secondary"} onClick={() => navigate(target)}>{languageName(target)} · {target}</button>)}</div>
+    <div className="target-tabs" role="tablist" aria-label="目标语言">{tags.map(target => <button role="tab" disabled={toolsDirty && target !== tag} aria-selected={target === tag} key={target} className={target === tag ? "" : "secondary"} onClick={() => navigate(target)}>{languageName(target)} · {target}</button>)}</div>
     {!tags.length ? <p className="muted">项目尚未声明目标语言。</p> : !timeline ? <p role="status">{data.error || "正在加载译文…"}</p> : <>
       {data.loading && <p role="status" className="muted">正在核对译文状态…</p>}
       {data.error && <p className="error" role="alert">{data.error} <button className="link" onClick={reload}>重新加载译文</button></p>}
@@ -47,7 +47,7 @@ export default function TargetPanel({project, sourceTimeline, csrf, refreshVersi
         <div className="translation-tools"><label>翻译模式<select value={mode} disabled={busy} onChange={event => {if (!modeDraft) modeBase.current = track.revision; setModeDraft(event.target.value as LanguageTrack["mode"]);}}><option value="Fast">快速逐行（Fast）</option><option value="Cinematic">完整语境（Cinematic）</option><option value="Autofit">语境与时长建议（Autofit）</option></select></label>{modeDraft && <div className="actions"><button className="secondary" disabled={busy} onClick={() => void saveMode()}>保存翻译模式</button><button className="link" onClick={() => {setModeDraft(null); modeBase.current = null;}}>放弃模式修改</button></div>}
           <button disabled={busy || !guard || dirty || toolsDirty || !!modeDraft || unresolved || !timeline.segments.some(row => rowGuard(timeline, row) && !row.translation?.locked && !row.translation?.approved)} onClick={() => void translate()}>翻译本页未保护行</button></div>
         <TargetTextTools key={tag} projectId={project.id} csrf={csrf} track={track} timeline={timeline} refreshVersion={refreshVersion + version} onSaved={reload} onDirty={setToolsDirty} />
-        {toolsDirty && <p className="muted">上下文或导入内容有未保存修改，请先处理后再请求自动翻译。</p>}
+        {toolsDirty && <p className="muted">上下文或导入内容有未保存修改，请先保存或放弃，再切换目标语言或请求自动翻译。</p>}
         <p className="muted">仅点击后请求云端翻译；已锁定或已确认的译文保留。Autofit 提供时长估计与精简建议，不保证配音时长。</p>
         {unresolved && <p className="error">当前目标有未完成或结果未知的翻译任务，请先在任务区核查并恢复原任务。</p>}
         {dirty && <p className="muted">有未保存的译文修改，请先保存或放弃，再请求自动翻译。</p>}

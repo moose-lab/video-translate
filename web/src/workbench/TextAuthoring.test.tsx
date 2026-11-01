@@ -104,3 +104,19 @@ it("keeps locked and approved target rows unavailable to import and invalidates 
   expect(screen.queryByRole("button", {name: "应用目标译文导入"})).toBeNull();
   expect(applyCalls).toBe(0);
 });
+it("blocks source paging and merging a dirty next row until explicit discard", async () => {
+  const {default: SourceAuthoringSection} = await import("./SourceAuthoringSection");
+  const user = userEvent.setup();
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(ok({source: {revision: 2, start_ms: 0, end_ms: 10000, stale: false}, transcript: {id: "transcript-a", stale: false}, segments: [row, {...row, id: "s2", text: "Next words"}], total: 51, cast: []}));
+  render(<SourceAuthoringSection projectId="p" csrf="csrf" refreshVersion={0} onSaved={vi.fn()} />);
+  await user.click(screen.getByRole("button", {name: "编辑或导入源字幕"}));
+  await user.type(await screen.findByLabelText("源文字 第 2 行"), " draft");
+  expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(true);
+  expect((screen.getByRole("button", {name: "与下一源行合并"}) as HTMLButtonElement).disabled).toBe(true);
+  await user.click(screen.getByRole("button", {name: "放弃源第 2 行修改"}));
+  await user.click(screen.getByRole("button", {name: "与下一源行合并"}));
+  expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(true);
+  expect((screen.getByLabelText("源文字 第 2 行") as HTMLTextAreaElement).disabled).toBe(true);
+  await user.click(screen.getByRole("button", {name: "放弃结构修改"}));
+  expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(false);
+});

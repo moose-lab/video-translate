@@ -1,5 +1,5 @@
 import {afterEach, expect, it, vi} from "vitest";
-import {cleanup, render, screen, waitFor} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import TargetPanel from "./TargetPanel";
 import type {Timeline} from "./types";
@@ -98,4 +98,19 @@ it("opens current context and target import tools explicitly without cloud work"
   expect(await screen.findByDisplayValue("Actual context double")).toBeTruthy();
   expect(screen.getByLabelText("导入格式")).toBeTruthy();
   expect(fetch.mock.calls.every(([, init]) => !init?.method)).toBe(true);
+});
+it("holds target navigation while context or import drafts exist", async () => {
+  const user = userEvent.setup();
+  vi.spyOn(globalThis, "fetch").mockImplementation(async input => ok(String(input).includes("/synthesis?") ? emptyAudio : String(input).includes("/contexts?") ? {items: [{id: "ctx", summary: "", glossary: {}}], total: 1} : {...data, language_tracks: [{...data.language_tracks![0], context_revision_id: "ctx"}]}));
+  render(<TargetPanel {...props} />); await screen.findByDisplayValue("目标文字");
+  await user.click(screen.getByRole("button", {name: "上下文、术语与译文导入"}));
+  await user.type(await screen.findByLabelText("翻译上下文摘要"), "draft");
+  expect((screen.getByRole("tab", {name: /日语/}) as HTMLButtonElement).disabled).toBe(true);
+  window.history.replaceState(null, "", "/#/projects/p?target=ja"); fireEvent(window, new HashChangeEvent("hashchange"));
+  expect(window.location.hash).toContain("target=zh");
+  expect((screen.getByLabelText("翻译上下文摘要") as HTMLTextAreaElement).value).toBe("draft");
+  await user.click(screen.getByRole("button", {name: "放弃上下文修改"}));
+  expect((screen.getByRole("tab", {name: /日语/}) as HTMLButtonElement).disabled).toBe(false);
+  await user.type(screen.getByLabelText("导入字幕内容"), "draft");
+  expect((screen.getByRole("tab", {name: /日语/}) as HTMLButtonElement).disabled).toBe(true);
 });
