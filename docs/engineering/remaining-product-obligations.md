@@ -1,6 +1,6 @@
 # Remaining approved product obligations
 
-This is a scope trace against the approved SaaS design, not a new reduced definition of completion. Initially written during5A cache-evidence review; updated after its independent gates closed through`6303ad3`. Completed source-model diagnostics and backend tests cannot close the remaining live/product obligations below.
+This is a scope trace against the approved SaaS design, not a new reduced definition of completion. Initially written during5A cache-evidence review; updated through6B1's final independent gates and retained-preview activation. Completed source-model diagnostics and backend tests cannot close the remaining live/product obligations below.
 
 | Approved requirement | Observed implementation boundary | Required subsequent work/evidence |
 | --- | --- | --- |

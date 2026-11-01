@@ -103,3 +103,5 @@ These signatures define the intended functions, not placeholder implementation b
 - [ ] Obtain fresh independent SPEC review and subsequent distinct QUALITY review. Original actor fixes findings with RED/GREEN and the same reviewer rechecks. Only after both pass may 6B2B bind these functions to owned source/bed/natural assets and prepared media publication.
 
 This closes CPU primitives only. It does not claim current owned render admission, a mixed export, captions, cloud deployment, real cloned-voice quality, browser workbench or the paired-language/multirole acceptance. The original 6B2/6C and master 6–9 obligations remain intact.
+
+The subsequent owned integration preparation is [6B2B boundaries](../specs/2026-11-01-owned-media-render-boundaries.md). It records actual fit/analysis/prepared-object source contracts, manifest identity, cache bounds and publication/recovery requirements; it is not implementation or permission to begin6B2B before this increment's two gates.
