@@ -120,3 +120,21 @@ it("refreshes an open recognition detail when the same QC request completes", as
   expect(await screen.findByText("识别完成的文字")).toBeTruthy();
   expect(fetch).toHaveBeenCalledTimes(2);
 });
+it("preserves the visible history page when selection returns the backend default page", async () => {
+  const user = userEvent.setup();
+  const outputs = Array.from({length: 20}, (_, index) => ({...output, id: `out-${index}`, audio_asset_id: `audio-${index}`}));
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    if (init?.method) return ok({selection_revision: 4, selected_output_id: "out-10", total: 20, outputs});
+    const offset = Number(new URL(String(input), "http://localhost").searchParams.get("offset"));
+    return ok({selection_revision: 3, selected_output_id: "out", total: 20, outputs: outputs.slice(offset, offset + 10)});
+  });
+  render(<LineAudioPanel {...props} />);
+  await user.click(screen.getByRole("button", {name: /配音与试听 第 1 行/}));
+  await user.click(screen.getByRole("button", {name: "查看第 1 行音频历史"}));
+  await user.click(await screen.findByRole("button", {name: "下一页历史音频"}));
+  await waitFor(() => expect(screen.getByLabelText("历史音频 11").getAttribute("src")).toBe("/api/assets/audio-10/content"));
+  await user.click(screen.getByRole("button", {name: "选用历史音频 11"}));
+  await waitFor(() => expect((screen.getByRole("button", {name: "选用历史音频 11"}) as HTMLButtonElement).disabled).toBe(true));
+  expect(screen.getByLabelText("历史音频 11").getAttribute("src")).toBe("/api/assets/audio-10/content");
+  expect(screen.queryByLabelText("历史音频 21")).toBeNull();
+});
