@@ -242,10 +242,20 @@ def asset_content(
     )
     if asset is None:
         raise APIError(404, "NOT_FOUND", "Resource not found")
+    # Copy the authorized immutable read facts before ending the SQL scope.
+    # A browser can keep a range body open for minutes; it must not reserve a
+    # pooled connection while storage opens or the receiver applies backpressure.
+    filename, size, content_type, storage_key = (
+        asset.filename,
+        asset.byte_size,
+        asset.content_type,
+        asset.storage_key,
+    )
     value = request.headers.get("range")
-    start, end = byte_range(value, asset.byte_size)
+    start, end = byte_range(value, size)
+    db.rollback()
     try:
-        stream = request.app.state.storage.open(asset.storage_key, start=start, end=end)
+        stream = request.app.state.storage.open(storage_key, start=start, end=end)
     except Exception:
         raise APIError(
             503, "STORAGE_UNAVAILABLE", "Source is temporarily unavailable", retryable=True
@@ -268,13 +278,13 @@ def asset_content(
     headers = {
         "Accept-Ranges": "bytes",
         "Content-Length": str(end - start + 1),
-        "Content-Disposition": f'attachment; filename="source{PurePosixPath(asset.filename).suffix}"; '
-        f"filename*=UTF-8''{quote(asset.filename, safe='')}",
+        "Content-Disposition": f'attachment; filename="source{PurePosixPath(filename).suffix}"; '
+        f"filename*=UTF-8''{quote(filename, safe='')}",
         "X-Content-Type-Options": "nosniff",
         "Cache-Control": "private, no-store",
     }
     if value is not None:
-        headers["Content-Range"] = f"bytes {start}-{end}/{asset.byte_size}"
+        headers["Content-Range"] = f"bytes {start}-{end}/{size}"
     return StreamingResponse(
-        chunks(), status_code=206 if value else 200, media_type=asset.content_type, headers=headers
+        chunks(), status_code=206 if value else 200, media_type=content_type, headers=headers
     )
