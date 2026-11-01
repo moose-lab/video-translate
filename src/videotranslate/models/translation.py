@@ -40,6 +40,7 @@ class TranslationCommand(Owned, Base):
     actor_id: Mapped[str] = mapped_column(String(36))
     payload: Mapped[dict] = mapped_column(JSON)
     row_heads: Mapped[dict] = mapped_column(JSON)
+    continuation_stopped: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     generated_context_id: Mapped[str | None] = mapped_column(String(36))
 
 

@@ -12,6 +12,7 @@ from .routes import (
     events,
     finishing,
     languages,
+    pipeline,
     projects,
     providers,
     references,
@@ -41,6 +42,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(events.router, prefix="/api")
     app.include_router(dubbing.router, prefix="/api")
     app.include_router(workflow.router, prefix="/api")
+    app.include_router(pipeline.router, prefix="/api")
     app.include_router(references.router, prefix="/api")
     app.include_router(synthesis.router, prefix="/api")
     app.include_router(finishing.router, prefix="/api")

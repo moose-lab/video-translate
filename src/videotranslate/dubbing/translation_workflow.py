@@ -119,7 +119,7 @@ def batches(rows):
     return result
 
 
-def command(db, project, tag, body, actor, runtime):
+def command(db, project, tag, body, actor, runtime, *, pipeline_call=False):
     initialize_inputs(db, project)
     _, selection, transcript = active_source(db, project, body, require_transcript=True)
     track = track_for(db, project, tag)
@@ -201,7 +201,11 @@ def command(db, project, tag, body, actor, runtime):
         scope(TranslationCommand, project).where(TranslationCommand.signature == signature)
     )
     if prior:
-        return command_json(db, project, prior)
+        if not pipeline_call:
+            from .pipeline import mark_shared
+
+            mark_shared(db, project, "translation", prior.id)
+        return {"id": prior.id, "reused": True} if pipeline_call else command_json(db, project, prior)
     if not selected_rows:
         raise APIError(409, "TRANSLATION_PROTECTED", "All requested rows are locked or approved")
     # Protect only overlapping selected rows or the same unresolved shared context.
@@ -285,7 +289,7 @@ def command(db, project, tag, body, actor, runtime):
             "count": len(selected_rows),
         },
     )
-    return command_json(db, project, intent)
+    return {"id": intent.id, "reused": False} if pipeline_call else command_json(db, project, intent)
 
 
 def phase_rows(db, project, intent):
@@ -310,7 +314,7 @@ def queue_phase(db, project, intent, name, index, parent=None):
     from ..execution.contracts import RunCreate
     from ..execution.service import create_run
 
-    if prior_phase(db, project, intent, name, index):
+    if intent.continuation_stopped or prior_phase(db, project, intent, name, index):
         return
     payload = intent.payload
     context, glossary = dict(payload["context"]), dict(payload["glossary"])

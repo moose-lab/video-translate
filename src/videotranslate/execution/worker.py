@@ -35,6 +35,11 @@ class Worker:
         self.owner = str(uuid.uuid4())
 
     def run_once(self):
+        if "workflow_continue" in self.registry:
+            from ..dubbing.pipeline_control import schedule_dirty
+
+            with self.session_factory.begin() as db:
+                schedule_dirty(db)
         with self.session_factory.begin() as db:
             run = claim_run(
                 db,

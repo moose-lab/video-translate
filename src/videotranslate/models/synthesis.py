@@ -160,6 +160,7 @@ class SynthesisLine(Owned, Base):
             "reference_versions",
             "fk_synthesis_line_review_reference",
         ),
+        owned_fk("authorization_checkpoint_id", "pipeline_checkpoints", "fk_synthesis_line_authorization"),
         UniqueConstraint("run_id", name="uq_synthesis_line_run"),
         UniqueConstraint("command_id", "segment_id", name="uq_synthesis_line_command_cell"),
         cell_unique("uq_synthesis_line_cell"),
@@ -174,6 +175,7 @@ class SynthesisLine(Owned, Base):
     input_payload: Mapped[dict] = mapped_column(JSON)
     input_fingerprint: Mapped[str] = mapped_column(String(64), index=True)
     guard_snapshot: Mapped[dict] = mapped_column(JSON)
+    authorization_checkpoint_id: Mapped[str | None] = mapped_column(String(36))
     review_translation_revision: Mapped[int | None] = mapped_column(Integer)
     review_reference_version_id: Mapped[str | None] = mapped_column(String(36))
     publication: Mapped[dict] = mapped_column(JSON, default=dict)

@@ -8,6 +8,7 @@ from . import (
     dubbing,
     execution,
     finishing,
+    pipeline,
     providers,
     synthesis,
     translation,

@@ -106,7 +106,7 @@ def capability_status(caps, tag):
     return "supported" if base in caps["supported_languages"] else caps["language_support"]
 
 
-def command(db, project, tag, body, actor):
+def command(db, project, tag, body, actor, *, pipeline_call=False):
     from ..execution.service import create_run
 
     _, _, transcript = active_source(db, project, body, require_transcript=True)
@@ -143,7 +143,11 @@ def command(db, project, tag, body, actor):
     signature = fingerprint({"track_id": track.id, "rows": [list(item[1:]) for item in captured]})
     prior = db.scalar(scope(VoiceQCCommand, project).where(VoiceQCCommand.signature == signature))
     if prior:
-        return command_json(db, project, prior)
+        if not pipeline_call:
+            from .pipeline import mark_shared
+
+            mark_shared(db, project, "qc", prior.id)
+        return {"id": prior.id, "reused": True} if pipeline_call else command_json(db, project, prior)
     for row, _, inputs, _ in captured:
         pending = db.scalar(
             scope(StageRun, project).where(
@@ -216,7 +220,7 @@ def command(db, project, tag, body, actor):
         target_language=track.tag,
     )
     db.flush()
-    return command_json(db, project, intent)
+    return {"id": intent.id, "reused": False} if pipeline_call else command_json(db, project, intent)
 
 
 def command_json(db, project, intent, limit=100, offset=0):

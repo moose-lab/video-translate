@@ -68,6 +68,10 @@ def set_inputs(db: Session, project: Project, values: dict) -> None:
             changed.add(key)
     if not changed:
         return
+    if any(not key.startswith("output.workflow_continue") for key in changed):
+        from ..dubbing.pipeline import mark_dirty
+
+        mark_dirty(db, project)
     # Fixed point traversal handles target/segment-specific downstream consumers.
     runs = db.scalars(
         select(StageRun).where(

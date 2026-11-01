@@ -51,6 +51,9 @@ def changed(db, project, kind, *, run=None, **facts):
         .where(Project.id == project.id)
         .values(revision=Project.revision + 1, updated_at=utcnow())
     )
+    from .pipeline import mark_dirty
+
+    mark_dirty(db, project)
     append_event(db, project, kind, run=run, facts=facts)
     db.flush()
 

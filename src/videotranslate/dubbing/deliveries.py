@@ -1,5 +1,7 @@
 """Guarded delivery admission and bounded owned artifact reads."""
 
+from dataclasses import dataclass
+
 from sqlalchemy import func, select
 
 from ..errors import APIError
@@ -15,6 +17,12 @@ from ..models.finishing import FitPlanCommand, FitPlanResult
 from ..models.synthesis import NaturalOutput
 from . import fit_plans
 from .ownership import changed, owned, owner, scope
+
+
+@dataclass(frozen=True)
+class DeliveryAdmission:
+    id: str
+    reused: bool = False
 
 
 def blocked():
@@ -176,7 +184,7 @@ def valid_parent(db, project, parent):
     return captured
 
 
-def admit(db, project, body, actor, validated_capture):
+def admit(db, project, body, actor, validated_capture, *, admission_only=False):
     from ..execution.service import create_run
 
     parent = owned(db, FitPlanCommand, project, body.fit_plan_id)
@@ -197,7 +205,7 @@ def admit(db, project, body, actor, validated_capture):
     signature = fingerprint(dict(snapshot=snapshot, actor_id=actor))
     prior = db.scalar(scope(DeliveryCommand, project).where(DeliveryCommand.signature == signature))
     if prior:
-        return prior.id
+        return DeliveryAdmission(prior.id, reused=True) if admission_only else prior.id
     command = DeliveryCommand(
         id=new_id(),
         **owner(project),
@@ -222,7 +230,7 @@ def admit(db, project, body, actor, validated_capture):
     )
     command.run_id = run.id
     changed(db, project, "delivery.queued", run=run, command_id=command.id, purpose=command.purpose)
-    return command.id
+    return DeliveryAdmission(command.id) if admission_only else command.id
 
 
 def current(db, project, command):

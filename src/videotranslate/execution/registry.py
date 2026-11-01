@@ -166,3 +166,11 @@ STAGES["deliver"] = StageDefinition(
     command_only=True,
     scope_suffix=delivery_execution.command_scope,
 )
+
+from ..dubbing import pipeline_control  # noqa: E402
+
+STAGES["workflow_continue"] = StageDefinition(
+    "workflow_continue", pipeline_control.options, pipeline_control.inputs,
+    pipeline_control.handler, pipeline_control.publish, command_only=True,
+    scope_suffix=pipeline_control.command_scope,
+)

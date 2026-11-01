@@ -47,6 +47,8 @@ def connection(db, project, slot):
 
 
 def queue_child(db, project, intent, stage):
+    if intent.continuation_stopped:
+        return
     shared = stage in {"extract", "separate"}
     run, reuse = None, None
     if stage == "transcribe":
@@ -110,7 +112,7 @@ def queue_child(db, project, intent, stage):
         sync_run_state(db, run)
 
 
-def command(db, project, body, actor):
+def command(db, project, body, actor, *, pipeline_call=False):
     selection = current_selection(db, project)
     digest = editor_fingerprint(db, project)
     if body.expected_editor_fingerprint != digest:
@@ -133,7 +135,11 @@ def command(db, project, body, actor):
         scope(WorkflowIntent, project).where(WorkflowIntent.command_fingerprint == signature)
     )
     if prior:
-        return safe_workflow(db, project, prior)
+        if not pipeline_call:
+            from .pipeline import mark_shared
+
+            mark_shared(db, project, "source", prior.id)
+        return {"id": prior.id, "reused": True} if pipeline_call else safe_workflow(db, project, prior)
     if body.action == "analyse":
         from ..models.execution import StageRun
 
@@ -164,7 +170,7 @@ def command(db, project, body, actor):
     append_event(
         db, project, "workflow.queued", facts={"workflow_id": intent.id, "action": intent.action}
     )
-    return safe_workflow(db, project, intent)
+    return {"id": intent.id, "reused": False} if pipeline_call else safe_workflow(db, project, intent)
 
 
 def publication_current(db, run):
@@ -200,7 +206,7 @@ def advance_for_run(db, run):
     project = db.get(Project, run.project_id)
     for child in db.scalars(scope(WorkflowChild, project).where(WorkflowChild.run_id == run.id)):
         intent = owned(db, WorkflowIntent, project, child.workflow_id)
-        if intent.status != "running" or intent.stage != run.stage:
+        if intent.continuation_stopped or intent.status != "running" or intent.stage != run.stage:
             continue
         if run.status != "succeeded":
             if run.status in {"stale", "failed", "needs_review", "cancelled"}:
@@ -254,7 +260,7 @@ def sync_run_state(db, run):
     project = db.get(Project, run.project_id)
     for child in db.scalars(scope(WorkflowChild, project).where(WorkflowChild.run_id == run.id)):
         intent = owned(db, WorkflowIntent, project, child.workflow_id)
-        if intent.stage != run.stage:
+        if intent.continuation_stopped or intent.stage != run.stage:
             continue
         if run.status in {"queued", "running", "retry_wait", "cancelling"}:
             intent.status, intent.next_action = "running", None

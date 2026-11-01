@@ -437,6 +437,7 @@ def finish_run(db: Session, run_id: str, token: str, result: StageResult, *, reg
     _end_attempt(db, run, run.status)
     _clear_lease(run)
     append_event(db, project, f"run.{run.status}", run=run)
+    _dirty_pipeline(db, project, run)
     return True
 
 
@@ -464,6 +465,7 @@ def fail_run(db: Session, run_id: str, token: str, failure: StageFailure) -> boo
     _end_attempt(db, run, run.status, run.safe_error)
     _clear_lease(run)
     append_event(db, project, f"run.{run.status}", run=run, facts={"code": failure.code.value})
+    _dirty_pipeline(db, project, run)
     return True
 
 
@@ -528,6 +530,7 @@ def retry_run(
     owned.safe_error = owned.result = owned.finished_at = owned.cancel_requested_at = None
     owned.due_at = owned.updated_at = utcnow()
     append_event(db, project, "run.retried", run=owned, facts={"revision": project.revision})
+    _dirty_pipeline(db, project, owned)
     return owned
 
 
@@ -560,6 +563,7 @@ def cancel_run(db: Session, workspace_id: str, run_id: str):
         "run.cancel_requested" if owned.status == "cancelling" else "run.cancelled",
         run=owned,
     )
+    _dirty_pipeline(db, project, owned)
     return owned
 
 
@@ -575,6 +579,7 @@ def confirm_cancel(db: Session, run_id: str, token: str, *, remote_confirmed=Fal
     _end_attempt(db, run, "cancelled")
     _clear_lease(run)
     append_event(db, project, "run.cancelled", run=run)
+    _dirty_pipeline(db, project, run)
     return True
 
 
@@ -588,3 +593,10 @@ def defer_run(db, run_id, token):
     _clear_lease(run)
     append_event(db, project, "run.pending", run=run)
     return True
+
+
+def _dirty_pipeline(db, project, run):
+    if run.stage != "workflow_continue":
+        from ..dubbing.pipeline import mark_dirty
+
+        mark_dirty(db, project)

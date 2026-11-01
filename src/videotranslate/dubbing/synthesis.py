@@ -168,7 +168,8 @@ def editor_current(db, project, line):
         return False
 
 
-def command(db, project, tag, body, actor):
+def command(db, project, tag, body, actor, *, pipeline_call=False,
+            authorization_checkpoint_id=None):
     from ..execution.service import create_run
 
     initialize_inputs(db, project)
@@ -176,6 +177,11 @@ def command(db, project, tag, body, actor):
     track = track_for(db, project, tag)
     if len({r.id for r in body.segments}) != len(body.segments):
         invalid()
+    authorization = None
+    if authorization_checkpoint_id:
+        from .pipeline import validate_authorization
+
+        authorization = validate_authorization(db, project, track, authorization_checkpoint_id)
     captured, skipped = [], []
     for row in body.segments:
         segment = active_segment(db, project, transcript, row.id)
@@ -192,7 +198,8 @@ def command(db, project, tag, body, actor):
             and row.review_translation_revision != state.revision
         ):
             conflict()
-        if not target.approved and row.review_translation_revision != state.revision:
+        if (not target.approved and row.review_translation_revision != state.revision
+            and authorization is None):
             issue(
                 "TARGET_REVIEW_REQUIRED",
                 "Review the exact current target revision before synthesis",
@@ -227,7 +234,11 @@ def command(db, project, tag, body, actor):
         scope(SynthesisCommand, project).where(SynthesisCommand.signature == signature)
     )
     if previous:
-        return command_json(db, project, previous)
+        if not pipeline_call:
+            from .pipeline import mark_shared
+
+            mark_shared(db, project, "synthesis", previous.id)
+        return {"id": previous.id, "reused": True} if pipeline_call else command_json(db, project, previous)
     if not captured:
         return {"id": None, "lines": [], "skipped_ids": skipped, "status": "selection_preserved"}
     for row, *_ in captured:
@@ -273,6 +284,7 @@ def command(db, project, tag, body, actor):
             input_fingerprint=digest,
             guard_snapshot=guard,
             review_translation_revision=row.review_translation_revision,
+            authorization_checkpoint_id=authorization.id if authorization else None,
             review_reference_version_id=row.review_reference_version_id,
         )
         db.add(line)
@@ -308,6 +320,8 @@ def command(db, project, tag, body, actor):
         else "generate",
     )
     db.flush()
+    if pipeline_call:
+        return {"id": intent.id, "reused": False}
     return command_json(db, project, intent) | {"skipped_ids": skipped}
 
 
@@ -344,6 +358,7 @@ def command_json(db, project, intent, limit=100, offset=0):
                 if line.publication
                 else None,
                 "review_translation_revision": line.review_translation_revision,
+                "authorization_checkpoint_id": line.authorization_checkpoint_id,
                 "review_reference_version_id": line.review_reference_version_id,
             }
         )
