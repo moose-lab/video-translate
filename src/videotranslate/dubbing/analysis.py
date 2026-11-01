@@ -6,7 +6,9 @@ from pathlib import Path
 from ..errors import APIError
 from ..execution.contracts import FailureCode, StageFailure, StagePending
 from ..execution.inputs import capture_inputs
+from ..execution.media_inputs import materialize
 from ..execution.prepared import Operations, current_operation, publish_objects, store_audio
+from ..execution.provider_runtime import make_http, provider_failure
 from ..models.analysis import AnalysisMedia
 from ..models.core import Project
 from ..models.dubbing import SourceTrack
@@ -76,23 +78,6 @@ def extract_inputs(db, project, request):
     )
 
 
-def materialize(context, asset, destination, *, max_bytes):
-    import hashlib
-
-    digest = hashlib.sha256()
-    size = 0
-    with context.storage.open(asset.storage_key) as source, destination.open("wb") as output:
-        while chunk := source.read(1024 * 1024):
-            context.check_active()
-            size += len(chunk)
-            if size > max_bytes:
-                raise StageFailure(FailureCode.MEDIA_LIMIT)
-            digest.update(chunk)
-            output.write(chunk)
-    if size != asset.byte_size or digest.hexdigest() != asset.sha256:
-        raise StageFailure(FailureCode.INVALID_MEDIA)
-
-
 def extract_handler(context):
     from ..media.audio import extract_audio
 
@@ -157,21 +142,6 @@ def publish_media(db, run, result):
                 for kind, asset in assets.items()
             },
         )
-    )
-
-
-def make_http(context):
-    from ..providers.network import SafeHTTP
-
-    runtime = context.settings
-    return SafeHTTP(
-        allowed_hosts={
-            host.strip().lower()
-            for host in runtime.provider_allowed_hosts.split(",")
-            if host.strip()
-        },
-        proxy_url=runtime.provider_proxy_url.get_secret_value() or None,
-        use_doh=runtime.provider_dns_over_https,
     )
 
 
@@ -257,34 +227,6 @@ def validate_source_asr(config, language, selection):
             raise APIError(422, "MEDIA_LIMIT", "HF source recognition audio exceeds limit")
     else:
         raise APIError(422, "STAGE_UNAVAILABLE", "Unsupported transcription adapter")
-
-
-def provider_failure(operations, error):
-    from ..providers.contracts import ProviderError, ProviderTerminalError
-
-    if isinstance(error, ProviderTerminalError):
-        operations.failed()
-        return StageFailure(FailureCode.INVALID_MEDIA)
-    if isinstance(error, ProviderError):
-        if error.code in {"auth", "quota", "configuration", "invalid_response"}:
-            operation = operations.current()
-            # Poll/download access failures say nothing about an accepted job's outcome.
-            if operation and not operation.remote_id and operation.phase == "submitting":
-                operations.failed()
-            return StageFailure(
-                FailureCode.AUTHENTICATION if error.code == "auth" else FailureCode.CONFIGURATION
-            )
-        if error.code == "uncertain":
-            return StageFailure(FailureCode.SUBMISSION_UNCERTAIN, review=True)
-        return StageFailure(FailureCode.TRANSIENT, retryable=True)
-    # A received but invalid terminal result must never be polled indefinitely.
-    if isinstance(error, ValueError):
-        operation = operations.current()
-        if operation and not operation.remote_id:
-            operations.failed()
-        # Malformed/non-UTF8 polling transport is not an authoritative terminal event.
-        return StageFailure(FailureCode.INVALID_MEDIA)
-    return None
 
 
 def separate_handler(context):
@@ -497,10 +439,10 @@ def transcribe_handler(context):
     from ..media.audio import extract_audio
     from ..models.core import Asset
     from ..models.providers import WorkspaceCredential
-    from ..providers.whisper import transcribe
     from ..providers.nvidia_stream import stream_remote
     from ..providers.settings import resolve_revision
     from ..providers.vault import decrypt_credential
+    from ..providers.whisper import transcribe
     from .workflow import connection, publication_current
 
     with context.session_factory.begin() as db:

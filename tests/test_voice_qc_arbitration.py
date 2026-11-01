@@ -105,8 +105,8 @@ def queue_japanese(f, ja):
 def test_retried_predecessor_waits_for_preparing_peer_and_adopts_without_io(
     synthesis_project, monkeypatch, tmp_path, checkpoint, backend, pg_synthesis_factory
 ):
-    from videotranslate.dubbing.analysis import materialize
     from videotranslate.execution.contracts import CancellationRequested
+    from videotranslate.execution.media_inputs import materialize
     from videotranslate.execution.prepared import Operations
     from videotranslate.execution.worker import Worker
     from videotranslate.models.analysis import PreparedObject, PrivateOperation
@@ -144,7 +144,7 @@ def test_retried_predecessor_waits_for_preparing_peer_and_adopts_without_io(
             assert release.wait(15)
         return materialize(context, asset, destination, **kwargs)
 
-    monkeypatch.setattr("videotranslate.dubbing.analysis.materialize", paused)
+    monkeypatch.setattr("videotranslate.execution.media_inputs.materialize", paused)
     with ThreadPoolExecutor(max_workers=2) as pool:
         peer = pool.submit(Worker(c.app.state.settings).run_once)
         try:
@@ -161,8 +161,8 @@ def test_retried_predecessor_waits_for_preparing_peer_and_adopts_without_io(
     def forbidden(*args, **kwargs):
         raise AssertionError("local adoption must not materialize/decrypt/construct HTTP")
 
-    monkeypatch.setattr("videotranslate.dubbing.analysis.materialize", forbidden)
-    monkeypatch.setattr("videotranslate.dubbing.remote_synthesis.credential_token", forbidden)
+    monkeypatch.setattr("videotranslate.execution.media_inputs.materialize", forbidden)
+    monkeypatch.setattr("videotranslate.execution.provider_runtime.credential_token", forbidden)
     monkeypatch.setattr("videotranslate.dubbing.remote_voice_qc.make_http", forbidden)
     original_cache = Operations.cache
     if checkpoint == "interrupted_adoption":
@@ -191,7 +191,7 @@ def test_retried_predecessor_waits_for_preparing_peer_and_adopts_without_io(
 def test_submission_boundary_adopts_success_that_appeared_after_initial_lookup(
     synthesis_project, monkeypatch, tmp_path
 ):
-    from videotranslate.dubbing.analysis import materialize
+    from videotranslate.execution.media_inputs import materialize
     from videotranslate.models.analysis import PrivateOperation
 
     f = synthesis_project
@@ -215,7 +215,7 @@ def test_submission_boundary_adopts_success_that_appeared_after_initial_lookup(
             ).phase = "prepared"
         return materialize(context, asset, destination, **kwargs)
 
-    monkeypatch.setattr("videotranslate.dubbing.analysis.materialize", reveal)
+    monkeypatch.setattr("videotranslate.execution.media_inputs.materialize", reveal)
     drain(c)
     assert detail(f, second)["lines"][0]["status"] == "succeeded"
     assert len(http.posts) == 1 and len(calls) == 1
@@ -227,7 +227,7 @@ def test_distinct_verification_identity_remains_independent_during_preparation(
 ):
     from test_voice_qc_review_fixes import configure
 
-    from videotranslate.dubbing.analysis import materialize
+    from videotranslate.execution.media_inputs import materialize
     from videotranslate.execution.worker import Worker
 
     f = synthesis_project
@@ -247,7 +247,7 @@ def test_distinct_verification_identity_remains_independent_during_preparation(
             assert release.wait(15)
         return materialize(context, asset, destination, **kwargs)
 
-    monkeypatch.setattr("videotranslate.dubbing.analysis.materialize", pause)
+    monkeypatch.setattr("videotranslate.execution.media_inputs.materialize", pause)
     with ThreadPoolExecutor(max_workers=2) as pool:
         earlier = pool.submit(Worker(c.app.state.settings).run_once)
         try:

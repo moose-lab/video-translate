@@ -9,12 +9,12 @@ from pathlib import Path
 
 from ..execution.contracts import FailureCode, StageFailure, StageResult
 from ..execution.inputs import fingerprint
+from ..execution.media_inputs import materialize
 from ..execution.prepared import Operations, current_operation
 from ..execution.prepared_media import publish as publish_media
 from ..execution.prepared_media import store
 from ..media.waveform import MAX_JSON_BYTES, POLICY, envelope
 from ..models.core import Project
-from .analysis import materialize
 from .waveforms import artifact_record, binding, capture, publication_current
 from .waveforms_contracts import WaveformArtifact, WaveformOptions
 

@@ -143,8 +143,8 @@ def publication_current(db, run):
 
 
 def reference_handler(context):
+    from ..execution.media_inputs import materialize
     from ..media.audio import extract_audio, validate_audio
-    from .analysis import materialize
 
     operations = Operations(context)
     if cached := operations.cached():

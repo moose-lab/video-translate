@@ -289,9 +289,9 @@ def check_provider(
     identity: Identity = Depends(require_csrf),
     db: Session = Depends(get_db),
 ):
+    from ..execution.provider_runtime import http_for
     from ..providers.contracts import ProviderError
     from ..providers.gradio import discover_prefix, resolve_space, validate_endpoint_schema
-    from ..providers.network import SafeHTTP
     from ..providers.vault import decrypt_credential
 
     owner(identity)
@@ -351,17 +351,7 @@ def check_provider(
     ):
         result["state"] = "configuration_required"
     else:
-        hosts = {
-            h.strip().lower()
-            for h in request.app.state.settings.provider_allowed_hosts.split(",")
-            if h.strip()
-        }
-        runtime = request.app.state.settings
-        client = SafeHTTP(
-            allowed_hosts=hosts,
-            proxy_url=runtime.provider_proxy_url.get_secret_value() or None,
-            use_doh=runtime.provider_dns_over_https,
-        )
+        client = http_for(request.app.state.settings)
         checking_account = False
         try:
             if values.get("space_id"):

@@ -13,6 +13,7 @@ from ..execution.inputs import (
     set_inputs,
 )
 from ..execution.prepared import Operations, bounded, current_operation
+from ..execution.provider_runtime import make_http
 from ..models.core import Project, new_id, utcnow
 from ..models.dubbing import (
     ContextRevision,
@@ -25,7 +26,6 @@ from ..models.providers import WorkspaceCredential
 from ..models.translation import TranslationCommand, TranslationPhase
 from ..providers.chat import chat_data, normalize_chat, structured_chat
 from ..providers.network import validate_url
-from .analysis import make_http
 from .ownership import invalid, owned, owner, scope
 from .segments import active_segment, active_segments_query
 from .source import current_selection, source_state

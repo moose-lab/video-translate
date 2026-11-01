@@ -148,10 +148,10 @@ def checkpoint(context, operation_id, expected, payload):
 
 
 def handler(context):
+    from ..execution.media_inputs import materialize
     from ..media.finishing_types import RenderLimits
     from ..media.float_audio import Budget
     from ..models.finishing import FitPlanCommand
-    from .analysis import materialize
     from .fit_snapshot import validate_stored
 
     operations = Operations(context)

@@ -680,7 +680,7 @@ def test_same_identity_is_serialized_before_preprocessing_and_reuses_completed_p
     from dubbing_helpers import make_track
     from test_synthesis_domain import body
 
-    from videotranslate.dubbing.analysis import materialize
+    from videotranslate.execution.media_inputs import materialize
     from videotranslate.execution.worker import Worker
     from videotranslate.models.core import utcnow
     from videotranslate.models.execution import StageRun
@@ -728,7 +728,7 @@ def test_same_identity_is_serialized_before_preprocessing_and_reuses_completed_p
             assert release.wait(10)
         return materialize(context, asset, destination, **kwargs)
 
-    monkeypatch.setattr("videotranslate.dubbing.analysis.materialize", paused)
+    monkeypatch.setattr("videotranslate.execution.media_inputs.materialize", paused)
     try:
         with ThreadPoolExecutor(max_workers=2) as pool:
             first = pool.submit(Worker(c.app.state.settings).run_once)

@@ -3,9 +3,9 @@
 from ..errors import APIError
 from ..execution.contracts import FailureCode, StageFailure
 from ..execution.inputs import capture_inputs, fingerprint
+from ..execution.provider_runtime import credential_token, make_http
 from ..models.synthesis import SynthesisCommand, SynthesisLine
 from ..providers.omnivoice import OmniVoiceLanguageUnavailable
-from .analysis import make_http
 from .ownership import invalid, owned, scope
 from .synthesis_cache import cached_payload
 from .synthesis_contracts import LineOptions
@@ -54,31 +54,6 @@ def publication_current(db, run):
         return False
 
 
-def credential_token(db, project, context, config):
-    from sqlalchemy import select
-
-    from ..models.providers import WorkspaceCredential
-    from ..providers.vault import decrypt_credential
-
-    kind = config.get("credential_ref")
-    if kind not in {None, "huggingface"}:
-        raise StageFailure(FailureCode.CONFIGURATION)
-    if not kind:
-        return None
-    credential = db.scalar(
-        select(WorkspaceCredential).where(
-            WorkspaceCredential.workspace_id == project.workspace_id,
-            WorkspaceCredential.kind == kind,
-        )
-    )
-    if not credential or not credential.ciphertext:
-        raise StageFailure(FailureCode.AUTHENTICATION)
-    try:
-        return decrypt_credential(context.settings, project.workspace_id, credential.ciphertext)
-    except ValueError:
-        raise StageFailure(FailureCode.AUTHENTICATION) from None
-
-
 def validate_preparation(http, operation, inputs, token):
     from ..providers.gradio import GradioClient
     from .synthesis_evidence import validate_operation
@@ -92,11 +67,12 @@ def handler(context):
     from pathlib import Path
 
     from ..execution.contracts import StagePending
+    from ..execution.media_inputs import materialize
     from ..execution.prepared import Operations, current_operation, store_audio
+    from ..execution.provider_runtime import provider_failure
     from ..media.audio import extract_audio, validate_audio
     from ..models.core import Asset
     from ..providers.omnivoice import normalize_result, prepare_clone
-    from .analysis import materialize, provider_failure
     from .synthesis import editor_current
 
     operations = Operations(context)

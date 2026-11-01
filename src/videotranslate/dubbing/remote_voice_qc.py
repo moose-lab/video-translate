@@ -4,8 +4,8 @@ from ..errors import APIError
 from ..execution.contracts import FailureCode, StageFailure, StageResult
 from ..execution.inputs import capture_inputs, fingerprint
 from ..execution.prepared import Operations, current_operation
+from ..execution.provider_runtime import make_http
 from ..models.voice_qc import VoiceQCCommand, VoiceQCLine
-from .analysis import make_http
 from .ownership import invalid, owned, scope
 from .synthesis_contracts import LineOptions
 from .voice_qc_cache import cached_recognition, resume_alias, validate_recognition
@@ -67,14 +67,14 @@ def handler(context):
     import tempfile
     from pathlib import Path
 
+    from ..execution.media_inputs import materialize
     from ..execution.prepared import store_audio
+    from ..execution.provider_runtime import credential_token, provider_failure
     from ..media.audio import extract_audio, validate_audio
     from ..models.analysis import PreparedObject
     from ..models.core import Asset
     from ..models.synthesis import NaturalOutput
     from ..providers.whisper import transcribe
-    from .analysis import materialize, provider_failure
-    from .remote_synthesis import credential_token
     from .synthesis_cache import validate_output_evidence
     from .voice_qc import line_current
     from .voice_qc_arbitration import (
