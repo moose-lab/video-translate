@@ -96,3 +96,20 @@ it("ignores project requests that finish after navigation", async () => {
   finish(ok(project));
   await waitFor(() => expect(screen.queryByRole("heading", {name: "Source film"})).toBeNull());
 });
+it("keeps unsaved source bounds across live refresh and offers a way to discard the draft", async () => {
+  const user = userEvent.setup(); fixture(); open();
+  await screen.findByText("Source line 8");
+  const start = screen.getByLabelText("开始时间（毫秒）") as HTMLInputElement;
+  await user.clear(start); await user.type(start, "2500");
+  await user.click(screen.getByRole("button", {name: "刷新状态"}));
+  await waitFor(() => expect(start.value).toBe("2500"));
+  await user.click(screen.getByRole("button", {name: "放弃范围修改"}));
+  await waitFor(() => expect(start.value).toBe("1000"));
+});
+it("does not reuse the previous asset selection as fresh-file probe facts", async () => {
+  fixture(path => path === "/api/projects/p" ? ok({...project, source_asset_id: "new-asset"}) : path.includes("/timeline") ? ok({...timeline, source: {...selection, stale: true}}) : path.includes("/runs?") ? ok({items: [{...probe, is_stale: true}], total: 1}) : undefined);
+  open(); await screen.findByRole("heading", {name: "Source film"});
+  expect(screen.getByLabelText("原片播放器").getAttribute("src")).toBe("/api/assets/new-asset/content");
+  expect(screen.queryByLabelText("开始时间（毫秒）")).toBeNull();
+  expect(screen.queryByRole("button", {name: "分析所选源片段"})).toBeNull();
+});

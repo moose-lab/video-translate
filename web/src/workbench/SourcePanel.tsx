@@ -8,30 +8,33 @@ import {useAction} from "./useAction";
 type Props = {project: Project; timeline: Timeline; runs: Run[]; csrf: string; refresh: () => void; providers: ProviderRequirements | null; workflow: SourceWorkflow | null; onWorkflow: (value: SourceWorkflow) => void};
 export default function SourcePanel({project, timeline, runs, csrf, refresh, providers, workflow, onWorkflow}: Props) {
   const path = projectPath(project.id), selection = timeline.source;
-  const [file, setFile] = useState<File | null>(null), [playbackError, setPlaybackError] = useState(false), [savedProbe, setSavedProbe] = useState<Run | null>(null);
-  const [start, setStart] = useState(String(selection?.start_ms ?? 0)), [end, setEnd] = useState(String(selection?.end_ms ?? "")), [ordinal, setOrdinal] = useState(String(selection?.track.audio_ordinal ?? 0)), [dirty, setDirty] = useState(false);
+  const editableSelection = selection?.source_asset_id === project.source_asset_id ? selection : null;
+  const [file, setFile] = useState<File | null>(null), [uploading, setUploading] = useState(false), [playbackError, setPlaybackError] = useState(false), [savedProbe, setSavedProbe] = useState<Run | null>(null);
+  const [start, setStart] = useState(String(editableSelection?.start_ms ?? 0)), [end, setEnd] = useState(String(editableSelection?.end_ms ?? "")), [ordinal, setOrdinal] = useState(String(editableSelection?.track.audio_ordinal ?? 0)), [dirty, setDirty] = useState(false);
   const {busy, error, perform} = useAction(), fileInput = useRef<HTMLInputElement>(null);
   const probe = runs.find(run => run.stage === "probe" && run.status === "succeeded" && !run.is_stale) ?? savedProbe;
   const facts = probe?.result as ProbeFacts | null | undefined;
-  const duration = facts?.duration_ms ?? selection?.track.duration_ms;
-  const audio = facts?.audio ?? (selection ? [selection.track] : []);
+  const duration = facts?.duration_ms ?? editableSelection?.track.duration_ms;
+  const audio = facts?.audio ?? (editableSelection ? [editableSelection.track] : []);
   useEffect(() => {
-    const probeId = selection?.track.probe_run_id;
+    const probeId = editableSelection?.track.probe_run_id;
     if (!probeId || runs.some(run => run.id === probeId)) return;
     let active = true; const controller = new AbortController();
     api<Run>(`/runs/${encodeURIComponent(probeId)}`, {signal: controller.signal}).then(run => {if (active && run.status === "succeeded" && !run.is_stale) setSavedProbe(run);}).catch(() => {});
     return () => {active = false; controller.abort();};
-  }, [selection?.track.probe_run_id, runs]);
+  }, [editableSelection?.track.probe_run_id, runs]);
   useEffect(() => {
     if (dirty) return;
-    setStart(String(selection?.start_ms ?? 0)); setEnd(duration === undefined ? "" : String(selection?.end_ms ?? duration)); setOrdinal(String(selection?.track.audio_ordinal ?? audio[0]?.audio_ordinal ?? 0));
-  }, [selection?.id, duration, dirty]);
+    setStart(String(editableSelection?.start_ms ?? 0)); setEnd(duration === undefined ? "" : String(editableSelection?.end_ms ?? duration)); setOrdinal(String(editableSelection?.track.audio_ordinal ?? audio[0]?.audio_ordinal ?? 0));
+  }, [editableSelection?.id, duration, dirty]);
   const from = Number(start), to = Number(end), audioOrdinal = Number(ordinal);
   const valid = duration !== undefined && start !== "" && end !== "" && Number.isSafeInteger(from) && Number.isSafeInteger(to) && from >= 0 && from < to && to <= duration && audio.some(track => track.audio_ordinal === audioOrdinal);
   async function upload(event: FormEvent) {
     event.preventDefault(); if (!file) return;
+    setUploading(true);
     const body = new FormData(); body.append("file", file);
     const result = await perform(signal => api<{project: Project}>(`${path}/source`, {method: "POST", body, signal}, csrf));
+    setUploading(false);
     if (result) {setFile(null); if (fileInput.current) fileInput.current.value = ""; refresh();}
   }
   async function save(event: FormEvent) {
@@ -49,7 +52,7 @@ export default function SourcePanel({project, timeline, runs, csrf, refresh, pro
     {playbackError && <p className="error" role="alert">浏览器无法播放此文件或当前会话已失效。请尝试 H.264/AAC 编码 MP4，或重新上传兼容视频。</p>}
     <form onSubmit={e => void upload(e)}><label>选择原片文件<input ref={fileInput} type="file" accept=".mp4,.m4v,.mov,.webm,.mkv,.avi" disabled={busy} onChange={e => setFile(e.target.files?.[0] ?? null)} /></label>
       {file && <p className="muted">{file.name} · {file.size.toLocaleString()} 字节{project.source_asset_id ? " · 上传将替换当前原片并使旧选择失效" : ""}</p>}
-      <button disabled={!file || busy}>{busy && file ? "正在上传，请稍候…" : "上传原片"}</button>{busy && file && <p role="status">正在传输文件，尚无可用字节进度。</p>}
+      <button disabled={!file || busy}>{uploading ? "正在上传，请稍候…" : "上传原片"}</button>{uploading && <p role="status">正在传输文件，尚无可用字节进度。</p>}
     </form>
     {project.source_asset_id && <div className="probe-info"><button className="secondary" disabled={busy || runs.some(run => run.stage === "probe" && ["queued", "running", "retry_wait"].includes(run.status))} onClick={() => void perform(signal => api<Run>(`${path}/runs`, {method: "POST", signal, body: JSON.stringify({stage: "probe"})}, csrf)).then(result => {if (result) refresh();})}>读取媒体信息</button>
       {duration !== undefined && <p className="muted">原片时长 {seconds(duration)} 秒{facts?.video?.codec ? ` · 视频 ${facts.video.codec}` : ""}{facts?.video?.width ? ` · ${facts.video.width} × ${facts.video.height}` : ""}</p>}
@@ -58,7 +61,7 @@ export default function SourcePanel({project, timeline, runs, csrf, refresh, pro
       <div className="range-fields"><label>开始时间（毫秒）<input type="number" min={0} max={duration} step={1} value={start} disabled={busy} onChange={e => {setStart(e.target.value); setDirty(true);}} /></label><label>结束时间（毫秒）<input type="number" min={1} max={duration} step={1} value={end} disabled={busy} onChange={e => {setEnd(e.target.value); setDirty(true);}} /></label></div>
       {!valid && <p className="error">请在原片时长内选择有效范围：开始小于结束，使用整数毫秒。</p>}
       {selection && <p className="muted">服务器已选：{seconds(selection.start_ms)}–{seconds(selection.end_ms)} 秒 · 音轨 {selection.track.audio_ordinal} · 选择版本 {selection.revision}</p>}
-      <button className="secondary" disabled={busy || !valid}>保存源片段</button>
+      <div className="actions"><button className="secondary" disabled={busy || !valid}>保存源片段</button>{dirty && <button className="link" type="button" disabled={busy} onClick={() => setDirty(false)}>放弃范围修改</button>}</div>
     </form>}
     {selection && !selection.stale && <div className="analysis-actions"><h3>源分析</h3><p className="muted">提取音轨 → 分离人声 → 识别源字幕与角色，之后等待源字幕与角色审核。</p>
       <p className="muted">所需服务：背景分离{providers ? (providers.providers.separation ? "已配置" : "未配置") : "状态待检查"}、识别{providers ? (providers.providers.transcription ? "已配置" : "未配置") : "状态待检查"}。<a href="#/services">服务配置</a></p>

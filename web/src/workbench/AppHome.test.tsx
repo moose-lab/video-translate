@@ -26,3 +26,21 @@ it("does not let a late initial identity response restore an expired session", a
   await waitFor(() => expect(screen.queryByRole("heading", {name: "项目"})).toBeNull());
   expect(await screen.findByRole("button", {name: "登录"})).toBeTruthy();
 });
+it("clears active project and authenticated UI immediately while logout is pending", async () => {
+  let logout!: (response: Response) => void;
+  window.history.replaceState(null, "", "/#/projects/p");
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const path = String(input);
+    if (path.endsWith("/auth/me")) return ok(identity);
+    if (path.endsWith("/auth/logout")) return new Promise<Response>(resolve => {logout = resolve;});
+    if (path === "/api/projects/p") return ok({id: "p", name: "Private project", source_language: "en", target_languages: ["zh"], source_asset_id: null});
+    if (path.includes("/timeline")) return ok({source: null, transcript: null, segments: [], cast: [], total: 0});
+    return ok({items: [], total: 0, next_cursor: 0, providers: {}, credentials: {}});
+  });
+  render(<App />); await screen.findByRole("heading", {name: "Private project"});
+  await userEvent.click(screen.getByRole("button", {name: "退出登录"}));
+  expect(screen.queryByRole("heading", {name: "Private project"})).toBeNull();
+  expect(await screen.findByRole("button", {name: "登录"})).toBeTruthy();
+  expect(window.location.hash).toBe("#/projects");
+  logout(new Response(null, {status: 204}));
+});

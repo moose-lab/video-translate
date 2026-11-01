@@ -41,3 +41,14 @@ it("closes and stops reconnecting when replay reports session expiry", async () 
   expect(expired).toHaveBeenCalledOnce(); expect(StreamDouble.all).toHaveLength(1); expect(StreamDouble.all[0].closed).toBe(true);
   close(); window.removeEventListener("session-expired", expired);
 });
+it("coalesces repeated transport failures into one replay and one reconnect", async () => {
+  vi.useFakeTimers(); vi.stubGlobal("EventSource", StreamDouble);
+  let finish!: (value: Response) => void;
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise<Response>(resolve => {finish = resolve;}));
+  const close = subscribeProjectEvents("p", {onChange: vi.fn(), onEvent: vi.fn(), onState: vi.fn()});
+  StreamDouble.all[0].onerror?.(); StreamDouble.all[0].onerror?.();
+  expect(fetch).toHaveBeenCalledOnce();
+  finish(new Response(JSON.stringify({items: [], next_cursor: 0})));
+  await vi.advanceTimersByTimeAsync(2500);
+  expect(StreamDouble.all).toHaveLength(2); close();
+});

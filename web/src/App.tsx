@@ -21,13 +21,12 @@ export default function App() {
   }, []);
   async function logout() {
     if (!identity) return;
-    try {
-      await api("/auth/logout", { method: "POST" }, identity.csrf_token);
-    } finally {
-      setIdentity(null);
-      window.history.replaceState(null, "", "#/projects");
-      setServices(false);
-    }
+    const csrf = identity.csrf_token;
+    setIdentity(null);
+    window.history.replaceState(null, "", "#/projects");
+    setServices(false);
+    try { await api("/auth/logout", { method: "POST" }, csrf); }
+    catch { /* Local state and project subscriptions have already been cleared. */ }
   }
   if (loading) return <main className="loading">正在加载工作空间…</main>;
   return identity ? (
