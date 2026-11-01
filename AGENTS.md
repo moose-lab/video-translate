@@ -2,6 +2,11 @@
 
 This is the user's approved SaaS project, not a local-model desktop app.
 
+- User steering on 2026-11-01: development must be agile. Prioritize small usable vertical slices and demonstrate working pages/media early; the complete product scope remains required.
+- Use concise delivery cards rather than expanding large plans or repeated research. Existing detailed plans are reference/backlog; implementation may simplify internal structure while preserving the approved behavior and essential safeguards.
+- Run relevant tests and focused review for each increment. Reserve full backend regression for integration milestones, release or demonstrated cross-cutting risk; reuse confirmed live/completed runs instead of duplicating them. Frontend-only work does not require a backend full suite.
+- Parallelize independent frontend/backend work with disjoint file ownership. Report working behavior and concrete blockers, not growing test counts or documents as the product deliverable.
+
 - AI inference goes to remote providers, Hugging Face first. Do not install or download model weights, torch, transformers or local ASR/TTS runtimes in this project.
 - Follow the approved spec in docs/superpowers/specs/2026-10-29-video-translate-saas-design.md and the implementation plans.
 - Use Superpowers test-driven development: demonstrate the missing behavior with a failing test, implement it, then verify. Record commands and outcomes.

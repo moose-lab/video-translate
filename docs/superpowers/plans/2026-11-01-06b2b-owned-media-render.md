@@ -1,5 +1,7 @@
 # Owned media rendering from an exact fit result Implementation Plan
 
+> **2026-11-01 user steering supersedes the delivery sequence below:** develop in agile usable vertical slices, stop long-plan expansion and repeated whole-backend checks for small changes. This detailed document is contract/reference backlog, not eleven mandatory pre-demo stages. The next actor should deliver the smallest real owned render→mix/caption/export loop, reuse existing persistence where sufficient, and validate the affected behavior; internal tables/module layout may be simplified without dropping ownership, exact map/input proofs, safe recovery, resource bounds or the complete final scope. Full regression belongs at an integration milestone. Do not claim unimplemented hardening or media acceptance as complete.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development and superpowers:test-driven-development. The controller assigns one implementer, then independent SPEC and distinct QUALITY; no parallel implementers. Steps use checkbox (`- [ ]`) syntax. Continuous construction is already authorized, but execution of this plan requires both final 6B2A gates to pass. Do not ask for another execution choice.
 
 **Goal:** Render and privately publish measured source picture, original comparison audio, fitted line voices and target-specific background beds from one exact current owned fit result, with recoverable prepared success and unchanged natural/QC history.
