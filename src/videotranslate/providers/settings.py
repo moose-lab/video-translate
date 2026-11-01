@@ -1,8 +1,8 @@
 from sqlalchemy import select
 
 from ..models.providers import ProviderConnectionRevision
-
-SLOTS = ("separation", "transcription", "translation", "synthesis", "verification")
+from .catalog import ADAPTERS
+from .catalog import SLOTS as SLOTS
 
 
 def resolve_revision(db, workspace_id, slot, revision):
@@ -21,19 +21,11 @@ def resolve_revision(db, workspace_id, slot, revision):
 def validate_controls(adapter, controls):
     import math
 
-    supported = {
-        "omnivoice": {"ns", "gs", "dn", "sp", "du", "pp", "po"},
-        "nvidia_stream": {"max_speakers"},
-        "demucs": set(),
-        "demucs_multistem": set(),
-        "hf_router": set(),
-        "hf_asr": set(),
-        "openai_compatible": set(),
-    }
+    spec = ADAPTERS.get(adapter)
     if (
-        adapter not in supported
+        spec is None
         or not isinstance(controls, dict)
-        or set(controls) - supported[adapter]
+        or set(controls) - set(spec.capabilities.controls)
     ):
         raise ValueError("Unsupported provider controls")
     for name, value in controls.items():
@@ -58,17 +50,15 @@ def validate_controls(adapter, controls):
 
 
 def capability_contract(slot, adapter, schema=None, model=None):
-    from dataclasses import asdict
+    from dataclasses import asdict, replace
 
     from ..languages.catalog import resolve
-    from .contracts import ProviderCapabilities
 
-    supported = []
-    if adapter == "nvidia_stream":
-        supported = ["en", "en-US", "en-GB"]
-    elif adapter == "omnivoice" and schema is not None:
+    spec = ADAPTERS[adapter]
+    supported = list(spec.capabilities.supported_languages)
+    if adapter == "omnivoice" and schema is not None:
         try:
-            enum = schema["named_endpoints"]["/_clone_fn"]["parameters"][1]["type"]["enum"]
+            enum = schema["named_endpoints"][spec.gradio_endpoint]["parameters"][1]["type"]["enum"]
             if not isinstance(enum, list):
                 raise ValueError()
             for name in enum:
@@ -80,19 +70,7 @@ def capability_contract(slot, adapter, schema=None, model=None):
                     continue
         except (KeyError, TypeError, ValueError):
             raise ValueError("Provider language enum unavailable") from None
-    controls = {
-        "omnivoice": ("ns", "gs", "dn", "sp", "du", "pp", "po"),
-        "nvidia_stream": ("max_speakers",),
-    }.get(adapter, ())
-    capability = ProviderCapabilities(
-        stage=slot,
-        language_support="unsupported" if adapter == "nvidia_stream" else "unknown",
-        supported_languages=tuple(supported),
-        resumable=adapter in {"omnivoice", "demucs", "demucs_multistem"},
-        cancel_supported=False,
-        max_duration_seconds=120 if adapter == "nvidia_stream" else None,
-        controls=controls,
-    )
+    capability = replace(spec.capabilities, stage=slot, supported_languages=tuple(supported))
     result = asdict(capability)
     if adapter == "hf_asr" or (slot == "verification" and adapter == "hf_router"):
         from .asr_languages import WHISPER_LANGUAGES, WHISPER_REVISION
@@ -110,15 +88,16 @@ def capability_contract(slot, adapter, schema=None, model=None):
             }
         )
     if adapter == "demucs_multistem":
-        from .demucs import MULTISTEM_REVISION, output_mapping
+        from .catalog import MULTISTEM_REVISION
+        from .demucs import output_mapping
 
         result.update(
             {
                 "outputs": list(output_mapping(adapter)),
                 "instrumental_sources": ["drums", "bass", "other"],
                 "published_outputs": ["vocals", "instrumental"],
-                "api_name": "process",
-                "model": "htdemucs",
+                "api_name": spec.gradio_endpoint.lstrip("/"),
+                "model": spec.fixed_model,
                 "space_revision": MULTISTEM_REVISION,
                 "credential_mode": "public_demo",
             }
@@ -127,24 +106,14 @@ def capability_contract(slot, adapter, schema=None, model=None):
 
 
 def preset_supported(adapter, model, space_id, endpoint):
-    if adapter == "demucs_multistem":
-        from .demucs import MULTISTEM_HOST, MULTISTEM_SPACE
-
-        return (
-            model == "htdemucs"
-            and space_id == MULTISTEM_SPACE
-            and (endpoint is None or endpoint.rstrip("/") == MULTISTEM_HOST)
-        )
-    models = {
-        "nvidia_stream": "nemotron-diarization",
-        "omnivoice": "OmniVoice",
-        "demucs": "htdemucs_ft",
-    }
-    if adapter in models and model != models[adapter]:
+    spec = ADAPTERS.get(adapter)
+    if spec is None:
+        return True
+    if spec.fixed_model is not None and model != spec.fixed_model:
         return False
-    if adapter == "nvidia_stream":
-        return (
-            space_id == "nvidia/nemotron-diarization"
-            and (endpoint or "").rstrip("/") == "https://nvidia-nemotron-diarization.hf.space"
+    if spec.fixed_space is not None:
+        return space_id == spec.fixed_space and (
+            (endpoint is None and spec.endpoint_optional)
+            or (endpoint or "").rstrip("/") == spec.fixed_endpoint
         )
     return True

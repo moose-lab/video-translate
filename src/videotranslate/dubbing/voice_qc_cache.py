@@ -11,7 +11,7 @@ def cached_recognition(db, project, line):
     from ..execution.prepared import bounded
     from ..models.analysis import PreparedObject
     from ..models.execution import StageRun
-    from ..providers.hf_router import normalize_asr
+    from ..providers.whisper import normalize_asr
     from .remote_voice_qc import line_for
     from .voice_qc import POLICY
 

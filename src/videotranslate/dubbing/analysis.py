@@ -497,7 +497,7 @@ def transcribe_handler(context):
     from ..media.audio import extract_audio
     from ..models.core import Asset
     from ..models.providers import WorkspaceCredential
-    from ..providers.hf_router import transcribe
+    from ..providers.whisper import transcribe
     from ..providers.nvidia_stream import stream_remote
     from ..providers.settings import resolve_revision
     from ..providers.vault import decrypt_credential

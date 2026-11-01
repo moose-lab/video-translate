@@ -20,7 +20,7 @@ from videotranslate.models.analysis import PrivateOperation
 from videotranslate.models.core import Project, utcnow
 from videotranslate.models.dubbing import TranscriptRevision
 from videotranslate.models.execution import StageRun
-from videotranslate.providers.hf_router import normalize_asr
+from videotranslate.providers.whisper import normalize_asr
 
 WHISPER = "openai/whisper-large-v3"
 ACTUAL_TAIL = {

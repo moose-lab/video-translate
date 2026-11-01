@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from videotranslate.providers import hf_router
+from videotranslate.providers import chat
 
 
 class RecordedHTTP:
@@ -26,7 +26,7 @@ def test_extended_chat_keeps_quoted_inputs_and_valid_actual_metadata():
         request_id="req-actual",
         usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
     )
-    result = hf_router.structured_chat(
+    result = chat.structured_chat(
         http,
         model="model",
         token="test",
@@ -65,7 +65,7 @@ def test_extended_chat_keeps_quoted_inputs_and_valid_actual_metadata():
 )
 def test_extended_chat_rejects_invalid_exact_output(bad):
     with pytest.raises(ValueError):
-        hf_router.structured_chat(
+        chat.structured_chat(
             RecordedHTTP(bad),
             model="model",
             token="test",
@@ -85,7 +85,7 @@ def test_context_covers_exact_ordered_rows_and_unknown_metadata_stays_unknown():
         id="unsafe id",
         usage={"prompt_tokens": True},
     )
-    result = hf_router.structured_chat(
+    result = chat.structured_chat(
         http,
         model="m",
         token="t",
@@ -98,7 +98,7 @@ def test_context_covers_exact_ordered_rows_and_unknown_metadata_stays_unknown():
         {"target_language": "ja", "source_ids": ["a"], "summary": "A", "glossary": {}}
     )
     with pytest.raises(ValueError):
-        hf_router.structured_chat(
+        chat.structured_chat(
             http,
             model="m",
             token="t",
@@ -111,7 +111,7 @@ def test_context_covers_exact_ordered_rows_and_unknown_metadata_stays_unknown():
 def test_whole_context_overflow_rejected_before_http():
     http = RecordedHTTP({})
     with pytest.raises(ValueError):
-        hf_router.structured_chat(
+        chat.structured_chat(
             http,
             model="m",
             token="t",
@@ -130,7 +130,7 @@ def test_refinement_requires_exact_prior_draft_and_critique_before_post():
         {"phase": "rewrite", "draft": {"a": "draft"}, "critique": []},
     ):
         with pytest.raises(ValueError):
-            hf_router.structured_chat(
+            chat.structured_chat(
                 http,
                 model="m",
                 token="t",
@@ -143,10 +143,10 @@ def test_refinement_requires_exact_prior_draft_and_critique_before_post():
 
 def test_combined_manual_and_generated_glossary_has_an_explicit_union_bound():
     terms = {f"term{i}": f"value{i}" for i in range(400)}
-    data = hf_router.chat_data(target="ja", segments=[{"id": "a", "text": "A"}], glossary=terms)
+    data = chat.chat_data(target="ja", segments=[{"id": "a", "text": "A"}], glossary=terms)
     assert len(data["quoted_data"]["glossary"]) == 400
     with pytest.raises(ValueError):
-        hf_router.chat_data(
+        chat.chat_data(
             target="ja", segments=[{"id": "a", "text": "A"}], glossary=terms | {"overflow": "x"}
         )
 
@@ -161,7 +161,7 @@ def test_combined_manual_and_generated_glossary_has_an_explicit_union_bound():
 def test_extended_client_never_posts_credential_to_disallowed_host(kwargs):
     http = RecordedHTTP({})
     with pytest.raises(ValueError):
-        hf_router.structured_chat(
+        chat.structured_chat(
             http,
             model="m",
             token="secret",

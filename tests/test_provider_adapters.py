@@ -44,7 +44,7 @@ def test_gradio_sse_requires_event_id_and_terminal_completion():
 
 
 def test_translation_response_requires_exact_segment_ids_and_types():
-    from videotranslate.providers.hf_router import normalize_translation
+    from videotranslate.providers.chat import normalize_translation
 
     result = normalize_translation(
         {"segments": [{"id": "a", "text": "你好"}, {"id": "b", "text": "世界"}]}, ["a", "b"]
@@ -61,7 +61,7 @@ def test_translation_response_requires_exact_segment_ids_and_types():
 
 
 def test_asr_normalization_preserves_actual_timestamps_and_no_speakers():
-    from videotranslate.providers.hf_router import normalize_asr
+    from videotranslate.providers.whisper import normalize_asr
 
     chunks = normalize_asr(
         {"text": "hello", "chunks": [{"text": "hello", "timestamp": [0.1, 0.8]}]}
@@ -323,7 +323,7 @@ def test_gradio_output_download_uses_provider_file_route_and_bounded_temp(tmp_pa
 def test_hf_translation_sends_explicit_ids_and_validates_reply():
     import json
 
-    from videotranslate.providers.hf_router import translate
+    from videotranslate.providers.chat import translate
 
     class Http:
         def post_json(self, url, body, **kwargs):
@@ -360,7 +360,7 @@ def test_hf_translation_sends_explicit_ids_and_validates_reply():
 
 
 def test_hf_credential_cannot_be_sent_to_custom_translation_host():
-    from videotranslate.providers.hf_router import translate
+    from videotranslate.providers.chat import translate
 
     class Http:
         allowed_hosts = {"custom.example"}
@@ -437,7 +437,7 @@ def test_gradio_preserves_uncertain_post_failure_without_retry():
 def test_hf_asr_sends_base64_with_timestamps_to_official_router():
     import base64
 
-    from videotranslate.providers.hf_router import transcribe
+    from videotranslate.providers.whisper import transcribe
 
     class Http:
         def post_json(self, url, body, **kwargs):
@@ -828,7 +828,7 @@ def test_nvidia_can_use_admin_proxy_and_doh_without_changing_sni(monkeypatch):
 def test_custom_translation_may_use_explicitly_uncredentialed_host():
     import json
 
-    from videotranslate.providers.hf_router import translate
+    from videotranslate.providers.chat import translate
 
     class Http:
         allowed_hosts = {"custom.example"}
@@ -864,7 +864,7 @@ def test_custom_translation_may_use_explicitly_uncredentialed_host():
 
 
 def test_hf_asr_model_identifier_rejects_traversal():
-    from videotranslate.providers.hf_router import transcribe
+    from videotranslate.providers.whisper import transcribe
 
     class Http:
         def post_json(self, *args, **kwargs):
@@ -1077,7 +1077,7 @@ def test_gradio_terminal_failure_distinct_from_pending_network():
 def test_hf_source_preserves_only_actually_returned_language_metadata():
     import json
 
-    from videotranslate.providers.hf_router import transcribe
+    from videotranslate.providers.whisper import transcribe
 
     class HTTP:
         def __init__(self, language):

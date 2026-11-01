@@ -72,7 +72,7 @@ def handler(context):
     from ..models.analysis import PreparedObject
     from ..models.core import Asset
     from ..models.synthesis import NaturalOutput
-    from ..providers.hf_router import transcribe
+    from ..providers.whisper import transcribe
     from .analysis import materialize, provider_failure
     from .remote_synthesis import credential_token
     from .synthesis_cache import validate_output_evidence

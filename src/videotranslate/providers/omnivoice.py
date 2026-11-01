@@ -1,6 +1,7 @@
 """OmniVoice request and result validation; no local inference."""
 
 from ..languages.catalog import key, resolve
+from .catalog import ADAPTERS
 from .settings import validate_controls
 
 
@@ -79,7 +80,7 @@ def submit_clone(
     filename,
     reference_text,
     space_id="k2-fsa/OmniVoice",
-    model="OmniVoice",
+    model=ADAPTERS["omnivoice"].fixed_model,
     controls=None,
     hf_token=None,
 ):
@@ -88,14 +89,16 @@ def submit_clone(
     from .contracts import RemoteResult
     from .gradio import GradioClient, discover_prefix, resolve_space, validate_endpoint_schema
 
-    if model != "OmniVoice":
+    if model != ADAPTERS["omnivoice"].fixed_model:
         raise ValueError("Unsupported OmniVoice model")
     host = resolve_space(http, space_id)
-    prefix = discover_prefix(http, host, "/_clone_fn")
+    prefix = discover_prefix(http, host, ADAPTERS["omnivoice"].gradio_endpoint)
     schema = json.loads(http.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024))
     validate_endpoint_schema(schema, "omnivoice")
     try:
-        enum = schema["named_endpoints"]["/_clone_fn"]["parameters"][1]["type"]["enum"]
+        enum = schema["named_endpoints"][ADAPTERS["omnivoice"].gradio_endpoint]["parameters"][1][
+            "type"
+        ]["enum"]
         if not isinstance(enum, list):
             raise ValueError()
         model_name_from_enum(language, enum)
@@ -147,7 +150,7 @@ def prepare_clone(http, *, inputs, reference_audio, hf_token=None):
     from .gradio import GradioClient, discover_prefix, resolve_space, validate_endpoint_schema
 
     config = inputs["config"]
-    if config["model"] != "OmniVoice":
+    if config["model"] != ADAPTERS["omnivoice"].fixed_model:
         raise ValueError("Unsupported model")
     host = resolve_space(http, config["space_id"])
     metadata = json.loads(
@@ -162,10 +165,12 @@ def prepare_clone(http, *, inputs, reference_audio, hf_token=None):
         raise ValueError("Model metadata revision unavailable")
     if config.get("endpoint") and config["endpoint"].rstrip("/") != host:
         raise ValueError("Resolved model host differs from configured endpoint")
-    prefix = discover_prefix(http, host, "/_clone_fn")
+    prefix = discover_prefix(http, host, ADAPTERS["omnivoice"].gradio_endpoint)
     schema = json.loads(http.get(host + prefix + "/info", max_bytes=2 * 1024 * 1024))
     validate_endpoint_schema(schema, "omnivoice")
-    enum = schema["named_endpoints"]["/_clone_fn"]["parameters"][1]["type"]["enum"]
+    enum = schema["named_endpoints"][ADAPTERS["omnivoice"].gradio_endpoint]["parameters"][1][
+        "type"
+    ]["enum"]
     if (
         not isinstance(enum, list)
         or not 1 <= len(enum) <= 2000

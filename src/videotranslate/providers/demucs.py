@@ -2,9 +2,8 @@
 
 from dataclasses import dataclass
 
-MULTISTEM_SPACE = "teamup-tech/Demucs"
-MULTISTEM_HOST = "https://teamup-tech-demucs.hf.space"
-MULTISTEM_REVISION = "541b5b5bdee7e1eb6163d6f4e064e9e24f33c40c"
+from .catalog import ADAPTERS, MULTISTEM_HOST, MULTISTEM_REVISION
+from .catalog import MULTISTEM_SPACE as MULTISTEM_SPACE
 
 
 def output_mapping(adapter="demucs"):
@@ -42,12 +41,17 @@ class PreparedSeparation:
     reference: dict
     adapter: str = "demucs"
     api_name: str = "predict"
-    model: str = "htdemucs_ft"
+    model: str = ADAPTERS["demucs"].fixed_model
     output_mapping: tuple[str, ...] = ("vocals", "instrumental")
 
 
 def prepare_separation(
-    http, *, audio, space_id="kajise/Demucs_v4-FT_2s", model="htdemucs_ft", adapter="demucs"
+    http,
+    *,
+    audio,
+    space_id="kajise/Demucs_v4-FT_2s",
+    model=ADAPTERS["demucs"].fixed_model,
+    adapter="demucs",
 ):
     """Schema and generic-name upload only; there is no named inference call here."""
     import json
@@ -65,7 +69,7 @@ def prepare_separation(
     )
     if adapter == "demucs_multistem" and host != MULTISTEM_HOST:
         raise ValueError("Unsupported Demucs host")
-    api_name = "process" if adapter == "demucs_multistem" else "predict"
+    api_name = ADAPTERS[adapter].gradio_endpoint.lstrip("/")
     prefix = discover_prefix(http, host, "/" + api_name)
     if adapter == "demucs_multistem" and prefix != "/gradio_api":
         raise ValueError("Unsupported Demucs API prefix")
@@ -87,7 +91,12 @@ def submit_prepared(http, prepared):
 
 
 def submit_separation(
-    http, *, audio, filename, space_id="kajise/Demucs_v4-FT_2s", model="htdemucs_ft"
+    http,
+    *,
+    audio,
+    filename,
+    space_id="kajise/Demucs_v4-FT_2s",
+    model=ADAPTERS["demucs"].fixed_model,
 ):
     from .contracts import RemoteResult
 

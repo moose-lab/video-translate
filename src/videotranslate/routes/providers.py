@@ -15,6 +15,8 @@ from ..errors import APIError
 from ..execution.inputs import set_inputs
 from ..models.core import Project, Workspace, utcnow
 from ..models.providers import ProviderConnection, ProviderConnectionRevision, WorkspaceCredential
+from ..providers.catalog import ADAPTERS, DEFAULT_ADAPTERS
+from ..providers.contracts import AdapterId
 from ..providers.network import validate_url
 from ..providers.settings import SLOTS, capability_contract, preset_supported, validate_controls
 from ..providers.vault import encrypt_credential
@@ -39,15 +41,7 @@ class CredentialBody(BaseModel):
 class ProviderBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(ge=0)
-    adapter: Literal[
-        "hf_router",
-        "openai_compatible",
-        "omnivoice",
-        "demucs",
-        "demucs_multistem",
-        "nvidia_stream",
-        "hf_asr",
-    ]
+    adapter: AdapterId
     endpoint: str | None = Field(default=None, max_length=300)
     space_id: str | None = Field(default=None, max_length=150)
     model: str | None = Field(default=None, max_length=200)
@@ -116,13 +110,7 @@ def get_settings(identity: Identity = Depends(require_identity), db: Session = D
                     "revision": 0,
                     "capabilities": capability_contract(
                         slot,
-                        {
-                            "separation": "demucs",
-                            "transcription": "nvidia_stream",
-                            "translation": "hf_router",
-                            "synthesis": "omnivoice",
-                            "verification": "hf_router",
-                        }[slot],
+                        DEFAULT_ADAPTERS[slot],
                     ),
                 },
             )
@@ -193,26 +181,8 @@ def put_provider(
     owner(identity)
     if slot not in SLOTS:
         raise APIError(404, "NOT_FOUND", "Resource not found")
-    allowed_adapters = {
-        "separation": {"demucs", "demucs_multistem"},
-        "transcription": {"nvidia_stream", "hf_asr"},
-        "translation": {"hf_router", "openai_compatible"},
-        "synthesis": {"omnivoice"},
-        "verification": {"hf_router"},
-    }
-    valid_refs = {
-        "hf_router": {"huggingface"},
-        "hf_asr": {"huggingface"},
-        "openai_compatible": {"translation", None},
-        "omnivoice": {"huggingface", None},
-        "demucs": {None},
-        "demucs_multistem": {None},
-        "nvidia_stream": {None},
-    }
-    if (
-        body.adapter not in allowed_adapters[slot]
-        or body.credential_ref not in valid_refs[body.adapter]
-    ):
+    spec = ADAPTERS[body.adapter]
+    if slot not in spec.roles or body.credential_ref not in spec.credential_refs:
         raise APIError(422, "VALIDATION_ERROR", "Invalid provider configuration")
     if (
         (slot == "verification" and body.adapter == "hf_router" or body.adapter == "hf_asr")
@@ -247,7 +217,7 @@ def put_provider(
             parsed = urlsplit(body.endpoint)
             if (
                 body.adapter in {"hf_router", "hf_asr"}
-                and body.endpoint.rstrip("/") != "https://router.huggingface.co/v1"
+                and body.endpoint.rstrip("/") != spec.fixed_endpoint
             ):
                 raise ValueError()
             if body.adapter == "openai_compatible" and parsed.hostname not in hosts:
@@ -409,11 +379,7 @@ def check_provider(
                 if values["adapter"] == "demucs_multistem" and host != MULTISTEM_HOST:
                     raise ValueError("Unsupported Demucs host")
                 if values["adapter"] in {"omnivoice", "demucs", "demucs_multistem"}:
-                    endpoint = {
-                        "omnivoice": "/_clone_fn",
-                        "demucs": "/predict",
-                        "demucs_multistem": "/process",
-                    }[values["adapter"]]
+                    endpoint = ADAPTERS[values["adapter"]].gradio_endpoint
                     import json
 
                     prefix = discover_prefix(client, host, endpoint)
@@ -425,20 +391,19 @@ def check_provider(
                     validate_endpoint_schema(schema, values["adapter"])
                     result["capabilities"] = capability_contract(slot, values["adapter"], schema)
                     result["capabilities"]["api_prefix"] = prefix
-                    if (
-                        values["adapter"] == "omnivoice"
-                        and values["space_id"] == "k2-fsa/OmniVoice"
-                    ):
+                    spec = ADAPTERS[values["adapter"]]
+                    if spec.checked_space is None or values["space_id"] == spec.checked_space:
                         result["capabilities"].update(
                             {
-                                "model_license": "CC-BY-NC",
-                                "upstream_code_license": "Apache-2.0",
-                                "model_source": "https://huggingface.co/k2-fsa/OmniVoice#license",
-                                "controls": ["ns", "gs", "dn", "sp", "du", "pp", "po"],
+                                key: list(value) if isinstance(value, tuple) else value
+                                for key, value in spec.checked_capabilities
                             }
                         )
-                    if values["adapter"] == "demucs":
-                        result["capabilities"].update({"outputs": ["vocals", "instrumental"]})
+                    if (
+                        values["adapter"] == "omnivoice"
+                        and values["space_id"] == spec.checked_space
+                    ):
+                        result["capabilities"]["controls"] = list(spec.capabilities.controls)
                 elif values["adapter"] == "nvidia_stream":
                     import json
 

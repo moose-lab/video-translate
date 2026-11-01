@@ -160,9 +160,11 @@ def resolve_space(http, space_id, *, expected_revision=None):
 
 
 def validate_endpoint_schema(info, adapter):
+    from .catalog import ADAPTERS
+
     specs = {
         "omnivoice": (
-            "/_clone_fn",
+            ADAPTERS["omnivoice"].gradio_endpoint,
             [
                 "text",
                 "lang",
@@ -179,8 +181,12 @@ def validate_endpoint_schema(info, adapter):
             ],
             ["Audio", "Textbox"],
         ),
-        "demucs": ("/predict", ["audio"], ["Audio", "Audio"]),
-        "demucs_multistem": ("/process", ["input_0", "input_1"], ["Audio"] * 4),
+        "demucs": (ADAPTERS["demucs"].gradio_endpoint, ["audio"], ["Audio", "Audio"]),
+        "demucs_multistem": (
+            ADAPTERS["demucs_multistem"].gradio_endpoint,
+            ["input_0", "input_1"],
+            ["Audio"] * 4,
+        ),
     }
     if adapter not in specs:
         raise ValueError("Unsupported Gradio adapter")
@@ -202,7 +208,7 @@ def validate_endpoint_schema(info, adapter):
                 [x.get("component") for x in spec["parameters"]] != ["Audio", "Dropdown"]
                 or [x.get("label") for x in spec["returns"]] != ["Drums", "Bass", "Vocals", "Other"]
                 or model["type"].get("type") != "string"
-                or "htdemucs" not in model["type"].get("enum", [])
+                or ADAPTERS["demucs_multistem"].fixed_model not in model["type"].get("enum", [])
             ):
                 raise ValueError()
             for item in [audio, *spec["returns"]]:

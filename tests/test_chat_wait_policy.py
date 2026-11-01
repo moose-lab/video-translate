@@ -23,8 +23,8 @@ from videotranslate.execution.worker import Worker
 from videotranslate.models.analysis import PrivateOperation
 from videotranslate.models.core import utcnow
 from videotranslate.models.execution import StageRun
+from videotranslate.providers.chat import structured_chat, translate
 from videotranslate.providers.contracts import ProviderError
-from videotranslate.providers.hf_router import structured_chat, translate
 from videotranslate.providers.network import SafeHTTP
 
 CHAT_TIMEOUT = {"connect": 5.0, "write": 30.0, "read": 180.0, "pool": 5.0}

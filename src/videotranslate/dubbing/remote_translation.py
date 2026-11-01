@@ -23,7 +23,7 @@ from ..models.dubbing import (
 from ..models.execution import StageRun
 from ..models.providers import WorkspaceCredential
 from ..models.translation import TranslationCommand, TranslationPhase
-from ..providers.hf_router import chat_data, normalize_chat, structured_chat
+from ..providers.chat import chat_data, normalize_chat, structured_chat
 from ..providers.network import validate_url
 from .analysis import make_http
 from .ownership import invalid, owned, owner, scope
@@ -77,7 +77,7 @@ def phase_result(db, project, phase):
         phase=phase.phase,
     )
     # Revalidate metadata rather than trusting a manually altered private payload.
-    from ..providers.hf_router import actual_metadata
+    from ..providers.chat import actual_metadata
 
     expected = actual_metadata(
         {

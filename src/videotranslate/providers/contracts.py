@@ -3,6 +3,17 @@
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+AdapterId = Literal[
+    "hf_router",
+    "openai_compatible",
+    "omnivoice",
+    "demucs",
+    "demucs_multistem",
+    "nvidia_stream",
+    "hf_asr",
+]
+ProviderRole = Literal["separation", "transcription", "translation", "synthesis", "verification"]
+
 
 @dataclass(frozen=True)
 class ProviderCapabilities:

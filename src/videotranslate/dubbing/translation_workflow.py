@@ -24,7 +24,7 @@ from ..models.dubbing import (
 from ..models.execution import StageRun
 from ..models.providers import WorkspaceCredential
 from ..models.translation import TranslationCommand, TranslationPhase
-from ..providers.hf_router import chat_data
+from ..providers.chat import chat_data
 from ..providers.network import validate_url
 from .ownership import conflict, invalid, owned, owner, scope
 from .remote_translation import (
