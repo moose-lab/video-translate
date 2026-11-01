@@ -31,6 +31,8 @@ it("clears active project and authenticated UI immediately while logout is pendi
   window.history.replaceState(null, "", "/#/projects/p");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const path = String(input);
+    if (path.endsWith("/pipeline/current")) return ok(null);
+    if (path.includes("/fit-settings?")) return ok({revision: 0, settings: {mode: "smart", max_audio_speed: {numerator: 6, denominator: 5}, max_picture_factor: {numerator: 2, denominator: 1}, max_borrow_ms: 0, max_output_duration_ms: 57600000}});
     if (path.endsWith("/auth/me")) return ok(identity);
     if (path.endsWith("/auth/logout")) return new Promise<Response>(resolve => {logout = resolve;});
     if (path === "/api/projects/p") return ok({id: "p", name: "Private project", source_language: "en", target_languages: ["zh"], source_asset_id: null});

@@ -140,7 +140,7 @@ it("preserves source import preview while row edits block replacement, then rele
   expect((screen.getByLabelText("源文字 第 1 行") as HTMLTextAreaElement).disabled).toBe(true);
   finish(ok({count: 1}));
   await screen.findByText(/手动导入已应用 1 行/);
-  expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(false);
+  await waitFor(() => expect((screen.getByRole("button", {name: "下一页源文字"}) as HTMLButtonElement).disabled).toBe(false));
 });
 it("removes the parent dirty marker when a row legitimately leaves the editor", async () => {
   const user = userEvent.setup(), onDirty = vi.fn();

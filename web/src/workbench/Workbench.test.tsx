@@ -11,6 +11,8 @@ it("lists real project responses and opens a reloadable project link", async () 
   const user = userEvent.setup();
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const path = String(input);
+    if (path.endsWith("/pipeline/current")) return ok(null);
+    if (path.includes("/fit-settings?")) return ok({revision: 0, settings: {mode: "smart", max_audio_speed: {numerator: 6, denominator: 5}, max_picture_factor: {numerator: 2, denominator: 1}, max_borrow_ms: 0, max_output_duration_ms: 57600000}});
     if (path === "/api/projects?limit=50&offset=0") return ok({items: [project], total: 1});
     if (path === "/api/projects/project-one") return ok(project);
     if (path.includes("/timeline")) return ok({segments: [], total: 0, cast: [], source: null, transcript: null, editor_fingerprint: "head"});
@@ -28,6 +30,8 @@ it("creates with source and target language choices, then opens the returned pro
   const writes: unknown[] = [];
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const path = String(input);
+    if (path.endsWith("/pipeline/current")) return ok(null);
+    if (path.includes("/fit-settings?")) return ok({revision: 0, settings: {mode: "smart", max_audio_speed: {numerator: 6, denominator: 5}, max_picture_factor: {numerator: 2, denominator: 1}, max_borrow_ms: 0, max_output_duration_ms: 57600000}});
     if (path.startsWith("/api/languages")) return ok({items: [{code: "auto", name: "自动检测", variants: []}, {code: "en", name: "English", variants: []}, {code: "zh", name: "中文", variants: ["zh-Hans"]}]});
     if (path === "/api/projects" && init?.method === "POST") { writes.push(JSON.parse(String(init.body))); return ok({...project, name: "New film"}, 201); }
     if (path.startsWith("/api/projects?")) return ok({items: [], total: 0});
