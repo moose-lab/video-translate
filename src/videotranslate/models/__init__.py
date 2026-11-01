@@ -10,6 +10,7 @@ from . import (
     finishing,
     pipeline,
     providers,
+    source_import,
     synthesis,
     translation,
     voice_qc,

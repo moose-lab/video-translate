@@ -9,6 +9,9 @@ from .prepared import bounded, current_operation
 
 FORMATS = {
     "mp4": "video/mp4",
+    "mov": "video/quicktime",
+    "mkv": "video/x-matroska",
+    "avi": "video/x-msvideo",
     "wav": "audio/wav",
     "mp3": "audio/mpeg",
     "srt": "application/x-subrip",

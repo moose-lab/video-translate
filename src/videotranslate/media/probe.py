@@ -80,48 +80,54 @@ def probe_source(context):
                 if size > settings.probe_max_bytes:
                     raise StageFailure(FailureCode.MEDIA_LIMIT)
                 output.write(chunk)
-        with tempfile.TemporaryFile() as output:
+        return probe_path(context, path)
+
+
+def probe_path(context, path):
+    """Inspect bounded local bytes; never give ffprobe a network protocol."""
+    settings = context.settings
+    with tempfile.TemporaryFile() as output:
+        try:
+            process = subprocess.Popen(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-protocol_whitelist",
+                    "file,pipe",
+                    "-format_whitelist",
+                    "mov,matroska,avi",
+                    "-show_format",
+                    "-show_streams",
+                    "-of",
+                    "json",
+                    str(path),
+                ],
+                stdout=output,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            raise StageFailure(FailureCode.CONFIGURATION) from None
+        try:
+            deadline = time.monotonic() + settings.probe_timeout_seconds
+            while process.poll() is None:
+                context.check_active()
+                if time.monotonic() > deadline or output.tell() > 1024 * 1024:
+                    raise StageFailure(FailureCode.MEDIA_LIMIT)
+                time.sleep(0.05)
+            if process.returncode or output.tell() > 1024 * 1024:
+                raise StageFailure(FailureCode.INVALID_MEDIA)
+            output.seek(0)
             try:
-                process = subprocess.Popen(
-                    [
-                        "ffprobe",
-                        "-v",
-                        "error",
-                        "-protocol_whitelist",
-                        "file,pipe",
-                        "-format_whitelist",
-                        "mov,matroska,avi",
-                        "-show_format",
-                        "-show_streams",
-                        "-of",
-                        "json",
-                        str(path),
-                    ],
-                    stdout=output,
-                    stderr=subprocess.DEVNULL,
-                )
-            except OSError:
-                raise StageFailure(FailureCode.CONFIGURATION) from None
-            try:
-                deadline = time.monotonic() + settings.probe_timeout_seconds
-                while process.poll() is None:
-                    context.check_active()
-                    if time.monotonic() > deadline or output.tell() > 1024 * 1024:
-                        raise StageFailure(FailureCode.MEDIA_LIMIT)
-                    time.sleep(0.05)
-                if process.returncode or output.tell() > 1024 * 1024:
-                    raise StageFailure(FailureCode.INVALID_MEDIA)
-                output.seek(0)
-                try:
-                    data = json.load(output)
-                except (ValueError, UnicodeDecodeError):
-                    raise StageFailure(FailureCode.INVALID_MEDIA) from None
-            finally:
-                if process.poll() is None:
-                    process.kill()
-                    process.wait()
-        return normalize_probe(
-            data,
-            max_duration=settings.probe_max_duration_seconds,
-            max_pixels=settings.probe_max_pixels,
-        )
+                data = json.load(output)
+            except (ValueError, UnicodeDecodeError):
+                raise StageFailure(FailureCode.INVALID_MEDIA) from None
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+    return normalize_probe(
+        data,
+        max_duration=settings.probe_max_duration_seconds,
+        max_pixels=settings.probe_max_pixels,
+    )

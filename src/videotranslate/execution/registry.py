@@ -174,3 +174,12 @@ STAGES["workflow_continue"] = StageDefinition(
     pipeline_control.handler, pipeline_control.publish, command_only=True,
     scope_suffix=pipeline_control.command_scope,
 )
+
+from ..dubbing import source_import_execution  # noqa: E402
+
+STAGES["source_import"] = StageDefinition(
+    "source_import", source_import_execution.options, source_import_execution.inputs,
+    source_import_execution.handler, source_import_execution.publish,
+    source_import_execution.publication_current, command_only=True,
+    scope_suffix=source_import_execution.command_scope,
+)

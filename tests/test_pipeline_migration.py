@@ -68,7 +68,12 @@ def test_pipeline_migration_roundtrip(tmp_path, backend):
         for _ in range(2):
             command.upgrade(config, "0013_pipeline")
             with engine.connect() as db:
-                assert compare_metadata(MigrationContext.configure(db), Base.metadata) == []
+                # Compare historical 0013 independently of the additive 0014 table.
+                context = MigrationContext.configure(db, opts={
+                    "include_object": lambda obj, name, type_, reflected, compare_to:
+                        not (type_ == "table" and name == "source_imports")
+                })
+                assert compare_metadata(context, Base.metadata) == []
                 for table in ('workflow_intents', 'translation_commands'):
                     column = next(c for c in inspect(db).get_columns(table) if c['name'] == 'continuation_stopped')
                     value = db.execute(text('SELECT ' + column['default'])).scalar()
