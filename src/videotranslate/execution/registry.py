@@ -170,24 +170,37 @@ STAGES["deliver"] = StageDefinition(
 from ..dubbing import pipeline_control  # noqa: E402
 
 STAGES["workflow_continue"] = StageDefinition(
-    "workflow_continue", pipeline_control.options, pipeline_control.inputs,
-    pipeline_control.handler, pipeline_control.publish, command_only=True,
+    "workflow_continue",
+    pipeline_control.options,
+    pipeline_control.inputs,
+    pipeline_control.handler,
+    pipeline_control.publish,
+    command_only=True,
     scope_suffix=pipeline_control.command_scope,
 )
 
 from ..dubbing import source_import_execution  # noqa: E402
 
 STAGES["source_import"] = StageDefinition(
-    "source_import", source_import_execution.options, source_import_execution.inputs,
-    source_import_execution.handler, source_import_execution.publish,
-    source_import_execution.publication_current, command_only=True,
+    "source_import",
+    source_import_execution.options,
+    source_import_execution.inputs,
+    source_import_execution.handler,
+    source_import_execution.publish,
+    source_import_execution.publication_current,
+    command_only=True,
     scope_suffix=source_import_execution.command_scope,
 )
 
 from ..dubbing import waveforms, waveforms_execution  # noqa: E402
 
 STAGES["waveform_envelope"] = StageDefinition(
-    "waveform_envelope", waveforms.options, waveforms.inputs,
-    waveforms_execution.handler, waveforms_execution.publish, waveforms.publication_current,
-    command_only=True, scope_suffix=waveforms.command_scope,
+    "waveform_envelope",
+    waveforms.options,
+    waveforms.inputs,
+    waveforms_execution.handler,
+    waveforms_execution.publish,
+    waveforms.publication_current,
+    command_only=True,
+    scope_suffix=waveforms.command_scope,
 )

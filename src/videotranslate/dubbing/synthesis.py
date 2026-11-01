@@ -168,8 +168,9 @@ def editor_current(db, project, line):
         return False
 
 
-def command(db, project, tag, body, actor, *, pipeline_call=False,
-            authorization_checkpoint_id=None):
+def command(
+    db, project, tag, body, actor, *, pipeline_call=False, authorization_checkpoint_id=None
+):
     from ..execution.service import create_run
 
     initialize_inputs(db, project)
@@ -198,8 +199,11 @@ def command(db, project, tag, body, actor, *, pipeline_call=False,
             and row.review_translation_revision != state.revision
         ):
             conflict()
-        if (not target.approved and row.review_translation_revision != state.revision
-            and authorization is None):
+        if (
+            not target.approved
+            and row.review_translation_revision != state.revision
+            and authorization is None
+        ):
             issue(
                 "TARGET_REVIEW_REQUIRED",
                 "Review the exact current target revision before synthesis",
@@ -238,7 +242,11 @@ def command(db, project, tag, body, actor, *, pipeline_call=False,
             from .pipeline import mark_shared
 
             mark_shared(db, project, "synthesis", previous.id)
-        return {"id": previous.id, "reused": True} if pipeline_call else command_json(db, project, previous)
+        return (
+            {"id": previous.id, "reused": True}
+            if pipeline_call
+            else command_json(db, project, previous)
+        )
     if not captured:
         return {"id": None, "lines": [], "skipped_ids": skipped, "status": "selection_preserved"}
     for row, *_ in captured:

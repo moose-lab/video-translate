@@ -58,7 +58,9 @@ class StageRun(Base):
     request_fingerprint: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(20), default="queued")
     is_stale: Mapped[bool] = mapped_column(Boolean, default=False)
-    independently_requested: Mapped[bool] = mapped_column(Boolean, default=False, server_default=true())
+    independently_requested: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=true()
+    )
     attempt_count: Mapped[int] = mapped_column(Integer, default=0)
     auto_failures: Mapped[int] = mapped_column(Integer, default=0)
     due_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)

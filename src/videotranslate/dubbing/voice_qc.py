@@ -147,7 +147,9 @@ def command(db, project, tag, body, actor, *, pipeline_call=False):
             from .pipeline import mark_shared
 
             mark_shared(db, project, "qc", prior.id)
-        return {"id": prior.id, "reused": True} if pipeline_call else command_json(db, project, prior)
+        return (
+            {"id": prior.id, "reused": True} if pipeline_call else command_json(db, project, prior)
+        )
     for row, _, inputs, _ in captured:
         pending = db.scalar(
             scope(StageRun, project).where(
@@ -220,7 +222,9 @@ def command(db, project, tag, body, actor, *, pipeline_call=False):
         target_language=track.tag,
     )
     db.flush()
-    return {"id": intent.id, "reused": False} if pipeline_call else command_json(db, project, intent)
+    return (
+        {"id": intent.id, "reused": False} if pipeline_call else command_json(db, project, intent)
+    )
 
 
 def command_json(db, project, intent, limit=100, offset=0):

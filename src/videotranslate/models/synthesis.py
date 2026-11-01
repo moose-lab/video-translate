@@ -160,7 +160,9 @@ class SynthesisLine(Owned, Base):
             "reference_versions",
             "fk_synthesis_line_review_reference",
         ),
-        owned_fk("authorization_checkpoint_id", "pipeline_checkpoints", "fk_synthesis_line_authorization"),
+        owned_fk(
+            "authorization_checkpoint_id", "pipeline_checkpoints", "fk_synthesis_line_authorization"
+        ),
         UniqueConstraint("run_id", name="uq_synthesis_line_run"),
         UniqueConstraint("command_id", "segment_id", name="uq_synthesis_line_command_cell"),
         cell_unique("uq_synthesis_line_cell"),

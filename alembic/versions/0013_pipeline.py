@@ -14,7 +14,9 @@ def upgrade():
     # Conservatively retain independently admitted historical jobs on full cancellation.
     op.add_column(
         "stage_runs",
-        sa.Column("independently_requested", sa.Boolean(), server_default=sa.true(), nullable=False),
+        sa.Column(
+            "independently_requested", sa.Boolean(), server_default=sa.true(), nullable=False
+        ),
     )
     op.add_column(
         "workflow_intents",

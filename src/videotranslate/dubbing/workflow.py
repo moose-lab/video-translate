@@ -139,7 +139,9 @@ def command(db, project, body, actor, *, pipeline_call=False):
             from .pipeline import mark_shared
 
             mark_shared(db, project, "source", prior.id)
-        return {"id": prior.id, "reused": True} if pipeline_call else safe_workflow(db, project, prior)
+        return (
+            {"id": prior.id, "reused": True} if pipeline_call else safe_workflow(db, project, prior)
+        )
     if body.action == "analyse":
         from ..models.execution import StageRun
 
@@ -170,7 +172,9 @@ def command(db, project, body, actor, *, pipeline_call=False):
     append_event(
         db, project, "workflow.queued", facts={"workflow_id": intent.id, "action": intent.action}
     )
-    return {"id": intent.id, "reused": False} if pipeline_call else safe_workflow(db, project, intent)
+    return (
+        {"id": intent.id, "reused": False} if pipeline_call else safe_workflow(db, project, intent)
+    )
 
 
 def publication_current(db, run):

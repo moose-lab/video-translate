@@ -205,7 +205,9 @@ def command(db, project, tag, body, actor, runtime, *, pipeline_call=False):
             from .pipeline import mark_shared
 
             mark_shared(db, project, "translation", prior.id)
-        return {"id": prior.id, "reused": True} if pipeline_call else command_json(db, project, prior)
+        return (
+            {"id": prior.id, "reused": True} if pipeline_call else command_json(db, project, prior)
+        )
     if not selected_rows:
         raise APIError(409, "TRANSLATION_PROTECTED", "All requested rows are locked or approved")
     # Protect only overlapping selected rows or the same unresolved shared context.
@@ -289,7 +291,9 @@ def command(db, project, tag, body, actor, runtime, *, pipeline_call=False):
             "count": len(selected_rows),
         },
     )
-    return {"id": intent.id, "reused": False} if pipeline_call else command_json(db, project, intent)
+    return (
+        {"id": intent.id, "reused": False} if pipeline_call else command_json(db, project, intent)
+    )
 
 
 def phase_rows(db, project, intent):

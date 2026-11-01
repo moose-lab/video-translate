@@ -69,14 +69,22 @@ def test_pipeline_migration_roundtrip(tmp_path, backend):
             command.upgrade(config, "0013_pipeline")
             with engine.connect() as db:
                 # Compare historical 0013 independently of the additive 0014 table.
-                context = MigrationContext.configure(db, opts={
-                    "include_object": lambda obj, name, type_, reflected, compare_to:
-                        not (type_ == "table" and name == "source_imports")
-                })
+                context = MigrationContext.configure(
+                    db,
+                    opts={
+                        "include_object": lambda obj, name, type_, reflected, compare_to: (
+                            not (type_ == "table" and name == "source_imports")
+                        )
+                    },
+                )
                 assert compare_metadata(context, Base.metadata) == []
-                for table in ('workflow_intents', 'translation_commands'):
-                    column = next(c for c in inspect(db).get_columns(table) if c['name'] == 'continuation_stopped')
-                    value = db.execute(text('SELECT ' + column['default'])).scalar()
+                for table in ("workflow_intents", "translation_commands"):
+                    column = next(
+                        c
+                        for c in inspect(db).get_columns(table)
+                        if c["name"] == "continuation_stopped"
+                    )
+                    value = db.execute(text("SELECT " + column["default"])).scalar()
                     assert value is False or (type(value) is int and value == 0), (table, value)
                 row = db.execute(m.tables["projects"].select()).mappings().one()
                 assert row["settings"] == {"keep": True} and row["revision"] == 7
