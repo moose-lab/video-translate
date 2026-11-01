@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .delivery_export import ExportedFile
 from .float_audio import digest, invalid
-from .subtitle_fonts import FAMILIES, FontCoverageError
+from .subtitle_fonts import FAMILIES, MAX_SELECTED_FONTS, FontCoverageError, measured_font
 
 
 def ass_time(ms, *, end=False):
@@ -40,11 +40,16 @@ def literal_font_runs(text, fonts):
     """Do not rely on libass choosing a working fallback from fontsdir.
 
     Font providers can choose a missing-glyph box even when a loaded secondary
-    font has the character. Server-authored, fixed-family runs choose the exact
+    font has the character. Server-authored, measured-family runs choose the exact
     family whose measured charset contains each visible character.
     """
     result, active = [], None
-    allowed = {value for names in FAMILIES.values() for value in names}
+    if (
+        not fonts
+        or len(fonts) > MAX_SELECTED_FONTS
+        or not all(measured_font(font) for font in fonts)
+    ):
+        raise FontCoverageError("FONT_UNAVAILABLE")
     for char in text.replace("\r\n", "\n").replace("\r", "\n"):
         point = ord(char)
         invisible = (
@@ -58,7 +63,7 @@ def literal_font_runs(text, fonts):
             if invisible
             else next((font for font in fonts if point in font.covered), None)
         )
-        if font is None or font.family not in allowed:
+        if font is None:
             raise FontCoverageError("FONT_GLYPHS_MISSING", [f"U+{point:04X}"])
         if font != active:
             result.append("{\\fn" + font.family + "}")
@@ -75,7 +80,11 @@ def ass_document(cues, *, width, height, family, font_size=42, fonts=None):
         or not 16 <= height <= 16384
     ):
         raise invalid()
-    if family not in {value for names in FAMILIES.values() for value in names}:
+    if family not in {value for names in FAMILIES.values() for value in names} and not (
+        fonts
+        and len(fonts) <= MAX_SELECTED_FONTS
+        and any(measured_font(font) and font.family == family for font in fonts)
+    ):
         raise invalid()
     if type(font_size) is not int or not 12 <= font_size <= 96 or not 0 <= len(cues) <= 1000:
         raise invalid()

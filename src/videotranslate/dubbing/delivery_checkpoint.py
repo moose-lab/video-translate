@@ -96,7 +96,7 @@ BURNED = {
 
 
 def validate_caption_proof(proof, expected):
-    from ..media.subtitle_fonts import FAMILIES
+    from ..media.subtitle_fonts import MAX_SELECTED_FONTS, safe_family
 
     if type(proof) is not dict or set(proof) != {
         "policy",
@@ -115,7 +115,7 @@ def validate_caption_proof(proof, expected):
         or type(proof["glyph_count"]) is not int
         or not 0 <= proof["glyph_count"] <= 65536
         or type(proof["fonts"]) is not list
-        or not 1 <= len(proof["fonts"]) <= 4
+        or not 1 <= len(proof["fonts"]) <= MAX_SELECTED_FONTS
     ):
         raise ValueError("Invalid bound caption proof")
     hashes = [proof["cue_manifest_sha256"], proof["glyphs_sha256"]]
@@ -123,7 +123,7 @@ def validate_caption_proof(proof, expected):
         if (
             type(font) is not dict
             or set(font) != {"family", "face", "sha256", "glyphs_sha256", "glyph_count"}
-            or font["family"] not in {name for names in FAMILIES.values() for name in names}
+            or not safe_family(font["family"])
             or type(font["face"]) is not int
             or not 0 <= font["face"] < 256
             or type(font["glyph_count"]) is not int
