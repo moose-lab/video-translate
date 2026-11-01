@@ -1,4 +1,5 @@
 """Optional caption choices preserve old command capture and reject executable inputs."""
+# ruff: noqa: F811
 
 import pytest
 from pydantic import ValidationError
@@ -59,3 +60,36 @@ def test_optional_caption_options_and_old_choices():
 def test_caption_options_are_bounded_and_server_authored(options):
     with pytest.raises(ValidationError):
         DeliveryCreate.model_validate(request(caption_options=options))
+
+
+from test_translation_operations import translation_project  # noqa: E402,F401
+
+
+def test_pipeline_without_caption_options_keeps_legacy_signature(translation_project):
+    from sqlalchemy import select
+
+    from videotranslate.dubbing.pipeline_contracts import PipelineStart
+    from videotranslate.execution.inputs import fingerprint
+    from videotranslate.models.pipeline import PipelineWorkflow
+
+    fixture = translation_project
+    c, h, project, selection, _, track = fixture
+    prefix = f"/api/projects/{project['id']}"
+    timeline = c.get(prefix + "/timeline").json()
+    payload = dict(
+        expected_editor_fingerprint=timeline["editor_fingerprint"],
+        target_track_ids=[track["id"]],
+        delivery_track_ids=[track["id"]],
+    )
+    response = c.post(prefix + "/pipeline", headers=h, json=payload)
+    assert response.status_code == 202, response.text
+    legacy = PipelineStart.model_validate(payload).model_dump()
+    del legacy["delivery_options"]["caption_options"]
+    with c.app.state.session_factory() as db:
+        workflow = db.scalar(select(PipelineWorkflow))
+        assert workflow.signature == fingerprint(legacy | dict(selection_id=workflow.selection_id))
+        assert "caption_options" not in workflow.delivery_options
+        assert workflow.delivery_options["default_audio_track"] is None
+    assert (
+        c.post(prefix + "/pipeline", headers=h, json=payload).json()["id"] == response.json()["id"]
+    )

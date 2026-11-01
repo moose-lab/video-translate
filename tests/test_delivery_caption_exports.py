@@ -71,11 +71,23 @@ def test_http_worker_private_ass_burned_movie_and_durable_font_proof(
 
     fixture = synthesis_project
     c, h, *_ = fixture
+    from videotranslate.dubbing import delivery_subtitles
+
+    select_fonts = delivery_subtitles.select_fonts
+
+    def outside_sql(*args, **kwargs):
+        assert c.app.state.engine.pool.checkedout() == 0, "Font discovery retained SQL connection"
+        return select_fonts(*args, **kwargs)
+
+    monkeypatch.setattr(delivery_subtitles, "select_fonts", outside_sql)
     text = "你好 · مرحبا · שלום " + r"{\pos(1,1)}\N"
     plan, provider = caption_plan(fixture, monkeypatch, tmp_path, text)
     response = c.post(base(fixture) + "/deliveries", headers=h, json=caption_request(plan))
     assert response.status_code == 202, response.text
     intent = response.json()
+    foreign = caption_request(plan)
+    foreign["caption_options"]["target_track"] = "ar"
+    assert c.post(base(fixture) + "/deliveries", headers=h, json=foreign).status_code == 422
     drain(c)
     detail = c.get(base(fixture) + "/deliveries/" + intent["id"]).json()
     assert detail["status"] == "succeeded" and detail["manifest_valid"], detail
