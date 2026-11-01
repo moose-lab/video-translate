@@ -1,16 +1,24 @@
 # Video Translate
 
-Workspace API and service-setup interface for the approved Video Translate SaaS. Implemented backend
-stages include accounts/projects, private source upload, durable execution, cloud separation/ASR,
-editable source/cast/references, independently recoverable target translation and per-line natural
-voice synthesis with guarded audio selection/history. Hugging Face is the primary remote ecosystem.
-Independent voice QC, media finishing, the full editing workbench and
-final paired-language acceptance remain in the implementation plan. There are no local AI
-models, model weights, torch, transformers, ASR or TTS runtimes in this package.
+SaaS video dubbing workbench with separate Web, API and media Worker processes.
+It includes authenticated private media, durable source analysis and full-pipeline coordination,
+editable transcripts/roles/references/translation, per-line remote voices and independent QC,
+shared timing maps, background mixing, captions and private multi-track exports. Hugging Face
+is the primary remote ecosystem. There are no local AI models, model weights, torch,
+transformers, ASR or TTS runtimes in this package.
+
+The requested SIZsFGvtClM English→Chinese preview is an actual registered cloud-inference
+result:59.51s of source becomes76.810s with natural voice speed preserved. The original and
+Chinese playback files, verified exports and receipts are in the adjacent
+`VideoTranslate-SIZsFGvtClM-EN-ZH` output folder. Human voice/listening acceptance is separate;
+Japanese testing is deferred by the user. See [current delivery boundary](docs/engineering/remaining-product-obligations.md)
+and [source-linked implementation flows](docs/engineering/voice-dubbing-source-flows.md).
 
 ## Run locally
 
-Python 3.12 and [uv](https://docs.astral.sh/uv/) are required. Tests also require FFmpeg on PATH;
+Python 3.12 and [uv](https://docs.astral.sh/uv/) are required. The CPU media Worker requires FFmpeg/FFprobe, Rubber Band4/R3, Fontconfig and usable
+outline fonts; YouTube extraction also requires the pinned Deno runtime in the container build.
+Tests require FFmpeg on PATH;
 the test fixture generates an actual tiny MP4 rather than labelling invented bytes as decoded media.
 
 ```sh
@@ -47,8 +55,9 @@ uv run uvicorn videotranslate.app:create_app --factory --host 0.0.0.0 --port 800
 
 Terminate HTTPS at a trusted proxy and keep the API private behind it. Throttling uses the ASGI
 network peer, never an arbitrary forwarded-IP header. `--no-proxy-headers` preserves this behavior;
-if many clients share one reverse proxy, they share its login limit until a trusted proxy policy is
-implemented. Do not enable arbitrary proxy header trust. Avoid request body/header or exception
+a standalone API keeps this strict peer behavior. The packaged Web/API topology includes an
+explicit trusted edge and one trusted Web proxy address so different clients retain distinct login
+buckets. Follow [the deployment proxy contract](deploy/README.md); do not enable arbitrary proxy header trust. Avoid request body/header or exception
 dumps in gateway, application or tracing logs. Use sanitized diagnostics instead. Session/hash
 stability requires the same server secret across workers and restarts; rotate it to revoke all sessions.
 
@@ -86,10 +95,12 @@ failed replacements. A process crash between object storage and database commit 
 orphan reconciliation, and a failed remote delete must be repaired operationally.
 
 `GET /api/projects/{id}/assets` returns `{items,total}`. `GET /api/assets/{id}/content` authenticates
-every request, serves safe attachment headers, and supports one byte range, including suffix/open
-ranges (206). Invalid or multiple ranges return 416. Unknown/foreign IDs and assets belonging to
-soft-deleted projects return 404. Original cookies are never forwarded to source URLs; the API accepts
-uploaded files, not remote URL fetches.
+every request. Binary media uses safe attachment headers and supports one byte range, including
+suffix/open ranges (206); waveform JSON is validated and returned as the exact complete stored object. Invalid or multiple ranges return 416. Unknown/foreign IDs and assets belonging to
+soft-deleted projects return 404. Original cookies are never forwarded to source URLs. Public HTTPS/YouTube import uses the
+separate guarded `/api/projects/{id}/source-imports` command; unsupported or unavailable
+upstream links provide an upload fallback. Direct adaptive YouTube video/audio pairs are downloaded
+through the same boundary and muxed locally; no browser credentials or remote manifests are used.
 
 Errors use `{error:{code,message,retryable,details}}`; validation details contain field locations and
 codes only, never submitted values. Responses are private/non-cacheable; unexpected exceptions are
@@ -135,8 +146,8 @@ Run lists, individual run/attempt details, retries, cancellation and project eve
 the workspace. `GET /api/projects/{id}/events/stream` supports `after`, `Last-Event-ID`, and
 `follow=false`. Probe reports zero-based audio ordinals separately from FFmpeg stream indices; a
 video without audio can be probed but cannot produce source speech. Real registered stages include
-`extract`, `separate`, `transcribe`, `reference`, target-specific translation phases and per-line
-`synthesize`. Guarded workflow/reference/translation/synthesis routes capture the necessary editor proofs; generic run creation
+`source_import`, `extract`, `separate`, `transcribe`, `reference`, target-specific translation phases,
+per-line `synthesize` and `voice_qc`, `waveform_envelope`, `plan_fit`, `deliver` and `workflow_continue`. Guarded workflow/reference/translation/synthesis routes capture the necessary editor proofs; generic run creation
 cannot bypass those command boundaries. Unimplemented stages return `STAGE_UNAVAILABLE`.
 
 Handlers implement `StageDefinition` with option validation, exact input resolution, and `handle`;
@@ -199,9 +210,9 @@ Japanese operations and row histories remain independent.
 Tests use explicit recording providers, real CPU media and optional isolated actual PostgreSQL.
 Set `VT_TEST_POSTGRES_ADMIN_URL` only to an administrator URL for a disposable test server; fixtures
 create/drop uniquely named test databases. See `docs/verification/task4b-analysis.md`,
-`task4c-translation.md` and `upload-preparation.md` for their actual evidence/gates. Controller live
-service diagnostics are separate from final product acceptance; no finished Chinese/Japanese dubbed
-video is claimed by backend tests. The remaining product sequence is recorded in the master plan.
+`task4c-translation.md` and `upload-preparation.md` for their actual evidence/gates. Recording-provider tests are separate from real inference and final listening acceptance.
+The actual requested English→Chinese integration and its output boundaries are recorded in
+[the current delivery record](docs/engineering/remaining-product-obligations.md); Japanese is deferred.
 
 ## Natural per-line voice synthesis
 
@@ -222,8 +233,9 @@ connection revision and effective controls. Slot/display changes do not automati
 Durable operations retain real remote receipts and original measured provenance; interrupted local
 reuse resumes without another model POST. Invalid proof is visible and cannot be manually selected
 as verified audio. Current editor guards still prevent an old completion from replacing a newer
-choice. See `docs/verification/task5-synthesis-qc.md` for the completed backend gates; registered live
-sample clones, independent QC and final Chinese/Japanese videos remain acceptance work.
+choice. See `docs/verification/task5-synthesis-qc.md` for the backend gates. The requested sample now has
+eight real clones, eight independent QC results and a verified Chinese video preview; human
+listening acceptance and the deferred Japanese integration are separate states.
 
 ### Provider credential storage
 
@@ -235,7 +247,12 @@ Provider connection settings are revisioned separately from credentials. The lan
 
 The development interface runs on loopback at `http://127.0.0.1:5173` and proxies `/api` to the local API at `127.0.0.1:8000`. Start the API using the documented environment, then run `pnpm install --frozen-lockfile` and `pnpm dev` in `web/`. Use Node 22, 24 or 26 as specified by `web/package.json`; the bundled Node 24 runtime was used for verification. `pnpm test`, `pnpm typecheck` and `pnpm build` run the frontend checks.
 
-For a same-origin production gateway, build `web/dist` and mount it read-only at `/srv/video-translate/web/dist` in an Nginx container using [web/nginx.conf](web/nginx.conf). The configuration listens on port 8080, proxies both `/api` and `/api/` to `api:8000` on the private container network before SPA fallback, disables buffering for event streams, and returns 404 for missing hashed assets. Put this gateway behind a trusted HTTPS termination point, configure the API public origin to that HTTPS origin, and do not expose the private API separately. The 520 MiB gateway limit accommodates the default 512 MiB API upload plus multipart overhead; adjust both limits together if the API limit changes. This configuration has not been syntax- or runtime-tested because Nginx is unavailable in this environment; full container deployment and validation remain later work.
+For the same-origin production gateway, use [deploy/compose.yaml](deploy/compose.yaml) and
+[deploy/nginx.conf](deploy/nginx.conf) with the exact trusted-edge/private-proxy contract in
+[deploy/README.md](deploy/README.md). It serves the built Web assets, keeps API private, preserves
+separate client login throttles and disables buffering for event streams. The520MiB gateway body
+limit accommodates the default512MiB upload plus multipart overhead; adjust both together.
+Docker/Nginx are unavailable here, so image/Compose startup and HTTPS ingress are unverified.
 
 Provider network access is direct by default and ignores ambient proxy variables. An administrator can set `VT_PROVIDER_PROXY_URL` and `VT_PROVIDER_DNS_OVER_HTTPS=true` when the deployment requires a trusted proxy and DNS over HTTPS. Proxy credentials belong in the server environment, never the browser or the provider settings API. HTTP proxies are restricted to loopback; HTTPS proxies must have a valid certificate. The DNS resolver uses a fixed public Cloudflare endpoint, validates every returned address as public, and tunnels to a validated address while retaining the original provider hostname for TLS verification. Provider authorization headers travel only inside the provider TLS tunnel. The runtime integration relies on HTTPX/httpcore's pinned backend interface and must be reverified when changing those dependencies. The real public checks so far cover the local loopback HTTP proxy; remote HTTPS-proxy operation has not been independently verified.
 

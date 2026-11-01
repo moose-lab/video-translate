@@ -1,12 +1,12 @@
 # Video Translate 配音、角色与翻译源码流程
 
-核对版本：实际媒体交付 `b60212a`，独立子进程启动修正 `cd15ecb`，工作台拟合/导出 `ac63089`。本文对应已经实现的源码路径；完整跨阶段自动推进和其余产品义务另列。指定素材前59.51秒已经过真实云端英转中、混音和私有视频导出，结果仍是待人工听审的预览；日语实测按用户要求暂缓。
+核对版本：实际媒体交付 `b60212a`、跨阶段编排 `83a4f17`、字幕换行 `a69de52`、链接导入 `d79c3f4`、直接双流合并 `39f2474`/原声优先 `12a5016`、波形 `89c4f82` 和参数界面 `9f7bef9`。指定素材前59.51秒已经过真实云端英转中、混音和私有视频导出，结果仍是待人工听审的预览；用户已将本次真实集成测试限定为英转中，日语暂缓。
 
 ## 上传、识别、翻译到配音
 
 ```mermaid
 flowchart TD
-  U[认证上传原片] --> P[探测视频与音轨]
+  U[认证上传原片 / 受限公开 HTTPS 链接导入] --> P[探测视频与音轨]
   P --> S[选择音轨与绝对时间窗口]
   S --> E[CPU 提取工作音频与识别音频]
   E --> D[远程 Demucs 分离人声与背景]
@@ -24,9 +24,11 @@ flowchart TD
   M --> X[字幕、预览、多音轨封装与私有导出]
 ```
 
-实际边界：`WorkflowIntent` 目前串联提取、分离和识别，停在原文/角色检查；翻译、合成、QC、拟合各自有持久化命令。完整跨阶段自动推进仍要接入这些命令。用户选择的自动推进开关不能代替尚未实现的后续编排。
+`PipelineWorkflow` 通过持久化 `workflow_continue` 作业协调已有的源分析、翻译、逐句合成、QC、共享拟合与导出命令。默认在原文/角色和目标内容检查点暂停；可对当前工作流单独启用自动推进。低置信度、缺失引用、未知远端结果等硬阻塞仍保留。浏览器读取事件与投影，不在前端串行调用业务阶段。继续、改策略、改范围、取消和恢复都绑定工作流修订；人工命令与共享任务的所有权分别保留。实际中文工作流复用了既有人声、QC、拟合和导出，没有新增模型请求；自动推进未建立虚假的试听通过记录。
 
-源码入口：[`analysis.py`](../../src/videotranslate/dubbing/analysis.py)、[`workflow.py`](../../src/videotranslate/dubbing/workflow.py)、[`translation_workflow.py`](../../src/videotranslate/dubbing/translation_workflow.py)、[`remote_synthesis.py`](../../src/videotranslate/dubbing/remote_synthesis.py)、[`remote_voice_qc.py`](../../src/videotranslate/dubbing/remote_voice_qc.py)、[`fit_execution.py`](../../src/videotranslate/dubbing/fit_execution.py)、[`delivery_execution.py`](../../src/videotranslate/dubbing/delivery_execution.py)。原片/角色/译文/音频各有自己的修订和来源记录。
+链接导入使用已有 StageRun/PrivateOperation 生命周期，私有 URL 加密且不进入事件。每次请求及重定向验证并固定公开 DNS；官方 yt-dlp 的 JavaScript 求解通过受限 Deno 运行。仅处理支持的公开可取用视频；支持直接合并文件，或不超过1080p的直接MP4视频与AAC音频双流。双流共享下载字节/时间预算，FFmpeg只读取已下载本地文件并原样封装；原始/默认音轨优先级高于码率。无法取得时提供上传入口，不复制浏览器 Cookie。本次给定链接的双流导入在当前网络仍失败，真实配音样片使用的是先前已下载、经过产品上传入口的同一原片。实际 PCM 波形由独立 CPU 作业流式计算 min/max/RMS，源片窗口与自然配音分别保留时钟；波形读取不触发计算。
+
+源码入口：[`pipeline_control.py`](../../src/videotranslate/dubbing/pipeline_control.py)、[`source_imports.py`](../../src/videotranslate/dubbing/source_imports.py)、[`waveforms.py`](../../src/videotranslate/dubbing/waveforms.py)、[`analysis.py`](../../src/videotranslate/dubbing/analysis.py)、[`workflow.py`](../../src/videotranslate/dubbing/workflow.py)、[`translation_workflow.py`](../../src/videotranslate/dubbing/translation_workflow.py)、[`remote_synthesis.py`](../../src/videotranslate/dubbing/remote_synthesis.py)、[`remote_voice_qc.py`](../../src/videotranslate/dubbing/remote_voice_qc.py)、[`fit_execution.py`](../../src/videotranslate/dubbing/fit_execution.py)、[`delivery_execution.py`](../../src/videotranslate/dubbing/delivery_execution.py)。原片/角色/译文/音频各有自己的修订和来源记录。
 
 ## 多角色：每句到底用哪份声音
 
@@ -112,7 +114,7 @@ flowchart TD
   RC --> B[按各目标实际包含行替换对白区背景]
   B --> M[共享映射与明确增益浮点叠加]
   M --> MC[峰值保护与 mix 检查点]
-  MC --> X[MP4 多音轨、WAV、MP3、SRT、VTT]
+  MC --> X[MP4 多音轨、WAV、MP3、SRT、VTT、ASS / 可选烧录字幕]
   X --> XC[完整解码与 export 检查点]
   XC --> P[当前性复核与原子发布自有文件]
   P --> D[认证私有预览与下载]
@@ -122,6 +124,6 @@ flowchart TD
 
 [`deliveries.py`](../../src/videotranslate/dubbing/deliveries.py) 把导出绑定到确切的父计划及用途，重新检查来源、时间映射和选定人声。普通成片要求已就绪音频；明确的未完成预览允许当前有效人声，并保留预览标签。列表中的普通 `render_eligible` 字段不能用来禁止这类明确预览。
 
-[`delivery_pipeline.py`](../../src/videotranslate/dubbing/delivery_pipeline.py) 负责实际媒体阶段，[`delivery_checkpoint.py`](../../src/videotranslate/dubbing/delivery_checkpoint.py) 校验持久化阶段输出。原声对照也使用共享时间映射；不会把它标成未经变速的原片。导出重试不调用模型。当前字幕是独立SRT/VTT，烧录字幕和字体渲染仍待实现。
+[`delivery_pipeline.py`](../../src/videotranslate/dubbing/delivery_pipeline.py) 负责实际媒体阶段，[`delivery_checkpoint.py`](../../src/videotranslate/dubbing/delivery_checkpoint.py) 校验持久化阶段输出。原声对照也使用共享时间映射；不会把它标成未经变速的原片。导出重试不调用模型。字幕支持原文、目标和双语 SRT/VTT/ASS，并可选择烧录。字体先核对实际字符覆盖、字体文件哈希及私有字体目录；ASS 使用明确字体切换，文字按字面量转义。`unicode_wrap_v2` 先用实际 libass 图初始化一帧，确认支持 Unicode 换行后才完整渲染。字体或字幕选项不会重做翻译、合成或 QC；新导出命令仍会执行自身 CPU 交付阶段，同命令重试可复用有效 render/mix 检查点。
 
-真实英转中预览的10个私有下载通过字节数与SHA256检查，中文播放版通过完整音视频解码。Smart计划保持8段自然配音语速，画面由59.51秒延长为76.810秒；自动识别检查和人工听审仍是不同验收状态。完整剩余范围见[剩余产品义务](remaining-product-obligations.md)。
+真实英转中基础预览10个、字幕增量12个私有下载分别通过字节数与SHA256检查，中文播放版通过完整音视频解码。字幕增量检查2/35/73秒帧确认完整换行；开头仍与原片姓名条重叠，保留预览限制。Smart计划保持8段自然配音语速，画面由59.51秒延长为76.810秒；自动识别检查和人工听审仍是不同验收状态。完整剩余范围见[剩余产品义务](remaining-product-obligations.md)。

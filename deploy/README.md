@@ -7,8 +7,9 @@ prerequisites. These files do not provision them or deploy to a cloud account.
 The runtime installs the project from `uv.lock` as a non-editable wheel. Python
 3.12, FFmpeg, H.264/AAC/MP3 codecs and Rubber Band 4.0.0/R3 are build checks. The
 runtime also includes Fontconfig, Noto Core/CJK fonts and a libass subtitles-filter
-build assertion for the forthcoming burn-in slice. This does not claim that
-burn-in or per-script rendering has been implemented or accepted. The
+build assertion and an actual Unicode-wrap initializer for burn-in. Actual Chinese
+burn-in was checked on this development machine; Linux image behavior and every
+script are not inferred from that result. The
 native runner uses its installed absolute script path; no `PYTHONPATH=src` is
 needed. The Web build uses its frozen pnpm lock and contains no server secrets.
 
@@ -141,3 +142,10 @@ neither performs backups nor claims that rollback has been exercised.
   identity or bypass the limiter. This is not a live Nginx/TLS test.
 
 Caption requests capture `unicode_wrap_v2`. Burn-in initializes the exact libass graph on one frame and rejects the unsupported Unicode-wrap warning before the full render. The image build executes the same check; a filter-help option alone is insufficient. ASS downloads contain literal text and measured font family receipts, but their wrapping and font availability depend on the receiving renderer; the server-verified burned MP4 preserves the measured appearance.
+
+YouTube extraction uses the pinned offline Deno gateway. Supported direct adaptive
+imports select MP4 H264/AV1 video up to1080p and M4A/AAC audio, prefer original
+audio using the extractor rank, share one download byte/deadline budget, and
+stream-copy mux only local files. Availability still depends on upstream and the
+configured network; an unavailable link retains its failed task and file-upload
+fallback. No browser Cookie or site login is imported.
