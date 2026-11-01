@@ -2,6 +2,7 @@ import json
 import math
 from array import array
 from fractions import Fraction as F
+from pathlib import Path
 
 import pytest
 from media_fixtures import RATE, golden_plan, marked
@@ -156,7 +157,7 @@ def test_cancel_during_native_pass_kills_reaps_and_cleans(tmp_path, phase, monke
 
     def captured_popen(args, **kwargs):
         child = original_popen(args, **kwargs)
-        if "videotranslate.media.offline_warp_runner" in args:
+        if len(args) > 1 and Path(args[1]).name == "offline_warp_runner.py":
             children.append(child)
             actual_wait = child.wait
 
@@ -311,12 +312,10 @@ def test_native_failure_and_malformed_receipt_are_visible_fault_boundaries(tmp_p
     original = Budget.run
 
     def fake(self, args, **kwargs):
-        if "videotranslate.media.offline_warp_runner" in args:
+        if len(args) > 1 and Path(args[1]).name == "offline_warp_runner.py":
             # Labelled fault double: successful exit with invalid/truncated protocol.
-            from pathlib import Path
-
-            Path(args[6]).write_text('{"engine":true}')
-            Path(args[5]).write_bytes(b"bad")
+            Path(args[-2]).write_text('{"engine":true}')
+            Path(args[-3]).write_bytes(b"bad")
             return b""
         return original(self, args, **kwargs)
 
@@ -344,10 +343,8 @@ def test_successful_native_exit_with_missing_output_is_bounded_fault(tmp_path, m
     original = Budget.run
 
     def fake(self, args, **kwargs):
-        if "videotranslate.media.offline_warp_runner" in args:
-            from pathlib import Path
-
-            Path(args[6]).write_text(
+        if len(args) > 1 and Path(args[1]).name == "offline_warp_runner.py":
+            Path(args[-2]).write_text(
                 json.dumps(
                     dict(engine=3, pitch_scale=1, input_frames=4800, output_frames=9600, peak=0)
                 )
@@ -377,8 +374,8 @@ def test_valid_native_receipt_reaches_invalid_output_measurement(tmp_path, monke
     measured = []
 
     def fake(self, args, **kwargs):
-        if "videotranslate.media.offline_warp_runner" in args:
-            Path(args[6]).write_text(
+        if len(args) > 1 and Path(args[1]).name == "offline_warp_runner.py":
+            Path(args[-2]).write_text(
                 json.dumps(
                     dict(engine=3, pitch_scale=1, input_frames=4800, output_frames=9600, peak=0)
                 )
@@ -389,7 +386,7 @@ def test_valid_native_receipt_reaches_invalid_output_measurement(tmp_path, monke
                 payload = b"\0" * (9599 * 8)
             else:
                 payload = array("f", [float("nan"), 0]).tobytes() + b"\0" * (9599 * 8)
-            Path(args[5]).write_bytes(payload)
+            Path(args[-3]).write_bytes(payload)
             return b""
         return original_run(self, args, **kwargs)
 
@@ -430,7 +427,7 @@ def test_actual_isolated_native_capability_and_nonzero_fault_cleanup(
         return child
 
     def injected_run(self, args, **kwargs):
-        if "videotranslate.media.offline_warp_runner" in args:
+        if len(args) > 1 and Path(args[1]).name == "offline_warp_runner.py":
             script = "import os\nfrom videotranslate.media import offline_warp_runner as runner\n"
             if fault == "missing-library":
                 script += (
@@ -445,7 +442,7 @@ def test_actual_isolated_native_capability_and_nonzero_fault_cleanup(
                     "runner.library=fatal_library\n"
                 )
             script += "runner.main()\n"
-            args = [sys.executable, "-c", script, *args[3:]]
+            args = [sys.executable, "-c", script, *args[2:]]
         return original_run(self, args, **kwargs)
 
     monkeypatch.setattr(subprocess, "Popen", capture)
