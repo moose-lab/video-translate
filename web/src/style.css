@@ -427,3 +427,15 @@ textarea:focus-visible { outline: 3px solid #90bca9; outline-offset: 2px; }
 .delivery-result video { max-height: 560px; }
 .artifact-list { padding: 0; list-style: none; }
 .artifact-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid #dfe9e1; }
+.fit-controls { border-top: 1px solid #dfe9e1; margin-top: 1.5rem; padding-top: 1rem; }
+.fit-settings, .fit-capture, .fit-plan-view, .delivery-form { padding: 1.25rem 0; border-bottom: 1px solid #dfe9e1; }
+.settings-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 1rem; }
+.settings-fields label { min-width: 0; }
+.fit-capture fieldset { border: 1px solid #dfe9e1; padding: .75rem 1rem; margin: 1rem 0; }
+.fit-capture fieldset label { display: inline-flex; margin: .5rem 1rem .5rem 0; }
+.fit-issues { color: #a02e28; line-height: 1.8; }
+.table-scroll { max-width: 100%; overflow: auto; }
+.table-scroll table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+.table-scroll th, .table-scroll td { padding: .75rem; text-align: start; border-bottom: 1px solid #dfe9e1; white-space: nowrap; }
+@media (max-width: 800px) { .settings-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 500px) { .settings-fields { grid-template-columns: minmax(0, 1fr); } .fit-workspace .actions { flex-wrap: wrap; } }

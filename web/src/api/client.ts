@@ -17,6 +17,9 @@ const messages: Record<string, string> = {
   TARGET_REQUIRED: "此行尚无译文，请先填写或翻译。", TARGET_STALE: "译文与当前源文字不匹配，请重新核对译文。",
   TARGET_REVIEW_REQUIRED: "请先确认当前译文，再请求配音。", AUDIO_EVIDENCE_INVALID: "音频来源证据需要检查，暂时不能选用。",
   AUDIO_REQUIRED: "请先选择有效自然音频。", INVALID_SYNTHESIS_INPUT: "当前合成语言或声音设置不受支持。",
+  FIT_AUDIO_NOT_READY: "正式配音要求每行都有可用且已接受的自然音频，请先完成听审或选择未完成试听预览。",
+  FIT_TRACK_INCOMPLETE: "拟合需包含当前源字幕的全部行，请重新读取输入。", FIT_SNAPSHOT_LIMIT: "拟合输入超出大小限制，请减少目标语言。",
+  DELIVERY_INPUT_CHANGED: "拟合方案或媒体已变化，请重新核对当前方案后再导出。", INVALID_AUDIO_TRACK: "请选择包含在此导出中的默认音轨。",
   CONTEXT_LIMIT: "源文字超出当前完整语境处理范围，请调整片段或使用逐行模式。",
 };
 export function safeCode(value: unknown): string {return typeof value === "string" && Object.hasOwn(messages, value) ? value : "REQUEST_FAILED";}
