@@ -29,6 +29,7 @@ def enqueue(
     if body.stage in {"transcribe", "reference"}:
         raise APIError(422, "WORKFLOW_REQUIRED", "Use the guarded workflow or reference command")
     run = create_run(db, identity.workspace.id, project_id, body, idempotency_key)
+    run.independently_requested = True
     db.commit()
     return run_json(db, run)
 

@@ -205,6 +205,10 @@ def admit(db, project, body, actor, validated_capture, *, admission_only=False):
     signature = fingerprint(dict(snapshot=snapshot, actor_id=actor))
     prior = db.scalar(scope(DeliveryCommand, project).where(DeliveryCommand.signature == signature))
     if prior:
+        if not admission_only:
+            from .pipeline import mark_shared
+
+            mark_shared(db, project, "delivery", prior.id)
         return DeliveryAdmission(prior.id, reused=True) if admission_only else prior.id
     command = DeliveryCommand(
         id=new_id(),

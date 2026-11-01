@@ -11,9 +11,14 @@ depends_on = None
 
 
 def upgrade():
+    # Conservatively retain independently admitted historical jobs on full cancellation.
+    op.add_column(
+        "stage_runs",
+        sa.Column("independently_requested", sa.Boolean(), server_default=sa.true(), nullable=False),
+    )
     op.add_column(
         "workflow_intents",
-        sa.Column("continuation_stopped", sa.Boolean(), server_default="false", nullable=False),
+        sa.Column("continuation_stopped", sa.Boolean(), server_default=sa.false(), nullable=False),
     )
     op.create_table(
         "pipeline_workflows",
@@ -263,11 +268,12 @@ def upgrade():
         )
     op.add_column(
         "translation_commands",
-        sa.Column("continuation_stopped", sa.Boolean(), server_default="false", nullable=False),
+        sa.Column("continuation_stopped", sa.Boolean(), server_default=sa.false(), nullable=False),
     )
 
 
 def downgrade():
+    op.drop_column("stage_runs", "independently_requested")
     op.drop_column("workflow_intents", "continuation_stopped")
     op.drop_column("translation_commands", "continuation_stopped")
     with op.batch_alter_table("synthesis_lines") as batch:

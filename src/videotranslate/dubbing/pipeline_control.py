@@ -180,6 +180,13 @@ def blocked_runs(db, project, link):
     return None
 
 
+def provider_revision(db, project, slot):
+    from .workflow import connection
+
+    config = connection(db, project, slot)
+    return config.revision if config else None
+
+
 def source_branch(db, project, workflow, rows):
     state = source_state(db, project)
     # Existing/imported transcript is never silently replaced by ASR.
@@ -198,6 +205,10 @@ def source_branch(db, project, workflow, rows):
                 kind="source",
                 selection=workflow.selection_id,
                 editor=body.expected_editor_fingerprint,
+                providers={
+                    slot: provider_revision(db, project, slot)
+                    for slot in ("separation", "transcription")
+                },
             )
         )
         link = command_link(
@@ -290,6 +301,7 @@ def target_branch(db, project, workflow, track, rows, runtime):
                 track=track.id,
                 body=body.model_dump(),
                 context=track.context_revision_id,
+                provider_revision=provider_revision(db, project, "translation"),
             )
         )
         link = command_link(
@@ -375,7 +387,17 @@ def target_branch(db, project, workflow, track, rows, runtime):
     if synth_rows:
         body = Synthesize(**guard, segments=synth_rows)
         dispatch = fingerprint(
-            dict(kind="synthesis", track=track.id, body=body.model_dump(), target_guard=token)
+            dict(
+                kind="synthesis",
+                track=track.id,
+                body=body.model_dump(),
+                target_guard=token,
+                inference=[
+                    fingerprint(synthesis.inference_inputs(db, project, track, row)[0])
+                    for row, *_ in current
+                    if row.id in {r["id"] for r in synth_rows}
+                ],
+            )
         )
         link = command_link(
             db,
@@ -402,7 +424,14 @@ def target_branch(db, project, workflow, track, rows, runtime):
         )
     if qc_rows:
         body = VoiceQC(**guard, segments=qc_rows)
-        dispatch = fingerprint(dict(kind="qc", track=track.id, body=body.model_dump()))
+        dispatch = fingerprint(
+            dict(
+                kind="qc",
+                track=track.id,
+                body=body.model_dump(),
+                provider_revision=provider_revision(db, project, "verification"),
+            )
+        )
         try:
             with db.begin_nested():
                 link = command_link(
@@ -494,10 +523,51 @@ def fit_body(db, project, workflow, rows):
     )
 
 
+def ensure_finish_media(db, project, workflow):
+    from .analysis import media_for
+    from .workflow import command, connection
+
+    try:
+        media_for(db, project, "extract")
+        media_for(db, project, "separate")
+        return None
+    except APIError:
+        pass
+    config = connection(db, project, "separation")
+    body = SimpleNamespace(
+        action="prepare_media",
+        expected_editor_fingerprint=editor_fingerprint(db, project),
+        auto_advance=False,
+    )
+    dispatch = fingerprint(
+        dict(
+            kind="media",
+            selection=workflow.selection_id,
+            editor=body.expected_editor_fingerprint,
+            provider_revision=config.revision if config else None,
+        )
+    )
+    link = command_link(
+        db,
+        project,
+        workflow,
+        "source",
+        "source",
+        dispatch,
+        lambda: command(db, project, body, workflow.actor_id, pipeline_call=True),
+    )
+    block = blocked_runs(db, project, link)
+    intent = owned(db, WorkflowIntent, project, link.source_id)
+    return block or dict(status=intent.status, next_action=intent.next_action)
+
+
 def finish_branch(db, project, workflow, rows, result):
     from . import deliveries, fit_plans
     from .delivery_contracts import DeliveryCreate
 
+    media = ensure_finish_media(db, project, workflow)
+    if media:
+        return dict(purpose=workflow.purpose, **media)
     body = fit_body(db, project, workflow, rows)
     dispatch = fingerprint(
         dict(kind="fit", scope=workflow.delivery_track_ids, body=body.model_dump())
@@ -509,7 +579,7 @@ def finish_branch(db, project, workflow, rows, result):
         "finish",
         "fit",
         dispatch,
-        lambda: fit_plans.command(db, project, body, workflow.actor_id),
+        lambda: fit_plans.command(db, project, body, workflow.actor_id, pipeline_call=True),
     )
     block = blocked_runs(db, project, link)
     if block:

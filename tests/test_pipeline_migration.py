@@ -11,7 +11,7 @@ def test_pipeline_migration_roundtrip(tmp_path, backend):
     from alembic.autogenerate import compare_metadata
     from alembic.config import Config
     from alembic.migration import MigrationContext
-    from sqlalchemy import MetaData, create_engine
+    from sqlalchemy import MetaData, create_engine, inspect, text
 
     from alembic import command
     from videotranslate.db import Base
@@ -69,6 +69,10 @@ def test_pipeline_migration_roundtrip(tmp_path, backend):
             command.upgrade(config, "0013_pipeline")
             with engine.connect() as db:
                 assert compare_metadata(MigrationContext.configure(db), Base.metadata) == []
+                for table in ('workflow_intents', 'translation_commands'):
+                    column = next(c for c in inspect(db).get_columns(table) if c['name'] == 'continuation_stopped')
+                    value = db.execute(text('SELECT ' + column['default'])).scalar()
+                    assert value is False or (type(value) is int and value == 0), (table, value)
                 row = db.execute(m.tables["projects"].select()).mappings().one()
                 assert row["settings"] == {"keep": True} and row["revision"] == 7
             command.downgrade(config, "0012_deliveries")

@@ -109,7 +109,7 @@ class WorkflowIntent(Owned, Base):
     stage: Mapped[str] = mapped_column(String(40), default="extract")
     next_action: Mapped[str | None] = mapped_column(String(60))
     auto_advance: Mapped[bool] = mapped_column(default=False)
-    continuation_stopped: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    continuation_stopped: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
 
 
 class WorkflowChild(Owned, Base):

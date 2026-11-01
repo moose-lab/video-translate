@@ -4,7 +4,7 @@ This is an association/authorization layer. Existing domain commands own work,
 StageRun owns leases/retries, and no GET or event callback dispatches work.
 """
 
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import func, or_, select, union_all, update
 
 from ..errors import APIError
 from ..execution.events import append_event
@@ -286,7 +286,10 @@ def change_scope(db, project, workflow, body):
         or workflow.delivery_track_ids != body.delivery_track_ids
     ):
         removed = set(workflow.target_track_ids) - set(body.target_track_ids)
-        stop_links(db, project, workflow, scopes={"target:" + tid for tid in removed})
+        stop_scopes = {"target:" + tid for tid in removed}
+        if workflow.delivery_track_ids != body.delivery_track_ids:
+            stop_scopes.add("finish")
+        stop_links(db, project, workflow, scopes=stop_scopes)
         workflow.target_track_ids, workflow.delivery_track_ids = (
             body.target_track_ids,
             body.delivery_track_ids,
@@ -312,7 +315,7 @@ def command_identity(link):
     raise ValueError("Invalid pipeline command association")
 
 
-def command_runs(db, project, link):
+def command_runs(db, project, link, limit=None):
     from ..models.analysis import WorkflowChild
     from ..models.delivery import DeliveryCommand
     from ..models.execution import StageRun
@@ -332,10 +335,15 @@ def command_runs(db, project, link):
             "synthesis": (SynthesisLine, SynthesisLine.command_id),
             "qc": (VoiceQCLine, VoiceQCLine.command_id),
         }[kind]
-        run_ids = db.scalars(
-            scope(model, project).where(column == value).with_only_columns(model.run_id)
-        ).all()
-    return [owned(db, StageRun, project, rid) for rid in run_ids if rid]
+        query = scope(model, project).where(column == value).with_only_columns(model.run_id)
+        if limit:
+            query = query.limit(limit)
+        run_ids = db.scalars(query).all()
+    return db.scalars(
+        scope(StageRun, project)
+        .where(StageRun.id.in_(run_ids))
+        .order_by(StageRun.created_at, StageRun.id)
+    ).all()
 
 
 def mark_shared(db, project, kind, command_id):
@@ -399,30 +407,83 @@ def stop_links(db, project, workflow, scopes=None):
             intent.status, intent.next_action = "cancelled", "review_source"
         db.flush()  # stop barrier is visible to the same publication transaction
         for run in command_runs(db, project, link):
+            if run.independently_requested:
+                continue
+            if kind == "source":
+                from ..models.analysis import WorkflowChild
+
+                other_parent = db.scalar(
+                    scope(WorkflowChild, project)
+                    .where(WorkflowChild.run_id == run.id, WorkflowChild.workflow_id != value)
+                    .limit(1)
+                )
+                if other_parent:
+                    continue
             cancel_run(db, project.workspace_id, run.id)
 
 
-def unresolved_work(db, project, workflow):
-    pending = []
-    for link in links(db, project, workflow):
-        for run in command_runs(db, project, link):
-            if run.remote_state == "submitting" or (
-                run.remote_id and run.remote_state != "completed"
-            ):
-                pending.append(
-                    dict(
-                        run_id=run.id,
-                        status=run.status,
-                        exclusively_owned=link.exclusively_owned,
-                        submission_uncertain=run.remote_state == "submitting",
-                    )
-                )
-    return pending
+def unresolved_query(project, workflow):
+    from ..models.analysis import WorkflowChild
+    from ..models.delivery import DeliveryCommand
+    from ..models.execution import StageRun
+    from ..models.finishing import FitPlanCommand
+    from ..models.synthesis import SynthesisLine
+    from ..models.translation import TranslationPhase
+    from ..models.voice_qc import VoiceQCLine
+
+    branches = []
+    for kind, model, column in (
+        ("source", WorkflowChild, WorkflowChild.workflow_id),
+        ("translation", TranslationPhase, TranslationPhase.command_id),
+        ("synthesis", SynthesisLine, SynthesisLine.command_id),
+        ("qc", VoiceQCLine, VoiceQCLine.command_id),
+        ("fit", FitPlanCommand, FitPlanCommand.id),
+        ("delivery", DeliveryCommand, DeliveryCommand.id),
+    ):
+        branches.append(
+            select(
+                StageRun.id.label("run_id"),
+                StageRun.status,
+                PipelineCommand.exclusively_owned,
+                StageRun.independently_requested,
+                StageRun.remote_state,
+            )
+            .select_from(PipelineCommand)
+            .join(model, column == getattr(PipelineCommand, kind + "_id"))
+            .join(StageRun, StageRun.id == model.run_id)
+            .where(
+                PipelineCommand.workflow_id == workflow.id,
+                PipelineCommand.project_id == project.id,
+                PipelineCommand.workspace_id == project.workspace_id,
+                or_(
+                    StageRun.remote_state == "submitting",
+                    StageRun.remote_id.is_not(None) & (StageRun.remote_state != "completed"),
+                ),
+            )
+        )
+    return union_all(*branches).subquery()
+
+
+def unresolved_work(db, project, workflow, limit=100):
+    query = unresolved_query(project, workflow)
+    return [
+        dict(
+            run_id=row.run_id,
+            status=row.status,
+            exclusively_owned=row.exclusively_owned and not row.independently_requested,
+            submission_uncertain=row.remote_state == "submitting",
+        )
+        for row in db.execute(select(query).order_by(query.c.run_id).limit(limit))
+    ]
 
 
 def settle_cancel(db, project, workflow):
-    pending = unresolved_work(db, project, workflow)
-    owns_pending = any(row["exclusively_owned"] for row in pending)
+    query = unresolved_query(project, workflow)
+    owns_pending = db.scalar(
+        select(query.c.run_id)
+        .where(query.c.exclusively_owned.is_(True), query.c.independently_requested.is_(False))
+        .limit(1)
+    )
     workflow.status = "cancelling" if owns_pending else "cancelled"
     workflow.next_action = "review_run" if owns_pending else "resume_workflow"
 
@@ -434,7 +495,14 @@ def cancel(db, project, workflow, body):
         workflow.generation += 1
         stop_links(db, project, workflow)
         settle_cancel(db, project, workflow)
-        touch(db, project, workflow, "pipeline.cancelled")
+        touch(
+            db,
+            project,
+            workflow,
+            "pipeline.cancel_requested"
+            if workflow.status == "cancelling"
+            else "pipeline.cancelled",
+        )
     return detail(db, project, workflow)
 
 
@@ -462,7 +530,37 @@ def resume(db, project, workflow, body):
     return detail(db, project, workflow)
 
 
+def command_page(db, project, workflow, limit=20, offset=0):
+    query = scope(PipelineCommand, project).where(PipelineCommand.workflow_id == workflow.id)
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+    records = db.scalars(
+        query.order_by(PipelineCommand.created_at.desc(), PipelineCommand.id)
+        .limit(limit)
+        .offset(offset)
+    ).all()
+    items = []
+    for link in records:
+        runs = command_runs(db, project, link, limit=101)
+        kind, command_id = command_identity(link)
+        items.append(
+            dict(
+                id=link.id,
+                kind=kind,
+                command_id=command_id,
+                scope=link.scope_key,
+                exclusively_owned=link.exclusively_owned,
+                run_ids=[r.id for r in runs[:100]],
+                more_runs=len(runs) > 100,
+            )
+        )
+    return dict(items=items, total=total, limit=limit, offset=offset)
+
+
 def detail(db, project, workflow):
+    from ..models.execution import StageRun
+
+    control = db.get(StageRun, workflow.control_run_id) if workflow.control_run_id else None
+    control_failed = control and control.status in {"failed", "needs_review"}
     targets = []
     for tid in workflow.target_track_ids:
         track = owned(db, LanguageTrack, project, tid)
@@ -474,11 +572,7 @@ def detail(db, project, workflow):
                 **workflow.target_states.get(tid, {"status": "pending", "next_action": None}),
             )
         )
-    query = scope(PipelineCommand, project).where(PipelineCommand.workflow_id == workflow.id)
-    count = db.scalar(select(func.count()).select_from(query.subquery()))
-    commands = db.scalars(
-        query.order_by(PipelineCommand.created_at.desc(), PipelineCommand.id).limit(100)
-    ).all()
+    commands_page = command_page(db, project, workflow)
     checkpoints = db.scalars(
         scope(PipelineCheckpoint, project)
         .where(PipelineCheckpoint.workflow_id == workflow.id)
@@ -491,9 +585,9 @@ def detail(db, project, workflow):
         generation=workflow.generation,
         policy_revision=workflow.policy_revision,
         scope_revision=workflow.scope_revision,
-        status=workflow.status,
+        status="failed" if control_failed else workflow.status,
         stage=workflow.stage,
-        next_action=workflow.next_action,
+        next_action="review_run" if control_failed else workflow.next_action,
         source_mode=workflow.source_mode,
         source_guard=source_guard(db, project),
         source_selection_id=workflow.selection_id,
@@ -505,22 +599,18 @@ def detail(db, project, workflow):
         dirty=workflow.wake_revision > workflow.reconciled_revision,
         stop_requested=workflow.stop_requested,
         control_run_id=workflow.control_run_id,
+        control=dict(id=control.id, status=control.status, error=control.safe_error)
+        if control
+        else None,
         event_cursor=project.event_sequence,
         targets=targets,
         finish=workflow.finish_state,
-        unresolved_remote=unresolved_work(db, project, workflow)[:100],
-        commands_total=count,
-        commands=[
-            dict(
-                id=link.id,
-                kind=command_identity(link)[0],
-                command_id=command_identity(link)[1],
-                scope=link.scope_key,
-                exclusively_owned=link.exclusively_owned,
-                run_ids=[r.id for r in command_runs(db, project, link)],
-            )
-            for link in commands
-        ],
+        unresolved_remote=unresolved_work(db, project, workflow),
+        unresolved_remote_total=db.scalar(
+            select(func.count()).select_from(unresolved_query(project, workflow))
+        ),
+        commands_total=commands_page["total"],
+        commands=commands_page["items"],
         checkpoints=[
             dict(
                 id=r.id,

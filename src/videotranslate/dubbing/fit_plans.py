@@ -147,7 +147,7 @@ def capture_row(db, project, track, transcript, row):
     return facts
 
 
-def command(db, project, body, actor):
+def command(db, project, body, actor, *, pipeline_call=False):
     from ..execution.service import create_run
 
     snapshot, transcript = source_snapshot(db, project, body)
@@ -201,6 +201,10 @@ def command(db, project, body, actor):
     signature = fingerprint({"snapshot": snapshot, "rows": captured, "actor_id": actor})
     prior = db.scalar(scope(FitPlanCommand, project).where(FitPlanCommand.signature == signature))
     if prior:
+        if not pipeline_call:
+            from .pipeline import mark_shared
+
+            mark_shared(db, project, "fit", prior.id)
         return FitAdmission(prior.id, reused=True)
     intent = FitPlanCommand(
         id=new_id(),

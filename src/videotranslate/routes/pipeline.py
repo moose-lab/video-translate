@@ -147,3 +147,18 @@ def resume(
     result = pipeline.resume(db, project, owned(db, PipelineWorkflow, project, workflow_id), body)
     db.commit()
     return result
+
+
+@router.get("/{workflow_id}/commands")
+def commands(
+    project_id: str,
+    workflow_id: str,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0, le=10000000)] = 0,
+    identity: Identity = Depends(require_identity),
+    db: Session = Depends(get_db),
+):
+    project = project_for(db, identity, project_id)
+    return pipeline.command_page(
+        db, project, owned(db, PipelineWorkflow, project, workflow_id), limit, offset
+    )
