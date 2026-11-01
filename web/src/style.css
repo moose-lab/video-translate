@@ -422,3 +422,8 @@ textarea:focus-visible { outline: 3px solid #90bca9; outline-offset: 2px; }
 .audio-history { padding: 1rem; margin-top: .75rem; background: #f6f8f5; border: 1px solid #dfe9e1; border-radius: 6px; }
 .audio-history ol { padding-left: 1.25rem; }
 .audio-history li { padding: .75rem 0; border-bottom: 1px solid #dfe9e1; }
+
+.finishing-panel { margin-top: 1.5rem; }
+.delivery-result video { max-height: 560px; }
+.artifact-list { padding: 0; list-style: none; }
+.artifact-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid #dfe9e1; }

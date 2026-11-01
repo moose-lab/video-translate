@@ -1,0 +1,11 @@
+export type Rate = {numerator: number; denominator: number};
+export type Purpose = "dub" | "incomplete_preview" | "original_only";
+export const purposeName = (purpose: string) => ({dub: "正式配音", incomplete_preview: "未完成试听预览", original_only: "仅原声"}[purpose] ?? "待检查");
+export const rateValue = (value: Rate | null | undefined) => value && value.denominator > 0 ? value.numerator / value.denominator : null;
+export type DeliverySummary = {id: string; run_id: string; purpose: Purpose; status: string; current: boolean | null};
+export type Artifact = {format: string; track: string; asset_id: string; byte_size: number; sha256: string; content_type: string; download_url: string; metadata: {duration_ms?: number; [key: string]: unknown}};
+export type Delivery = DeliverySummary & {fit_plan_id: string; phase: string | null; manifest_valid: boolean; source_window: {start_ms: number; end_ms: number}; choices: {default_audio_track: string; captions: string}; artifacts: Artifact[]; error: {code?: string} | null};
+export type FitSettings = {mode: "fixed" | "smart"; max_audio_speed: Rate; max_picture_factor: Rate; max_borrow_ms: number; max_output_duration_ms: number};
+export type SettingsResponse = {revision: number; settings: FitSettings};
+export type FitSummary = {id: string; run_id: string; purpose: Purpose; status: string; total: number; current: boolean | null};
+export type FitDetail = FitSummary & {current: boolean; stale: boolean; audio_eligible: boolean; dub_ready: boolean; render_eligible: boolean; timeline_feasible: boolean | null; planned_output_duration_ms: Rate | null; tracks: {id: string; tag: string}[]; issues: string[]; lines: {segment_id: string; tag: string; included: boolean; ready: boolean; issues: string[]}[]; plan: {source_duration_ms: number; output_duration_ms: Rate; pieces: {source_start_ms: number; source_end_ms: number; output_start_ms: Rate; output_end_ms: Rate}[]; issues: {code: string}[]} | null};
