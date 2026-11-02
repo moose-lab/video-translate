@@ -62,10 +62,10 @@ make package      # sdist + wheel
 
 `make check` 是开发和 PR 的快速检查，不替代完整媒体回归。模型/网络测试使用显式测试提供方，不调用真实推理。
 
-完整检查需要媒体依赖与**可创建/删除测试数据库的独立 PostgreSQL 实例**：
+完整检查需要媒体依赖与**独立 PostgreSQL 实例**。请在该隔离实例预先创建具有 `LOGIN`、`CREATEDB` 权限的 `vt_test` 角色并配置密码；现有测试固定以 `OWNER vt_test` 创建临时库，使用该角色连接：
 
 ```sh
-export VT_TEST_POSTGRES_ADMIN_URL='postgresql://TEST_USER:TEST_PASSWORD@127.0.0.1:TEST_PORT/postgres'
+export VT_TEST_POSTGRES_ADMIN_URL='postgresql://vt_test:TEST_PASSWORD@127.0.0.1:TEST_PORT/postgres'
 make test
 ```
 

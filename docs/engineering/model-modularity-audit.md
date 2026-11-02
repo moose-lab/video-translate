@@ -13,7 +13,7 @@
 | 翻译策略 | Fast/Cinematic/Autofit；部分已经过 LLM 的路径会跳过额外反思/改写。 | 各翻译阶段是独立持久化命令；不是对上游全部分支的逐行复刻。 |
 | 远端重试 | 本地 GPU OOM 可降低步数重试。 | 不能直接套用到可能计费的远端 POST；保留提交不确定状态与已有请求 ID。 |
 
-来源：[tasks.py](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/core/tasks.py#L47-L84)、[job_store.py](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/core/job_store.py#L170-L183)、[项目与素材缓存](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/services/dub_pipeline.py#L325-L396)、[增量生成](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/services/incremental.py#L52-L101)、[翻译分支](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/api/routers/dub_translate.py#L389-L425)。未复制上游 AGPL 实现。
+来源：[tasks.py](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/core/tasks.py#L47-L84)、[job_store.py](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/core/job_store.py#L170-L183)、[项目与素材缓存](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/services/dub_pipeline.py#L325-L396)、[增量生成](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/services/incremental.py#L52-L101)、[翻译策略说明](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/api/routers/dub_translate.py#L1247-L1259)、[跳过重复改写的分支](https://github.com/debpalash/VoiceStudio/blob/cb1d6783a1c9e32044cce7137ab2fdde25c6c646/backend/api/routers/dub_translate.py#L1295-L1315)。未复制上游 AGPL 实现。
 
 ## 当前模块边界
 
