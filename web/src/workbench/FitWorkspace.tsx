@@ -41,8 +41,8 @@ export default function FitWorkspace({projectId, csrf, refreshVersion, targetLan
         {capture && <p className="notice">已读取 {capture.tracks.reduce((total, track) => total + track.segments.length, 0)} 行 · {purposeName(capture.purpose)}。如遇版本冲突，修改仍保留，请明确重新读取后再提交。</p>}
       </div>
     </> : !loadError && <p role="status">正在读取拟合设置…</p>}
-    {plans.items.length > 0 && <label>已有拟合方案<select value={selected} onChange={event => select(event.target.value)}>{plans.items.map((item, index) => <option key={item.id} value={item.id}>方案 {offset + index + 1} · {purposeName(item.purpose)} · {statusName(item.status)}</option>)}</select></label>}
+    {(plans.items.length > 0 || selected) && <label>已有拟合方案<select value={selected} onChange={event => select(event.target.value)}>{selected && !plans.items.some(item => item.id === selected) && <option value={selected}>当前链接方案</option>}{plans.items.map((item, index) => <option key={item.id} value={item.id}>方案 {offset + index + 1} · {purposeName(item.purpose)} · {statusName(item.status)}</option>)}</select></label>}
     {plans.total > 50 && <nav className="actions pagination" aria-label="拟合方案分页"><button className="secondary" disabled={!offset} onClick={() => {setOffset(Math.max(0, offset - 50)); setSelected(""); setPlan(null);}}>上一页方案</button><button className="secondary" disabled={offset + 50 >= plans.total} onClick={() => {setOffset(offset + 50); setSelected(""); setPlan(null);}}>下一页方案</button></nav>}
-    {plan && <><FitPlanView key={plan.id} plan={plan} /><DeliveryForm key={plan.id} projectId={projectId} csrf={csrf} plan={plan} onCreated={onDelivery} /></>}{error && <p className="error" role="alert">{error}</p>}
+    {plan && <><FitPlanView key={`plan/${plan.id}`} plan={plan} /><DeliveryForm key={`delivery/${plan.id}`} projectId={projectId} csrf={csrf} plan={plan} onCreated={onDelivery} /></>}{error && <p className="error" role="alert">{error}</p>}
   </div>;
 }

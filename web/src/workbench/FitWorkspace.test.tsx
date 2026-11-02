@@ -13,6 +13,46 @@ const audio = {items: [{segment_id: "s", selection_revision: 5, selected: {id: "
 const fit = {id: "fit", run_id: "fit-run", purpose: "incomplete_preview", status: "succeeded", current: true, stale: false, audio_eligible: false, dub_ready: false, render_eligible: false, timeline_feasible: true, planned_output_duration_ms: {numerator: 76780, denominator: 1}, tracks: [{id: "track", tag: "zh"}], issues: ["LISTENING_NOT_ASSESSED"], lines: [], total: 1, plan: {source_duration_ms: 59510, output_duration_ms: {numerator: 76780, denominator: 1}, pieces: [], issues: []}} as FitDetail;
 const ok = (value: unknown, status = 200) => new Response(JSON.stringify(value), {status});
 afterEach(() => {cleanup(); vi.restoreAllMocks(); window.history.replaceState(null, "", "/");});
+it("renders the selected plan and export form without duplicate keys", async () => {
+  const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(globalThis, "fetch").mockImplementation(async input => {
+    const path = String(input);
+    if (path.includes("/fit-settings")) return ok(settings);
+    if (path.includes("/fit-plans?")) return ok({items: [fit], total: 1});
+    if (path.includes("/fit-plans/fit?")) return ok(fit);
+    throw new Error(path);
+  });
+  render(<FitWorkspace projectId="p" csrf="csrf" refreshVersion={0} targetLanguages={["zh"]} sourceTimeline={timeline} onDelivery={vi.fn()} />);
+  await screen.findByRole("heading", {name: "拟合方案 · 未完成试听预览"});
+  expect(screen.getAllByRole("heading", {name: "创建导出 · 未完成试听预览"})).toHaveLength(1);
+  expect(errors.mock.calls.filter(call => call.some(value => String(value).includes("same key")))).toEqual([]);
+});
+it.each([false, true])("keeps a linked historical plan visibly selected across refresh (listed: %s)", async listed => {
+  window.history.replaceState(null, "", "/#/projects/p?fit=historical");
+  const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+  let newer = false;
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async input => {
+    const path = String(input);
+    if (path.includes("/fit-settings")) return ok(settings);
+    if (path.includes("/fit-plans?")) return ok({items: [{...fit, id: newer ? "newest" : "latest"}, ...(listed ? [{...fit, id: "historical"}] : [])], total: listed ? 2 : 1});
+    if (path.includes("/fit-plans/historical?")) return ok({...fit, id: "historical"});
+    throw new Error(path);
+  });
+  const props = {projectId: "p", csrf: "csrf", refreshVersion: 0, targetLanguages: ["zh"], sourceTimeline: timeline, onDelivery: vi.fn()};
+  const view = render(<FitWorkspace {...props} />);
+  await screen.findByRole("heading", {name: "拟合方案 · 未完成试听预览"});
+  expect(errors.mock.calls.filter(call => call.some(value => String(value).includes("same key")))).toEqual([]);
+  expect((screen.getByLabelText("已有拟合方案") as HTMLSelectElement).value).toBe("historical");
+  expect(screen.getByLabelText("已有拟合方案").querySelectorAll('option[value="historical"]')).toHaveLength(1);
+  newer = true;
+  view.rerender(<FitWorkspace {...props} refreshVersion={1} />);
+  await waitFor(() => expect(screen.getByLabelText("已有拟合方案").querySelector('option[value="newest"]')).not.toBeNull());
+  expect(fetch.mock.calls.some(([path]) => String(path).includes("/fit-plans/historical?"))).toBe(true);
+  expect((screen.getByLabelText("已有拟合方案") as HTMLSelectElement).value).toBe("historical");
+  expect(window.location.hash).toContain("fit=historical");
+  expect(screen.getByLabelText("已有拟合方案").querySelectorAll('option[value="historical"]')).toHaveLength(1);
+  expect(errors.mock.calls.filter(call => call.some(value => String(value).includes("same key")))).toEqual([]);
+});
 it("pins fitting-settings edits to the loaded base revision across live refresh", async () => {
   const user = userEvent.setup(); let saved: unknown;
   vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {saved = JSON.parse(String(init?.body)); return ok({error: {code: "REVISION_CONFLICT"}}, 409);});
