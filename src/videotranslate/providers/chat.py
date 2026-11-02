@@ -30,9 +30,7 @@ def normalize_translation(value, expected_ids):
     return result
 
 
-
 MAX_CHAT_BYTES = 240000
-
 
 
 def chat_data(
@@ -113,7 +111,6 @@ def chat_data(
     return data
 
 
-
 def normalize_chat(data, *, target, ids, phase):
     import json
 
@@ -146,7 +143,6 @@ def normalize_chat(data, *, target, ids, phase):
     return {"segments": result}
 
 
-
 def actual_metadata(envelope):
     from ..execution.contracts import safe_identifier
 
@@ -168,7 +164,6 @@ def actual_metadata(envelope):
         if values:
             result["usage"] = values
     return result
-
 
 
 def structured_chat(

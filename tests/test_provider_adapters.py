@@ -575,9 +575,12 @@ def test_omnivoice_prepares_then_submits_real_event_id_with_uploaded_reference()
     http = Http()
     prepared = prepare_clone(http, inputs=clone_inputs(), reference_audio=b"fake-audio")
     assert prepared["metadata_revision"] == "recorded-revision"
-    assert GradioClient(http, prepared["host"], prepared["prefix"]).submit(
-        prepared["api_name"], prepared["args"]
-    ) == "real-remote-id"
+    assert (
+        GradioClient(http, prepared["host"], prepared["prefix"]).submit(
+            prepared["api_name"], prepared["args"]
+        )
+        == "real-remote-id"
+    )
 
 
 def test_omnivoice_does_not_upload_when_text_or_controls_invalid():

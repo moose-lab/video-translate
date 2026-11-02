@@ -30,7 +30,6 @@ def normalize_asr(value):
     return result
 
 
-
 def transcribe(http, *, audio, model, token, include_metadata=False):
     """HF Inference ASR with timestamps. This is a synchronous, non-resumable call."""
     import base64
